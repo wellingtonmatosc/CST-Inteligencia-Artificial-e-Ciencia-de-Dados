@@ -1,7 +1,15 @@
 """Gera um hash Argon2 para ADMIN_PASSWORD_HASH sem gravar a senha em disco."""
 from __future__ import annotations
 
+import sys
 from getpass import getpass
+from pathlib import Path
+
+# Permite executar diretamente com `python scripts/<arquivo>.py` a partir da raiz.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from app.core.security import hash_password
 
 
