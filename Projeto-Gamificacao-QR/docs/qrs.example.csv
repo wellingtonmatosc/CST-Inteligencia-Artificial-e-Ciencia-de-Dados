@@ -1,0 +1,13 @@
+code,name
+BIB-01,Biblioteca
+CAN-01,Cantina
+TER-01,Salão de entrada
+BON-DIA-CAN,Bônus do Dia - Cantina
+BON-DIA-TER,Bônus do Dia - Térreo
+BON-DIA-1A,Bônus do Dia - 1º andar
+BON-DIN-CAN-A,Bônus Dinâmico - Cantina A
+BON-DIN-CAN-B,Bônus Dinâmico - Cantina B
+BON-DIN-TER-A,Bônus Dinâmico - Térreo A
+BON-DIN-TER-B,Bônus Dinâmico - Térreo B
+BON-DIN-1A-A,Bônus Dinâmico - 1º andar A
+BON-DIN-1A-B,Bônus Dinâmico - 1º andar B

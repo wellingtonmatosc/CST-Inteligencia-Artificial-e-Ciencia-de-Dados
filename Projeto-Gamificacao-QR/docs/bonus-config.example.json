@@ -1,0 +1,19 @@
+{
+  "event_date": "2026-09-10",
+  "start_time": "07:00",
+  "end_time": "22:00",
+  "daily_name": "Bônus do Dia",
+  "daily_points": 15,
+  "dynamic_name": "Bônus Dinâmico",
+  "dynamic_points": 20,
+  "daily_qr_by_zone": {
+    "cantina": "BON-DIA-CAN",
+    "terreo": "BON-DIA-TER",
+    "primeiro-andar": "BON-DIA-1A"
+  },
+  "dynamic_qrs_by_zone": {
+    "cantina": ["BON-DIN-CAN-A", "BON-DIN-CAN-B"],
+    "terreo": ["BON-DIN-TER-A", "BON-DIN-TER-B"],
+    "primeiro-andar": ["BON-DIN-1A-A", "BON-DIN-1A-B"]
+  }
+}

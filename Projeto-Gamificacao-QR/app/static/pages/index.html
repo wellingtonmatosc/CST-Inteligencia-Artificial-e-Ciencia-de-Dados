@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gamificação QR — Evento IFMT</title>
+<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<main id="conteudo">
+<header><h1>Gamificação QR — Evento IFMT</h1><p>Cadastre-se uma vez e use os QR Codes distribuídos pelo evento.</p></header>
+<div id="message" class="notice hidden" role="status" aria-live="polite"></div>
+<section id="profile" class="card hidden" aria-live="polite"></section>
+<section id="forms">
+<div class="card"><h2>Cadastro</h2><form id="registerForm">
+<label for="full_name">Nome completo</label><input id="full_name" name="full_name" autocomplete="name" required minlength="3">
+<label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não será exibido no ranking público.</small>
+<label for="participant_type">Tipo de participante</label><select id="participant_type" name="participant_type" required><option value="student">Aluno IFMT</option><option value="staff">Servidor IFMT</option><option value="external">Público externo</option></select>
+<div id="studentFields"><label for="registration">Matrícula</label><input id="registration" name="registration"><label for="course_class">Curso / turma</label><input id="course_class" name="course_class"></div>
+<div id="externalFields" class="hidden"><label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label><input id="institution" name="institution"></div>
+<button type="submit">Criar cadastro</button></form></div>
+<div class="card"><h2>Já participou?</h2><form id="recoverForm"><label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required><button type="submit" class="secondary">Recuperar sessão</button></form></div>
+</section>
+<p><a href="/ranking">Ver ranking público</a> · <a href="/admin">Administração</a></p>
+</main>
+<script src="/static/js/common.js"></script><script src="/static/js/index.js"></script>
+</body></html>
