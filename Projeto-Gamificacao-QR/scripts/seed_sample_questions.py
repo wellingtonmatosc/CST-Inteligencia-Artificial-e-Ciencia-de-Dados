@@ -6,6 +6,13 @@ por texto da pergunta e não vincula questões a QR normal automaticamente.
 from __future__ import annotations
 
 import logging
+import sys
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.repositories.supabase_repo import SupabaseRepository
@@ -33,8 +40,10 @@ def options(values: list[str]) -> list[dict[str, str]]:
 
 
 def main() -> None:
-    settings = get_settings(); configure_logging(settings.log_level)
-    repo = SupabaseRepository(settings); logger = logging.getLogger(__name__)
+    settings = get_settings()
+    configure_logging(settings.log_level)
+    repo = SupabaseRepository(settings)
+    logger = logging.getLogger(__name__)
     categories = {row["slug"]: row["id"] for row in repo.raw_table("categories").select("id,slug").execute().data or []}
     created = 0
     for slug, kind, prompt, raw_options, correct in QUESTIONS:
