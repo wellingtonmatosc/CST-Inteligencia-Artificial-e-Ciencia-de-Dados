@@ -5,3 +5,4 @@ pydantic-settings==2.15.0
 qrcode[pil]==8.2
 argon2-cffi==25.1.0
 itsdangerous==2.2.0
+tzdata==2026.2
