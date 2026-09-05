@@ -1,0 +1,8 @@
+const reg=document.querySelector('#registerForm'), rec=document.querySelector('#recoverForm'), msg=document.querySelector('#message'), profile=document.querySelector('#profile');
+const type=document.querySelector('#participant_type'), student=document.querySelector('#studentFields'), external=document.querySelector('#externalFields');
+function toggle(){student.classList.toggle('hidden',type.value!=='student');external.classList.toggle('hidden',type.value!=='external')}
+type.addEventListener('change',toggle);toggle();
+async function loadMe(){try{const d=await api('/api/participants/me');profile.innerHTML=`<h2>Olá, ${esc(d.participant.nick)}</h2><p><strong>${d.summary.points}</strong> pontos • ${d.summary.normal_completed_today} atividades normais concluídas hoje</p><p><a href="/ranking">Ver ranking</a></p>`;profile.classList.remove('hidden');document.querySelector('#forms').classList.add('hidden')}catch(_){}}
+reg.addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(reg);const payload=Object.fromEntries(f.entries());for(const k of Object.keys(payload))if(payload[k]==='')payload[k]=null;try{const d=await api('/api/participants/register',{method:'POST',body:JSON.stringify(payload)});showMessage(msg,`Cadastro concluído. Guarde seu código de recuperação: ${d.access_code}`,'success');await loadMe()}catch(err){showMessage(msg,err.message,'error')}});
+rec.addEventListener('submit',async e=>{e.preventDefault();try{await api('/api/participants/recover',{method:'POST',body:JSON.stringify({access_code:new FormData(rec).get('access_code')})});await loadMe()}catch(err){showMessage(msg,err.message,'error')}});
+loadMe();
