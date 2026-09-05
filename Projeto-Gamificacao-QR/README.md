@@ -1,5 +1,7 @@
 # Projeto Gamificação QR — Evento IFMT
 
+**Status:** MVP 0.1 em branch de desenvolvimento; ainda não mesclado à `main`.
+
 MVP web acessível para atividades e gamificação por QR Codes. O projeto foi desenhado para público interno e externo, três zonas físicas (Cantina, Térreo e 1º andar), ranking por nick, questões sem repetição por participante e dois tipos de bônus diários.
 
 ## Stack
