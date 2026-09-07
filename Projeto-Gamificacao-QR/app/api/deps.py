@@ -6,9 +6,9 @@ from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.core.security import verify_admin_session
 from app.repositories.supabase_repo import SupabaseRepository
+from app.services.gamification_optimized import OptimizedGamificationService
 from app.services.moderation import NickModerationService
 from app.services.participants import ParticipantService
-from app.services.gamification import GamificationService
 
 
 def get_repo(settings: Settings = Depends(get_settings)) -> Generator[SupabaseRepository, None, None]:
@@ -23,8 +23,8 @@ def get_participant_service(repo: SupabaseRepository = Depends(get_repo), settin
     return ParticipantService(repo, NickModerationService(settings.blocked_nick_terms), settings.participant_session_days)
 
 
-def get_gamification_service(repo: SupabaseRepository = Depends(get_repo), settings: Settings = Depends(get_settings)) -> GamificationService:
-    return GamificationService(repo, settings.event_timezone)
+def get_gamification_service(repo: SupabaseRepository = Depends(get_repo), settings: Settings = Depends(get_settings)) -> OptimizedGamificationService:
+    return OptimizedGamificationService(repo, settings.event_timezone)
 
 
 def current_participant(request: Request, service: ParticipantService = Depends(get_participant_service), settings: Settings = Depends(get_settings)):
