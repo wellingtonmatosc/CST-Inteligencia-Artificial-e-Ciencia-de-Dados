@@ -13,15 +13,16 @@
 - Cada participante pontua em cada QR normal no máximo uma vez por dia.
 - No dia seguinte o mesmo QR pode ser usado novamente.
 - A pergunta sorteada nunca se repete para a mesma pessoa enquanto houver perguntas inéditas.
-- Questões de verdadeiro/falso: 1 tentativa, valendo 10 pontos em caso de acerto.
-- Demais tipos: até 3 tentativas, com 10 pontos na 1ª, 7 na 2ª e 5 na 3ª; depois, 0.
+- Questões de verdadeiro/falso: 1 tentativa. Acerto = 10 pontos; erro = 1 ponto por participação.
+- Demais tipos: até 2 tentativas. Acerto na 1ª = 10 pontos; acerto na 2ª = 5 pontos; se errar as duas = 1 ponto por participação.
+- O ponto por participação não transforma uma resposta errada em atividade concluída para fins dos marcos de 3 e 5 atividades.
 - Não há cronômetro de resposta.
 - Compartilhamento de QR não será combatido com GPS/códigos invasivos; a proposta confia nos participantes e registra as regras no servidor.
 - QR danificado pode ser desativado e substituído pelo administrador.
 
 ## Progressão diária
-- 3 atividades normais concluídas: +5 pontos.
-- 5 atividades normais concluídas: +10 pontos adicionais.
+- 3 atividades normais concluídas corretamente: +5 pontos.
+- 5 atividades normais concluídas corretamente: +10 pontos adicionais.
 - O ledger impede concessão duplicada do mesmo marco.
 
 ## Bônus
