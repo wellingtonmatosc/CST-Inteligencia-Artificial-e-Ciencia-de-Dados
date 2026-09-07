@@ -1,4 +1,4 @@
-from collections.abc import Generator
+from functools import lru_cache
 
 from fastapi import Depends, Request
 
@@ -11,12 +11,14 @@ from app.services.moderation import NickModerationService
 from app.services.participants import ParticipantService
 
 
-def get_repo(settings: Settings = Depends(get_settings)) -> Generator[SupabaseRepository, None, None]:
-    repo = SupabaseRepository(settings)
-    try:
-        yield repo
-    finally:
-        repo.close()
+@lru_cache
+def _shared_repo() -> SupabaseRepository:
+    """Mantém o pool HTTP do Supabase entre requisições enquanto o processo estiver ativo."""
+    return SupabaseRepository(get_settings())
+
+
+def get_repo() -> SupabaseRepository:
+    return _shared_repo()
 
 
 def get_participant_service(repo: SupabaseRepository = Depends(get_repo), settings: Settings = Depends(get_settings)) -> ParticipantService:
