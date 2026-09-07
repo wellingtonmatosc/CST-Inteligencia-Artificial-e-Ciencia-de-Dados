@@ -68,21 +68,14 @@ class ParticipantService:
         return token
 
     def get_by_session(self, token: str) -> dict:
-        token_hash = sha256_hex(token)
-        now = datetime.now(timezone.utc).isoformat()
-        sessions = (
-            self.repo.raw_table("participant_sessions")
-            .select("id,participant_id,expires_at,revoked_at")
-            .eq("token_hash", token_hash)
-            .is_("revoked_at", "null")
-            .gt("expires_at", now)
-            .limit(1)
-            .execute().data or []
+        """Valida a sessão e obtém o participante em uma única chamada ao banco."""
+        result = self.repo.rpc(
+            "game_participant_from_session",
+            {"p_token_hash": sha256_hex(token)},
         )
-        if not sessions:
+        if not isinstance(result, dict) or not result.get("ok"):
             raise AppError("Sessão inválida ou expirada.", 401)
-        self.repo.update("participant_sessions", {"last_seen_at": now}, id=sessions[0]["id"])
-        participants = self.repo.select("participants", id=sessions[0]["participant_id"], active=True)
-        if not participants:
+        participant = result.get("participant")
+        if not participant:
             raise AppError("Participante não encontrado.", 401)
-        return participants[0]
+        return participant
