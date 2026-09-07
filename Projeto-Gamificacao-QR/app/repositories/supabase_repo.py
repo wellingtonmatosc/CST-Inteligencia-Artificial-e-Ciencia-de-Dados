@@ -87,12 +87,15 @@ class SupabaseRepository:
             "User-Agent": "gamificacao-qr-backend/0.1",
         }
         self.timeout = httpx.Timeout(15.0, connect=8.0)
-        # Reutiliza a mesma conexão HTTP durante toda a requisição FastAPI.
         self.client = httpx.Client(
             base_url=self.base_url,
             headers=self.headers,
             timeout=self.timeout,
-            limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
+            limits=httpx.Limits(
+                max_keepalive_connections=10,
+                max_connections=20,
+                keepalive_expiry=60.0,
+            ),
         )
 
     def close(self) -> None:
