@@ -25,14 +25,14 @@ def test_other_normal_questions_have_two_attempts():
     assert normal_max_attempts("ordering") == 2
 
 
-def test_normal_scoring_is_10_then_5():
+def test_normal_scoring_is_10_then_6():
     assert normal_score_for_attempt(1) == 10
-    assert normal_score_for_attempt(2) == 5
+    assert normal_score_for_attempt(2) == 6
     assert normal_score_for_attempt(3) == 0
 
 
-def test_normal_participation_is_one_point():
-    assert normal_participation_points() == 1
+def test_normal_participation_is_two_points():
+    assert normal_participation_points() == 2
 
 
 def test_daily_milestones_are_cumulative():
