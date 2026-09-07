@@ -16,21 +16,24 @@ def score_for_attempt(base_points: int, attempt_number: int) -> int:
 
 
 def normal_max_attempts(question_kind: str) -> int:
+    """V/F tem uma tentativa; os demais tipos normais têm no máximo duas."""
     return 1 if question_kind == "true_false" else 2
 
 
 def normal_score_for_attempt(attempt_number: int) -> int:
+    """Pontuação por acerto em atividade normal: 10 na 1ª e 6 na 2ª."""
     if attempt_number <= 0:
         raise ValueError("attempt_number deve ser >= 1")
     if attempt_number == 1:
         return 10
     if attempt_number == 2:
-        return 5
+        return 6
     return 0
 
 
 def normal_participation_points() -> int:
-    return 1
+    """Pontuação concedida quando todas as tentativas normais terminam sem acerto."""
+    return 2
 
 
 MILESTONES = {3: 5, 5: 10}
