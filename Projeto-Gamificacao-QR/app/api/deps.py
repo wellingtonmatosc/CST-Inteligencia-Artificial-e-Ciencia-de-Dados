@@ -1,4 +1,7 @@
+from collections.abc import Generator
+
 from fastapi import Depends, Request
+
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
 from app.core.security import verify_admin_session
@@ -8,8 +11,12 @@ from app.services.participants import ParticipantService
 from app.services.gamification import GamificationService
 
 
-def get_repo(settings: Settings = Depends(get_settings)) -> SupabaseRepository:
-    return SupabaseRepository(settings)
+def get_repo(settings: Settings = Depends(get_settings)) -> Generator[SupabaseRepository, None, None]:
+    repo = SupabaseRepository(settings)
+    try:
+        yield repo
+    finally:
+        repo.close()
 
 
 def get_participant_service(repo: SupabaseRepository = Depends(get_repo), settings: Settings = Depends(get_settings)) -> ParticipantService:
