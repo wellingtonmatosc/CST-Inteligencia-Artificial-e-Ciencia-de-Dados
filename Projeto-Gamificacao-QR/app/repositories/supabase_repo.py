@@ -88,7 +88,6 @@ class SupabaseRepository:
         }
         self.timeout = httpx.Timeout(15.0, connect=8.0)
         # Reutiliza a mesma conexão HTTP durante toda a requisição FastAPI.
-        # Isso evita novo handshake TCP/TLS em cada SELECT/INSERT/UPDATE.
         self.client = httpx.Client(
             base_url=self.base_url,
             headers=self.headers,
@@ -147,3 +146,15 @@ class SupabaseRepository:
     def delete(self, table: str, **filters: Any) -> None:
         params = [(key, f"eq.{_value(value)}") for key, value in filters.items()]
         self._request("DELETE", f"/{table}", params=params, headers={"Prefer": "return=minimal"})
+
+    def rpc(self, function_name: str, payload: dict[str, Any] | None = None) -> Any:
+        """Executa uma função PostgreSQL exposta pelo PostgREST em uma única ida ao banco."""
+        response = self._request(
+            "POST",
+            f"/rpc/{function_name}",
+            json=payload or {},
+            headers={"Prefer": "return=representation"},
+        )
+        if not response.content:
+            return None
+        return response.json()
