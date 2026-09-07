@@ -3,6 +3,7 @@ from __future__ import annotations
 
 
 def score_for_attempt(base_points: int, attempt_number: int) -> int:
+    """Regra genérica mantida para bônus e fluxos legados."""
     if attempt_number <= 0:
         raise ValueError("attempt_number deve ser >= 1")
     if attempt_number == 1:
@@ -12,6 +13,24 @@ def score_for_attempt(base_points: int, attempt_number: int) -> int:
     if attempt_number == 3:
         return round(base_points * 0.50)
     return 0
+
+
+def normal_max_attempts(question_kind: str) -> int:
+    return 1 if question_kind == "true_false" else 2
+
+
+def normal_score_for_attempt(attempt_number: int) -> int:
+    if attempt_number <= 0:
+        raise ValueError("attempt_number deve ser >= 1")
+    if attempt_number == 1:
+        return 10
+    if attempt_number == 2:
+        return 5
+    return 0
+
+
+def normal_participation_points() -> int:
+    return 1
 
 
 MILESTONES = {3: 5, 5: 10}
