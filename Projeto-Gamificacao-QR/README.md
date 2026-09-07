@@ -16,14 +16,16 @@ MVP web acessível para atividades e gamificação por QR Codes. O projeto foi d
 ## Regras principais
 - QR normal: uma pontuação por pessoa/QR/dia.
 - Questão não se repete para a mesma pessoa enquanto houver questão inédita.
-- Verdadeiro/Falso: 1 tentativa; 10 pontos se acertar; 1 ponto por participação se errar.
-- Demais questões: até 2 tentativas; 10 pontos na 1ª, 5 na 2ª; 1 ponto por participação se errar as duas.
-- O ponto de participação não conta como atividade concluída para os marcos de progresso.
+- Verdadeiro/Falso: 1 tentativa; 10 pontos se acertar; 2 pontos por participação se errar.
+- Demais questões: até 2 tentativas; 10 pontos na 1ª, 6 na 2ª; 2 pontos por participação se errar as duas.
+- A pontuação de participação não conta como atividade concluída para os marcos de progresso.
+- Questões de verdadeiro/falso devem ser minoria e distribuídas de forma equilibrada.
 - Marco de 3 atividades concluídas: +5; marco de 5: +10.
 - Bônus do Dia: 1/pessoa/dia, base 15.
 - Bônus Dinâmico: 1/pessoa/dia, muda de hora em hora, base 20.
 - Bônus sempre com alternativas equivalentes na Cantina, Térreo e 1º andar.
 - Sem GPS ou mecanismo invasivo para impedir compartilhamento de QR.
+- A interface não usa verde como cor principal/estado e nunca depende apenas de cor para comunicar informação.
 
 ## Desenvolvimento local
 ```bash
