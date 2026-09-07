@@ -3,8 +3,8 @@ const code=decodeURIComponent(location.pathname.split('/').pop());
 let state;let submitting=false;
 
 function attemptInfo(q){
-  if(q.kind==='true_false') return '1 tentativa • 10 pontos se acertar • 1 ponto por participar';
-  return 'Até 2 tentativas • 10 / 5 pontos • 1 ponto por participar';
+  if(q.kind==='true_false') return '1 tentativa • 10 pontos se acertar • 2 pontos por participar';
+  return 'Até 2 tentativas • 10 / 6 pontos • 2 pontos por participar';
 }
 
 function renderQuestion(q,submit){
@@ -32,17 +32,18 @@ function renderCompleted(points,milestones=[]){
   box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Concluído</div><h1>Atividade concluída.</h1><p>Esta atividade já foi registrada para hoje.</p><p><span class="result-points">+${points||0} pontos</span></p>${bonusText}<p><a href="/ranking">Ver ranking</a> · <a href="/">Meu perfil</a></p></div>`;
 }
 
-function renderParticipation(points=1){
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Participação registrada</div><h1>Atividade encerrada</h1><p>As tentativas disponíveis foram utilizadas.</p><p>Você recebeu <strong>${points} ponto</strong> por participar.</p><p><span class="result-points">+${points} ponto</span></p><p><a href="/ranking">Ver ranking</a> · <a href="/">Meu perfil</a></p></div>`;
+function renderParticipation(points=2){
+  const label=points===1?'ponto':'pontos';
+  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Participação registrada</div><h1>Atividade encerrada</h1><p>As tentativas disponíveis foram utilizadas.</p><p>Você recebeu <strong>${points} ${label}</strong> por participar.</p><p><span class="result-points">+${points} ${label}</span></p><p><a href="/ranking">Ver ranking</a> · <a href="/">Meu perfil</a></p></div>`;
 }
 
 async function load(){
   try{
     state=await api(`/api/q/${encodeURIComponent(code)}`);
     if(state.status==='completed'){renderCompleted(state.points_awarded);return}
-    if(state.status==='failed'){renderParticipation(state.points_awarded||1);return}
+    if(state.status==='failed'){renderParticipation(state.points_awarded||2);return}
     if(state.mode==='bonus'&&state.status==='choosing'){
-      box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Bônus</div><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um dos três desafios. Todas as opções valem a mesma pontuação-base.</p><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
+      box.innerHTML=`<div class="card question-card bonus-card"><div class="question-eyebrow">Bônus</div><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um dos três desafios. Todas as opções valem a mesma pontuação-base.</p><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
       document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>choose(b.dataset.cat,b));return;
     }
     if(state.question)renderQuestion(state.question,submitAnswer);
@@ -76,8 +77,8 @@ async function submitAnswer(e){
       state.status='completed';state.points_awarded=d.points;submitting=false;renderCompleted(d.points,d.milestones||[]);return;
     }
     if(d.completed){
-      const participationPoints=Number(d.points||1);
-      showMessage(msg,`Resposta incorreta. +${participationPoints} ponto por participação.`,'error');
+      const participationPoints=Number(d.points||2);
+      showMessage(msg,`Resposta incorreta. +${participationPoints} pontos por participação.`,'error');
       state.status='failed';state.points_awarded=participationPoints;submitting=false;renderParticipation(participationPoints);return;
     }
     showMessage(msg,`Resposta incorreta. Resta ${d.remaining} tentativa.`,'error');setFormBusy(form,false);
