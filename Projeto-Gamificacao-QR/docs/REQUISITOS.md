@@ -13,7 +13,8 @@
 - Cada participante pontua em cada QR normal no máximo uma vez por dia.
 - No dia seguinte o mesmo QR pode ser usado novamente.
 - A pergunta sorteada nunca se repete para a mesma pessoa enquanto houver perguntas inéditas.
-- Até 3 tentativas: 10 pontos na 1ª, 7 na 2ª e 5 na 3ª; depois, 0.
+- Questões de verdadeiro/falso: 1 tentativa, valendo 10 pontos em caso de acerto.
+- Demais tipos: até 3 tentativas, com 10 pontos na 1ª, 7 na 2ª e 5 na 3ª; depois, 0.
 - Não há cronômetro de resposta.
 - Compartilhamento de QR não será combatido com GPS/códigos invasivos; a proposta confia nos participantes e registra as regras no servidor.
 - QR danificado pode ser desativado e substituído pelo administrador.
