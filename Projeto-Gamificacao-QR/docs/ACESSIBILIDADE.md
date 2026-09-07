@@ -14,6 +14,10 @@ A regra central é: **nenhuma característica física, sensorial ou necessidade 
 - Foco visível e alvos de interação grandes.
 - Contraste adequado e suporte à ampliação de texto.
 - Informação não depende somente de cor.
+- Verde não é utilizado como cor principal nem como indicador de estado.
+- A paleta pode usar azul, roxo, âmbar/laranja e vermelho, sempre combinados com texto explícito e, quando útil, ícone/símbolo.
+- Acerto/conclusão usa destaque azul + mensagem textual; bônus usa roxo + rótulo “Bônus”; avisos usam âmbar + texto; erros usam vermelho + mensagem textual.
+- Estados de foco por teclado permanecem claramente visíveis e não dependem da cor do componente em repouso.
 - Respeito a `prefers-reduced-motion`.
 - Mensagens de erro/sucesso anunciadas por regiões `aria-live`.
 - Ranking público exibe nick, não dados pessoais.
@@ -26,6 +30,7 @@ A regra central é: **nenhuma característica física, sensorial ou necessidade 
 - Não criar questão cuja resposta dependa somente de cor.
 - Quando um formato não puder ser adaptado com equivalência, oferecer atividade alternativa com a mesma pontuação.
 - Questão ativa deve passar pela validação de metadados de acessibilidade.
+- Verdadeiro/Falso deve representar uma parcela menor do banco e ser distribuído de forma equilibrada, evitando vantagem por maior probabilidade de acerto ao acaso.
 
 ## Dados e respeito
 - Nick passa por moderação configurável; conteúdo agressivo, discriminatório ou impróprio pode ser bloqueado/desativado.
