@@ -87,12 +87,21 @@ class SupabaseRepository:
             "User-Agent": "gamificacao-qr-backend/0.1",
         }
         self.timeout = httpx.Timeout(15.0, connect=8.0)
+        # Reutiliza a mesma conexão HTTP durante toda a requisição FastAPI.
+        # Isso evita novo handshake TCP/TLS em cada SELECT/INSERT/UPDATE.
+        self.client = httpx.Client(
+            base_url=self.base_url,
+            headers=self.headers,
+            timeout=self.timeout,
+            limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
+        )
+
+    def close(self) -> None:
+        self.client.close()
 
     def _request(self, method: str, path: str, *, params=None, json=None, headers=None) -> httpx.Response:
-        merged = {**self.headers, **(headers or {})}
         try:
-            with httpx.Client(base_url=self.base_url, headers=merged, timeout=self.timeout) as client:
-                response = client.request(method, path, params=params, json=json)
+            response = self.client.request(method, path, params=params, json=json, headers=headers)
             if response.status_code >= 400:
                 logger.error("Supabase %s %s -> %s: %s", method, path, response.status_code, response.text[:500])
                 raise AppError("Falha ao acessar o banco de dados.", 503)
