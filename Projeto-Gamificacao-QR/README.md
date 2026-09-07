@@ -16,7 +16,8 @@ MVP web acessível para atividades e gamificação por QR Codes. O projeto foi d
 ## Regras principais
 - QR normal: uma pontuação por pessoa/QR/dia.
 - Questão não se repete para a mesma pessoa enquanto houver questão inédita.
-- Tentativas: 10 / 7 / 5 pontos.
+- Verdadeiro/Falso: 1 tentativa, valendo 10 pontos em caso de acerto.
+- Demais questões: até 3 tentativas, com 10 / 7 / 5 pontos.
 - Marco de 3 atividades: +5; marco de 5: +10.
 - Bônus do Dia: 1/pessoa/dia, base 15.
 - Bônus Dinâmico: 1/pessoa/dia, muda de hora em hora, base 20.
