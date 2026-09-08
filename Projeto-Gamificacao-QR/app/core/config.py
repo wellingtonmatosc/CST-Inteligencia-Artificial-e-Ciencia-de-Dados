@@ -1,5 +1,6 @@
 """Configuração central da aplicação via variáveis de ambiente."""
 from functools import lru_cache
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -18,6 +19,7 @@ class Settings(BaseSettings):
     participant_session_days: int = 30
     session_cookie_secure: bool = False
 
+    admin_username: str = "admin"
     admin_password_hash: str = ""
     admin_session_secret: str = Field(default="change-me", min_length=8)
     admin_cookie_name: str = "event_admin"
