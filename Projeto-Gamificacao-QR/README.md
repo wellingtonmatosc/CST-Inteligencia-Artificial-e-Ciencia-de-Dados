@@ -1,8 +1,8 @@
 # Projeto Gamificação QR — Evento IFMT
 
-**Status:** MVP 0.1 em branch de desenvolvimento; ainda não mesclado à `main`.
+**Status:** MVP em homologação na branch `feat/gamificacao-qr-evento`; ainda não mesclado à `main`.
 
-MVP web acessível para atividades e gamificação por QR Codes. O projeto foi desenhado para público interno e externo, três zonas físicas (Cantina, Térreo e 1º andar), ranking por nick, questões sem repetição por participante e dois tipos de bônus diários.
+Aplicação web acessível para atividades e gamificação por QR Codes, com identidade visual inspirada em Inteligência Artificial e Ciência de Dados. O sistema atende público interno e externo, mantém ranking por nick e evita repetição de perguntas por participante enquanto houver conteúdo inédito.
 
 ## Stack
 - Python 3.12+
@@ -14,27 +14,48 @@ MVP web acessível para atividades e gamificação por QR Codes. O projeto foi d
 - `qrcode` para geração dos QR Codes físicos
 
 ## Acesso dos participantes
-- Cadastro novo: nome, nick e senha.
-- Login normal: nick + senha.
+- Cadastro novo: nome, nick e **PIN numérico de 4 dígitos**.
+- Login normal: **nick + PIN**.
 - A sessão permanece autenticada em cookie HttpOnly.
-- O código de recuperação é uma contingência para redefinir a senha, não o método principal de login.
+- Depois de 5 PINs incorretos, a conta fica temporariamente bloqueada por 2 minutos contra tentativas automatizadas.
+- O código de recuperação é uma contingência para redefinir o PIN, não o método principal de login.
 - Ao usar o código de recuperação, ele é rotacionado e um novo código é exibido.
-- Participantes criados antes desta regra podem definir uma senha sem perder pontos ou histórico.
+- Participantes criados antes da regra do PIN podem defini-lo na sessão atual sem perder pontos ou histórico.
 - Sair revoga a sessão no servidor e apaga o cookie local.
+
+## Administração
+- Login administrativo: **usuário + senha forte**.
+- Usuário configurado por `ADMIN_USERNAME` (padrão local: `admin`).
+- A senha fica apenas como hash Argon2 em `ADMIN_PASSWORD_HASH`.
 
 ## Regras principais
 - QR normal: uma pontuação por pessoa/QR/dia.
 - Questão não se repete para a mesma pessoa enquanto houver questão inédita.
 - Verdadeiro/Falso: 1 tentativa; 10 pontos se acertar; 2 pontos por participação se errar.
 - Demais questões: até 2 tentativas; 10 pontos na 1ª, 6 na 2ª; 2 pontos por participação se errar as duas.
-- A pontuação de participação não conta como atividade concluída para os marcos de progresso.
-- Questões de verdadeiro/falso devem ser minoria e distribuídas de forma equilibrada.
+- Pontos de participação não contam como atividade concluída para marcos de progresso.
+- Verdadeiro/Falso deve ser minoria do banco para evitar vantagem pelo chute.
 - Marco de 3 atividades concluídas: +5; marco de 5: +10.
 - Bônus do Dia: 1/pessoa/dia, base 15.
 - Bônus Dinâmico: 1/pessoa/dia, muda de hora em hora, base 20.
-- Bônus sempre com alternativas equivalentes na Cantina, Térreo e 1º andar.
-- Sem GPS ou mecanismo invasivo para impedir compartilhamento de QR.
-- A interface não usa verde como cor principal/estado e nunca depende apenas de cor para comunicar informação.
+- Bônus oferecem alternativas equivalentes em Cantina, Térreo e 1º andar.
+- Não há GPS nem mecanismo invasivo para impedir compartilhamento de QR.
+
+## Acessibilidade e inclusão
+O botão **Acessibilidade** aparece nas telas públicas e administrativas e salva preferências apenas no navegador:
+- tamanho de texto de 90% a 140%;
+- modo claro;
+- alto contraste;
+- redução de animações;
+- mais espaçamento e áreas de toque;
+- modo leitura.
+
+Nas atividades, quando suportado pelo navegador, há leitura em voz alta do enunciado e alternativas. As questões podem armazenar versão em linguagem simples, descrição equivalente de imagem e transcrição de áudio/vídeo. Nenhuma atividade pode depender exclusivamente de cor, velocidade, imagem sem descrição ou áudio/vídeo sem alternativa textual.
+
+## Banco inicial de questões
+A migration `20260908_initial_accessible_question_bank.sql` adiciona **24 questões acessíveis**, distribuídas nas 12 categorias iniciais, sendo apenas 3 de Verdadeiro/Falso. Durante a homologação, essas questões são vinculadas aos QR Codes `TESTE-*`.
+
+Categorias: Inteligência Artificial, Ciência de Dados, Lógica/Tecnologia, História de Mato Grosso, Geografia de Mato Grosso, Cultura Regional, Literatura, Poesia, Arte, Sustentabilidade, IFMT e Cidadania/Ética Digital.
 
 ## Desenvolvimento local
 ```bash
@@ -50,20 +71,18 @@ uvicorn app.main:app --reload
 Abra `http://127.0.0.1:8000`.
 
 ## Banco Supabase
-1. Crie um projeto Supabase exclusivo para este sistema.
-2. Execute `supabase/schema.sql` no SQL Editor.
+1. Use um projeto Supabase exclusivo para a aplicação.
+2. Aplique `supabase/schema.sql` e as migrations em ordem.
 3. Preencha `SUPABASE_URL` e `SUPABASE_SECRET_KEY` no `.env`.
-4. Execute `python scripts/seed_content.py`.
-5. Para testes, opcionalmente execute `python scripts/seed_sample_questions.py` (conteúdo demonstrativo, deve ser revisado antes do evento).
+4. Execute `python scripts/seed_content.py` quando necessário para categorias e zonas.
 
-> A secret key nunca deve aparecer no frontend ou ser commitada. Senhas de participantes e de administração são armazenadas apenas como hash Argon2.
+> A secret key nunca deve aparecer no frontend ou ser commitada. PINs e senhas administrativas são armazenados apenas como hash Argon2.
 
 ## Configurar bônus de um dia
 Use `docs/bonus-config.example.json` como modelo e execute:
 ```bash
 python scripts/configure_bonus_day.py --config docs/bonus-config.example.json
 ```
-O script cria janelas de 1 em 1 hora e falha se faltar Cantina, Térreo ou 1º andar.
 
 ## Gerar QR Codes
 Prepare um CSV:
@@ -83,7 +102,7 @@ pytest
 ```
 
 ## Vercel
-A configuração usa `app.main:app` em `pyproject.toml`. No painel da Vercel, defina a raiz do projeto para esta pasta caso ela esteja dentro de um monorepo/repositório maior, configure as variáveis de ambiente e faça o deploy a partir do GitHub.
+A configuração usa `app.main:app` em `pyproject.toml`. Defina a raiz do projeto para `Projeto-Gamificacao-QR`, configure as variáveis de ambiente, use `APP_ENV=production` e `SESSION_COOKIE_SECURE=true`, e faça o deploy a partir do GitHub.
 
 ## Documentação adicional
 - `docs/REQUISITOS.md`
