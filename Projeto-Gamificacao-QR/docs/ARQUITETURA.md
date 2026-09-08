@@ -1,44 +1,111 @@
-# Arquitetura
+# Arquitetura — Trilhas Poéticas
+
+## Visão geral
 
 ```text
 Celular / navegador
-      |
-      v
-HTML + CSS + JavaScript
-      |
-      v
-FastAPI / Python (Vercel)
-      |
-      v
-Supabase Data API
-      |
-      v
-PostgreSQL
+        │ HTTPS
+        ▼
+Vercel + FastAPI
+        │ secret key somente no servidor
+        ▼
+Supabase / PostgreSQL
 ```
 
-## Decisões
-- O navegador não recebe a secret key do Supabase e não consulta tabelas diretamente.
-- FastAPI aplica cadastro, sessão, moderação, sorteio sem repetição, tentativas, pontuação, bônus e ranking.
-- Supabase fornece PostgreSQL gerenciado; todas as tabelas têm RLS habilitado e permissões diretas de `anon`/`authenticated` revogadas.
-- O backend usa `SUPABASE_SECRET_KEY` somente em ambiente controlado.
-- Sessão do participante usa token aleatório; apenas SHA-256 do token é persistido.
-- Recuperação usa código aleatório; apenas o hash é persistido.
-- Senha administrativa é armazenada como hash Argon2 em variável de ambiente.
-- `point_ledger.dedupe_key` evita pontuação duplicada.
-- `participant_question_history` garante pergunta inédita por participante.
+O navegador nunca acessa o Supabase diretamente.
 
-## Deploy
-A Vercel reconhece FastAPI e o projeto usa `[tool.vercel] entrypoint = "app.main:app"`. Configure a raiz do projeto Vercel como `Projeto-Gamificacao-QR` dentro deste repositório.
+## Camadas
 
-Variáveis de produção:
-- `APP_ENV=production`
-- `APP_BASE_URL`
-- `EVENT_TIMEZONE=America/Cuiaba`
-- `SUPABASE_URL`
-- `SUPABASE_SECRET_KEY`
-- `ADMIN_PASSWORD_HASH`
-- `ADMIN_SESSION_SECRET`
-- `SESSION_COOKIE_SECURE=true`
+### Frontend
 
-## Dados principais
-`participants`, `participant_sessions`, `categories`, `questions`, `qr_points`, `qr_question_pool`, `participant_question_history`, `activity_runs`, `attempts`, `bonus_campaigns`, `bonus_locations`, `bonus_runs`, `point_ledger`, `blocked_terms` e `zones`.
+HTML/CSS/JavaScript simples, responsivo e acessível:
+
+- `index.html` / `index.js`: login, ativação institucional, cadastro, recuperação, perfil e leitor de QR;
+- `scan.html` / `scan.js`: validação física, conteúdo cultural e desafio;
+- `ranking.html` / `ranking.js`: ranking coletivo;
+- `admin.html` / `admin.js`: operação administrativa;
+- `common.js`: API helper e recursos de acessibilidade.
+
+### API FastAPI
+
+- `api/participants.py`: cadastro, ativação, login, recuperação, sessão e logout;
+- `api/game.py`: estação, validação, resposta, resumo e ranking;
+- `api/admin.py`: administração, RBAC, pontos extras e auditoria;
+- `api/deps.py`: injeção de dependências e autorização.
+
+### Serviços
+
+- `services/participants.py`: regras de conta, PIN, ativação e sessão;
+- `services/trilhas.py`: fachada das regras de gamificação;
+- `services/questions.py`: avaliação/validação acessível dos desafios;
+- `services/moderation.py`: moderação de nick.
+
+O motor antigo de gamificação, bônus diário/dinâmico e scoring 10/6/2 foi removido.
+
+## Banco
+
+Tabelas centrais:
+
+```text
+teams ──< participants ──< participant_sessions
+                    │
+                    ├──< station_visits ──< station_attempts
+                    ├──< trail_completions
+                    ├──< point_ledger
+                    └──< manual_point_actions
+
+categories ──< questions
+zones ──< qr_points ──1 station_contents
+                   └──< trail_steps >── trails
+
+admin_users
+audit_log
+blocked_terms
+```
+
+`supabase/schema.sql` é a definição canônica para recriar um banco novo. `supabase/seed.sql` cria apenas dados-base não sensíveis.
+
+## RPCs atômicas
+
+- `trilhas_assign_team`
+- `trilhas_participant_from_session`
+- `trilhas_home_state_from_session`
+- `trilhas_get_station`
+- `trilhas_validate_station`
+- `trilhas_answer_challenge`
+- `trilhas_participant_summary`
+- `trilhas_team_ranking`
+- `trilhas_admin_grant_manual_points`
+- `trilhas_admin_reverse_manual_points`
+
+Validação/pontuação ocorre dentro do PostgreSQL para reduzir condições de corrida e duplicidade.
+
+## Segurança
+
+- tabelas com RLS;
+- sem acesso de `anon`/`authenticated` às tabelas do jogo;
+- RPCs críticas executáveis somente pelo `service_role`;
+- browser não recebe chave de banco;
+- PIN e senha administrativa com Argon2;
+- código físico e código de ativação/recuperação persistidos somente como SHA-256;
+- sessão participante por token aleatório armazenado no banco apenas como hash;
+- sessão admin assinada com expiração;
+- CSP não foi implantada de forma rígida porque ainda há JavaScript inline na página inicial; cabeçalho de frame, MIME sniffing, referrer e Permissions-Policy estão habilitados.
+
+## Desempenho
+
+- cliente HTTPX é reaproveitado enquanto a função Vercel permanece quente;
+- a abertura da estação usa uma RPC consolidada;
+- a home autenticada usa uma RPC consolidada;
+- arquivos estáticos recebem cache na CDN;
+- páginas autenticáveis recebem `no-store`;
+- o leitor interno do QR verifica a câmera em intervalos, não a cada frame;
+- tema animado pesado antigo foi removido.
+
+## Produção
+
+O projeto continua no mesmo domínio Vercel para não invalidar QR Codes já gerados:
+
+`https://gamificacao-qr-ifmt.vercel.app`
+
+A branch de homologação permanece `feat/gamificacao-qr-evento` até a aprovação final.
