@@ -20,6 +20,12 @@ class RegisterPayload(BaseModel):
     institution: str | None = Field(default=None, max_length=160)
 
 
+class ActivatePayload(BaseModel):
+    access_code: str = Field(min_length=6, max_length=20)
+    nick: str = Field(min_length=3, max_length=24)
+    pin: str = Field(pattern=PIN_PATTERN)
+
+
 class LoginPayload(BaseModel):
     nick: str = Field(min_length=3, max_length=24)
     pin: str = Field(pattern=PIN_PATTERN)
@@ -51,6 +57,13 @@ def register(payload: RegisterPayload, response: Response, service: ParticipantS
     participant, token, access_code = service.register(payload.model_dump())
     _set_cookie(response, token, settings)
     return {"participant": {"id": participant["id"], "nick": participant["nick"], "full_name": participant["full_name"]}, "access_code": access_code}
+
+
+@router.post("/activate")
+def activate(payload: ActivatePayload, response: Response, service: ParticipantService = Depends(get_participant_service), settings: Settings = Depends(get_settings)):
+    participant, token, recovery_code = service.activate(payload.access_code, payload.nick, payload.pin)
+    _set_cookie(response, token, settings)
+    return {"participant": {"id": participant["id"], "nick": participant["nick"], "full_name": participant["full_name"]}, "access_code": recovery_code}
 
 
 @router.post("/login")
@@ -85,7 +98,7 @@ def logout(request: Request, response: Response, service: ParticipantService = D
 def me(request: Request, service: ParticipantService = Depends(get_participant_service), settings: Settings = Depends(get_settings)):
     token = request.cookies.get(settings.participant_cookie_name)
     if not token:
-        raise AppError("Faça seu cadastro ou recupere sua sessão para continuar.", 401)
+        raise AppError("Faça seu cadastro, ative sua conta ou recupere sua sessão para continuar.", 401)
     state = service.get_home_state_by_session(token)
     participant = state["participant"]
     return {
