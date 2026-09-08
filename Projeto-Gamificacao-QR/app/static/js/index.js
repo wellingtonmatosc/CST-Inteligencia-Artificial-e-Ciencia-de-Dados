@@ -1,6 +1,29 @@
 const reg=document.querySelector('#registerForm'),loginForm=document.querySelector('#loginForm'),rec=document.querySelector('#recoverForm'),msg=document.querySelector('#message'),profile=document.querySelector('#profile');
 const type=document.querySelector('#participant_type'),student=document.querySelector('#studentFields'),external=document.querySelector('#externalFields');
 
+function getPendingQrPath(){
+  const next=new URLSearchParams(location.search).get('next');
+  if(!next)return '';
+  try{
+    const url=new URL(next,location.origin);
+    if(url.origin!==location.origin)return '';
+    if(!/^\/q\/[^/?#]+\/?$/.test(url.pathname))return '';
+    return `${url.pathname}${url.search}`;
+  }catch(_){return ''}
+}
+
+const pendingQrPath=getPendingQrPath();
+
+function rememberRecoveryCode(code){
+  if(code)sessionStorage.setItem('event_recovery_code_once',String(code));
+}
+
+function continueToPendingQr(){
+  if(!pendingQrPath)return false;
+  location.replace(pendingQrPath);
+  return true;
+}
+
 function toggle(){
   student.classList.toggle('hidden',type.value!=='student');
   external.classList.toggle('hidden',type.value!=='external');
@@ -46,6 +69,7 @@ async function setPin(e){
 async function loadMe(){
   try{
     const d=await api('/api/participants/me');
+    if(continueToPendingQr())return;
     const pinSetup=d.participant.has_pin?'':`<div class="notice warning setup-pin"><strong>Defina um PIN antes de sair.</strong><form id="setPinForm"><div class="grid two compact-grid"><div><label for="profile_pin">Novo PIN</label><input id="profile_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div><div><label for="profile_pin_confirm">Confirmar PIN</label><input id="profile_pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div></div><button type="submit">Definir PIN</button></form></div>`;
     profile.innerHTML=`<div class="profile-top"><div><span class="eyebrow">Participante</span><h2>${esc(d.participant.nick)}</h2><p class="muted">${d.summary.normal_completed_today} atividades hoje</p></div><div class="profile-score"><strong class="score-number">${d.summary.points}</strong><span>pontos</span></div></div>${pinSetup}<div class="profile-actions"><button id="openQrScanner" type="button" class="compact">Ler QR Code</button><a class="button-link" href="/ranking">Ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
     profile.classList.remove('hidden');
@@ -53,7 +77,9 @@ async function loadMe(){
     msg.classList.add('hidden');
     document.querySelector('#logoutButton').addEventListener('click',logout);
     const setPinForm=document.querySelector('#setPinForm');if(setPinForm)setPinForm.addEventListener('submit',setPin);
-  }catch(_){ }
+  }catch(_){
+    if(pendingQrPath)showMessage(msg,'Entre ou crie sua conta para continuar a atividade.','notice');
+  }
 }
 
 loginForm.addEventListener('submit',async e=>{
@@ -61,6 +87,7 @@ loginForm.addEventListener('submit',async e=>{
   if(!/^\d{4}$/.test(pin)){showMessage(msg,'Informe um PIN de 4 dígitos.','error');return}
   try{
     await api('/api/participants/login',{method:'POST',body:JSON.stringify({nick:f.get('nick'),pin})});
+    if(continueToPendingQr())return;
     await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
@@ -72,6 +99,8 @@ reg.addEventListener('submit',async e=>{
   for(const k of Object.keys(payload))if(payload[k]==='')payload[k]=null;
   try{
     const d=await api('/api/participants/register',{method:'POST',body:JSON.stringify(payload)});
+    rememberRecoveryCode(d.access_code);
+    if(continueToPendingQr())return;
     showMessage(msg,`Cadastro concluído. Código de recuperação: ${d.access_code}`,'success');await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
@@ -81,6 +110,8 @@ rec.addEventListener('submit',async e=>{
   if(!pinsMatch(f.get('new_pin'),f.get('new_pin_confirm')))return;
   try{
     const d=await api('/api/participants/recover',{method:'POST',body:JSON.stringify({access_code:f.get('access_code'),new_pin:f.get('new_pin')})});
+    rememberRecoveryCode(d.access_code);
+    if(continueToPendingQr())return;
     showMessage(msg,`PIN redefinido. Novo código de recuperação: ${d.access_code}`,'success');rec.reset();await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
