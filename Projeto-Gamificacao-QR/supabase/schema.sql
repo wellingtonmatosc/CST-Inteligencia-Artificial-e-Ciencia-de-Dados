@@ -35,6 +35,7 @@ create table if not exists public.participants (
     registration text,
     course_class text,
     institution text,
+    password_hash text,
     access_code_hash char(64) not null unique,
     active boolean not null default true,
     created_at timestamptz not null default now(),
