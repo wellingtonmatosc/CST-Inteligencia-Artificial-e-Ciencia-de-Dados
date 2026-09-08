@@ -138,6 +138,19 @@ class ParticipantService:
             raise AppError("Participante não encontrado.", 401)
         return participant
 
+    def get_home_state_by_session(self, token: str) -> dict:
+        result = self.repo.rpc(
+            "trilhas_home_state_from_session",
+            {"p_token_hash": sha256_hex(token)},
+        )
+        if not isinstance(result, dict) or not result.get("ok"):
+            raise AppError("Sessão inválida ou expirada.", 401)
+        participant = result.get("participant")
+        summary = result.get("summary")
+        if not participant or not isinstance(summary, dict):
+            raise AppError("Não foi possível carregar seu progresso.", 503)
+        return {"participant": participant, "summary": summary}
+
     def logout(self, token: str | None) -> None:
         if not token:
             return
