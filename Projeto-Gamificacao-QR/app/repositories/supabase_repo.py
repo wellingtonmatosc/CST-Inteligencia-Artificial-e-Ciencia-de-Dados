@@ -1,7 +1,7 @@
 """Cliente mínimo do Supabase/PostgREST usando HTTPX.
 
 A aplicação usa a secret key exclusivamente no backend e a envia somente no
-cabeçalho `apikey`, conforme o formato atual das chaves `sb_secret_...`.
+cabeçalho ``apikey``. O navegador nunca recebe a chave do service role.
 """
 from __future__ import annotations
 
@@ -84,18 +84,14 @@ class SupabaseRepository:
         self.headers = {
             "apikey": settings.supabase_secret_key,
             "Content-Type": "application/json",
-            "User-Agent": "gamificacao-qr-backend/0.1",
+            "User-Agent": "trilhas-poeticas-backend/1.0",
         }
         self.timeout = httpx.Timeout(15.0, connect=8.0)
         self.client = httpx.Client(
             base_url=self.base_url,
             headers=self.headers,
             timeout=self.timeout,
-            limits=httpx.Limits(
-                max_keepalive_connections=10,
-                max_connections=20,
-                keepalive_expiry=60.0,
-            ),
+            limits=httpx.Limits(max_keepalive_connections=10,max_connections=20,keepalive_expiry=60.0),
         )
 
     def close(self) -> None:
@@ -151,13 +147,7 @@ class SupabaseRepository:
         self._request("DELETE", f"/{table}", params=params, headers={"Prefer": "return=minimal"})
 
     def rpc(self, function_name: str, payload: dict[str, Any] | None = None) -> Any:
-        """Executa uma função PostgreSQL exposta pelo PostgREST em uma única ida ao banco."""
-        response = self._request(
-            "POST",
-            f"/rpc/{function_name}",
-            json=payload or {},
-            headers={"Prefer": "return=representation"},
-        )
+        response = self._request("POST",f"/rpc/{function_name}",json=payload or {},headers={"Prefer": "return=representation"})
         if not response.content:
             return None
         return response.json()
