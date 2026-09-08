@@ -111,7 +111,6 @@ class ParticipantService:
             },
             id=participant["id"],
         )
-        participant["password_hash"] = "updated"
         session_token = self._create_session(participant["id"])
         return participant, session_token, new_access_code
 
