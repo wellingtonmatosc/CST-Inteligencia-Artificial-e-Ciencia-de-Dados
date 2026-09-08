@@ -13,6 +13,15 @@ MVP web acessível para atividades e gamificação por QR Codes. O projeto foi d
 - Pytest
 - `qrcode` para geração dos QR Codes físicos
 
+## Acesso dos participantes
+- Cadastro novo: nome, nick e senha.
+- Login normal: nick + senha.
+- A sessão permanece autenticada em cookie HttpOnly.
+- O código de recuperação é uma contingência para redefinir a senha, não o método principal de login.
+- Ao usar o código de recuperação, ele é rotacionado e um novo código é exibido.
+- Participantes criados antes desta regra podem definir uma senha sem perder pontos ou histórico.
+- Sair revoga a sessão no servidor e apaga o cookie local.
+
 ## Regras principais
 - QR normal: uma pontuação por pessoa/QR/dia.
 - Questão não se repete para a mesma pessoa enquanto houver questão inédita.
@@ -47,7 +56,7 @@ Abra `http://127.0.0.1:8000`.
 4. Execute `python scripts/seed_content.py`.
 5. Para testes, opcionalmente execute `python scripts/seed_sample_questions.py` (conteúdo demonstrativo, deve ser revisado antes do evento).
 
-> A secret key nunca deve aparecer no frontend ou ser commitada.
+> A secret key nunca deve aparecer no frontend ou ser commitada. Senhas de participantes e de administração são armazenadas apenas como hash Argon2.
 
 ## Configurar bônus de um dia
 Use `docs/bonus-config.example.json` como modelo e execute:
