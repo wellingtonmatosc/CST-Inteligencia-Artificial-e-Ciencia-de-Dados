@@ -1,0 +1,36 @@
+/* Ajustes de interface: menos molduras, menos espaço e foco no conteúdo. */
+main{padding-top:24px;padding-bottom:40px}
+.hero{border:0;box-shadow:0 10px 28px rgba(0,0,0,.16);margin-bottom:14px;padding:24px}
+.card{border:0;box-shadow:0 10px 28px rgba(0,0,0,.16);padding:20px;margin:12px 0}
+.card::before{display:none}
+.card-heading{margin-bottom:8px}
+label{margin-top:10px;margin-bottom:4px}
+.auth-card form button{margin-top:14px}
+.page-links{margin-top:14px;gap:8px}
+.page-links a{border:0;padding:8px 10px}
+.profile-actions{margin-top:14px;padding-top:12px}
+.question-card{padding:22px}
+.question-meta{margin-top:10px}
+.question-tools{margin-top:12px;gap:6px}
+.question-tools button{min-height:40px;padding:8px 11px}
+.choices{gap:10px;margin-top:16px}
+.choices label{padding:13px 14px}
+.notice{margin:10px 0}
+
+.a11y-panel{padding:18px}
+.a11y-panel-head{margin-bottom:10px}
+.a11y-panel-head h2{margin:0}
+.a11y-voice-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.a11y-voice-actions #voiceCommandButton{grid-column:1/-1}
+.voice-status{min-height:1.3em;margin:6px 0 10px;color:var(--muted);font-size:.9rem}
+.a11y-control,.switch-row{padding:10px 0}
+.a11y-footer{padding-top:10px;margin-top:6px}
+
+@media(max-width:640px){
+  main{width:min(100% - 22px,1080px);padding-top:14px;padding-bottom:28px}
+  .hero{padding:18px;border-radius:18px}
+  .card{padding:16px;border-radius:16px;margin:9px 0}
+  .question-card{padding:18px}
+  .a11y-panel{right:10px;bottom:68px;width:calc(100vw - 20px);padding:16px}
+  .a11y-toggle{right:10px;bottom:10px}
+}
