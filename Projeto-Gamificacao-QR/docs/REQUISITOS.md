@@ -2,11 +2,16 @@
 
 ## Participantes
 - Público interno e externo.
-- Cadastro: nome completo, nick público e tipo de participante.
+- Cadastro: nome completo, nick público, senha e tipo de participante.
+- Login normal: nick + senha.
+- Senhas são armazenadas somente como hash Argon2; senha em texto puro não é persistida.
 - Aluno: matrícula e curso/turma obrigatórios.
 - Público externo: instituição/empresa opcional.
 - Nome completo e matrícula não aparecem no ranking público.
-- O sistema fornece um código de recuperação e mantém sessão em cookie HttpOnly.
+- O sistema fornece um código de recuperação como contingência para redefinir a senha.
+- Ao usar o código de recuperação, o código antigo deixa de valer e um novo é gerado.
+- A sessão é mantida em cookie HttpOnly e pode ser encerrada pelo botão Sair; o logout também revoga a sessão no servidor.
+- Participantes criados antes da implantação de senha podem definir uma senha a partir de uma sessão válida, sem perder pontos ou histórico.
 
 ## QR e atividades normais
 - Várias pessoas podem ler o mesmo QR simultaneamente.
