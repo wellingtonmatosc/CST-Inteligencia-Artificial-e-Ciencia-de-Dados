@@ -64,13 +64,13 @@ class FakeRepo:
         raise AssertionError((table, filters))
 
 
-def make_service(password="senha-segura"):
+def make_service(pin="1234"):
     participant = {
         "id": "p1",
         "nick": "Wellington",
         "full_name": "Wellington Teste",
         "active": True,
-        "password_hash": hash_password(password),
+        "password_hash": hash_password(pin),
         "access_code_hash": sha256_hex("ABCDEFGH"),
     }
     repo = FakeRepo(participant)
@@ -78,30 +78,30 @@ def make_service(password="senha-segura"):
     return service, repo
 
 
-def test_participant_login_with_nick_and_password_creates_session():
+def test_participant_login_with_nick_and_pin_creates_session():
     service, repo = make_service()
-    participant, token = service.login("wellington", "senha-segura")
+    participant, token = service.login("wellington", "1234")
     assert participant["id"] == "p1"
     assert token
     assert len(repo.inserted_sessions) == 1
 
 
-def test_participant_login_rejects_wrong_password():
+def test_participant_login_rejects_wrong_pin():
     service, _ = make_service()
     with pytest.raises(AppError):
-        service.login("Wellington", "senha-errada")
+        service.login("Wellington", "9999")
 
 
-def test_authenticated_participant_can_define_new_password():
+def test_authenticated_participant_can_define_new_pin():
     service, repo = make_service()
-    service.set_password("p1", "nova-senha-123")
-    assert verify_password(repo.participant["password_hash"], "nova-senha-123")
+    service.set_pin("p1", "5678")
+    assert verify_password(repo.participant["password_hash"], "5678")
 
 
-def test_recovery_rotates_code_and_sets_new_password():
+def test_recovery_rotates_code_and_sets_new_pin():
     service, repo = make_service()
-    _, token, new_code = service.recover("ABCDEFGH", "senha-nova-456")
+    _, token, new_code = service.recover("ABCDEFGH", "2468")
     assert token
     assert new_code != "ABCDEFGH"
-    assert verify_password(repo.participant["password_hash"], "senha-nova-456")
+    assert verify_password(repo.participant["password_hash"], "2468")
     assert repo.participant["access_code_hash"] == sha256_hex(new_code)
