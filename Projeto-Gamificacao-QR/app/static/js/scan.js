@@ -3,8 +3,40 @@ const code=decodeURIComponent(location.pathname.split('/').pop());
 let state;let submitting=false;
 
 function attemptInfo(q){
-  if(q.kind==='true_false') return '1 tentativa • 10 pontos se acertar • 2 pontos por participar';
-  return 'Até 2 tentativas • 10 / 6 pontos • 2 pontos por participar';
+  if(q.kind==='true_false')return '1 tentativa • 10 pontos se acertar • 2 por participar';
+  return 'Até 2 tentativas • 10 / 6 pontos • 2 por participar';
+}
+
+function kindLabel(kind){
+  return ({multiple_choice:'Múltipla escolha',true_false:'Verdadeiro/Falso',short_text:'Resposta curta',association:'Associação',ordering:'Ordenação'})[kind]||'Questão';
+}
+
+function optionText(q){
+  return (q.options||[]).map((o,i)=>`${i+1}. ${o.label??o}`).join('. ');
+}
+
+function questionSpeechText(q,includeOptions=false){
+  const prompt=(document.querySelector('#questionPrompt')?.textContent||q.prompt||'').trim();
+  if(!includeOptions)return prompt;
+  const opts=optionText(q);
+  return opts?`${prompt}. Alternativas: ${opts}`:prompt;
+}
+
+function bindQuestionTools(q){
+  const read=document.querySelector('#readQuestion');
+  const readAll=document.querySelector('#readOptions');
+  const stop=document.querySelector('#stopAudio');
+  const simple=document.querySelector('#simpleText');
+  if(read)read.onclick=()=>{if(!window.speakText(questionSpeechText(q,false)))showMessage(msg,'Leitura em voz alta não está disponível neste navegador.','warning')};
+  if(readAll)readAll.onclick=()=>{if(!window.speakText(questionSpeechText(q,true)))showMessage(msg,'Leitura em voz alta não está disponível neste navegador.','warning')};
+  if(stop)stop.onclick=()=>window.stopSpeech?.();
+  if(simple)simple.onclick=()=>{
+    const prompt=document.querySelector('#questionPrompt');
+    const usingSimple=simple.dataset.simple==='true';
+    prompt.textContent=usingSimple?q.prompt:q.accessibility.simplified_prompt;
+    simple.dataset.simple=String(!usingSimple);
+    simple.textContent=usingSimple?'Texto simples':'Texto original';
+  };
 }
 
 function renderQuestion(q,submit){
@@ -14,27 +46,50 @@ function renderQuestion(q,submit){
   }else{
     options='<label for="answerText">Sua resposta</label><input id="answerText" name="answer" required autocomplete="off">';
   }
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Desafio</div><h1>${esc(state.qr.name)}</h1><p class="question-prompt">${esc(q.prompt)}</p><div class="question-meta">${attemptInfo(q)}</div>${q.accessibility?.alt_text?`<p class="muted">Descrição: ${esc(q.accessibility.alt_text)}</p>`:''}<form id="answerForm" class="choices">${options}<button type="submit">Responder</button></form></div>`;
+
+  const a11y=q.accessibility||{};
+  const support=[];
+  if('speechSynthesis' in window){
+    support.push('<button type="button" id="readQuestion">Ouvir enunciado</button>');
+    if((q.options||[]).length)support.push('<button type="button" id="readOptions">Ouvir enunciado e alternativas</button>');
+    support.push('<button type="button" id="stopAudio">Parar leitura</button>');
+  }
+  if(a11y.simplified_prompt)support.push('<button type="button" id="simpleText" data-simple="false">Texto simples</button>');
+
+  const equivalents=[];
+  if(a11y.alt_text)equivalents.push(`<p class="alternative-description"><strong>Descrição da imagem:</strong> ${esc(a11y.alt_text)}</p>`);
+  if(a11y.transcript)equivalents.push(`<p class="alternative-description"><strong>Transcrição:</strong> ${esc(a11y.transcript)}</p>`);
+
+  box.innerHTML=`<div class="card question-card">
+    <div class="question-eyebrow">${esc(kindLabel(q.kind))}</div>
+    <h1>${esc(state.qr.name)}</h1>
+    <p id="questionPrompt" class="question-prompt">${esc(q.prompt)}</p>
+    <div class="question-meta"><span class="meta-pill">${esc(attemptInfo(q))}</span><span class="meta-pill">Sem limite de tempo</span>${a11y.reading_level?`<span class="meta-pill">Leitura: ${esc(a11y.reading_level)}</span>`:''}</div>
+    ${support.length?`<div class="question-tools" aria-label="Apoios de acessibilidade">${support.join('')}</div>`:''}
+    ${equivalents.join('')}
+    <form id="answerForm" class="choices">${options}<button type="submit">Responder</button></form>
+  </div>`;
   document.querySelector('#answerForm').addEventListener('submit',submit);
+  bindQuestionTools(q);
 }
 
 function setFormBusy(form,busy){
-  submitting=busy;
-  form.setAttribute('aria-busy',String(busy));
+  submitting=busy;form.setAttribute('aria-busy',String(busy));
   form.querySelectorAll('button,input,select,textarea').forEach(el=>{el.disabled=busy});
-  const button=form.querySelector('button[type="submit"]');
-  if(button)button.textContent=busy?'Enviando resposta…':'Responder';
+  const button=form.querySelector('button[type="submit"]');if(button)button.textContent=busy?'Enviando resposta…':'Responder';
 }
 
 function renderCompleted(points,milestones=[]){
+  window.stopSpeech?.();
   const bonus=(milestones||[]).reduce((sum,item)=>sum+Number(item.points||0),0);
   const bonusText=bonus>0?`<p class="success notice">Bônus de progresso conquistado: <strong>+${bonus} pontos</strong>.</p>`:'';
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Concluído</div><h1>Atividade concluída.</h1><p>Esta atividade já foi registrada para hoje.</p><p><span class="result-points">+${points||0} pontos</span></p>${bonusText}<p><a href="/ranking">Ver ranking</a> · <a href="/">Meu perfil</a></p></div>`;
+  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Atividade concluída</div><h1>Resposta registrada.</h1><p>Esta atividade já foi contabilizada para hoje.</p><p><span class="result-points">+${points||0} pontos</span></p>${bonusText}<div class="page-links"><a href="/ranking">Ver ranking</a><a href="/">Meu perfil</a></div></div>`;
 }
 
 function renderParticipation(points=2){
+  window.stopSpeech?.();
   const label=points===1?'ponto':'pontos';
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Participação registrada</div><h1>Atividade encerrada</h1><p>As tentativas disponíveis foram utilizadas.</p><p>Você recebeu <strong>${points} ${label}</strong> por participar.</p><p><span class="result-points">+${points} ${label}</span></p><p><a href="/ranking">Ver ranking</a> · <a href="/">Meu perfil</a></p></div>`;
+  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Participação registrada</div><h1>Atividade encerrada</h1><p>As tentativas disponíveis foram utilizadas.</p><p>Você recebeu <strong>${points} ${label}</strong> por participar.</p><p><span class="result-points">+${points} ${label}</span></p><div class="page-links"><a href="/ranking">Ver ranking</a><a href="/">Meu perfil</a></div></div>`;
 }
 
 async function load(){
@@ -43,7 +98,7 @@ async function load(){
     if(state.status==='completed'){renderCompleted(state.points_awarded);return}
     if(state.status==='failed'){renderParticipation(state.points_awarded||2);return}
     if(state.mode==='bonus'&&state.status==='choosing'){
-      box.innerHTML=`<div class="card question-card bonus-card"><div class="question-eyebrow">Bônus</div><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um dos três desafios. Todas as opções valem a mesma pontuação-base.</p><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
+      box.innerHTML=`<div class="card question-card bonus-card"><div class="question-eyebrow">Bônus</div><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um dos três desafios. Todas as opções valem a mesma pontuação-base.</p><div class="question-meta"><span class="meta-pill">Opções equivalentes</span><span class="meta-pill">Sem velocidade</span></div><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
       document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>choose(b.dataset.cat,b));return;
     }
     if(state.question)renderQuestion(state.question,submitAnswer);
@@ -51,23 +106,18 @@ async function load(){
 }
 
 async function choose(category_id,button){
-  if(submitting)return;
-  submitting=true;
-  const buttons=[...document.querySelectorAll('[data-cat]')];
-  buttons.forEach(b=>b.disabled=true);
+  if(submitting)return;submitting=true;
+  const buttons=[...document.querySelectorAll('[data-cat]')];buttons.forEach(b=>b.disabled=true);
   const oldText=button.textContent;button.textContent='Carregando…';
   try{
     const d=await api(`/api/bonus/${state.bonus_run_id}/category`,{method:'POST',body:JSON.stringify({category_id})});
     state.status=d.status;state.question=d.question;submitting=false;renderQuestion(d.question,submitAnswer);
-  }catch(err){
-    submitting=false;buttons.forEach(b=>b.disabled=false);button.textContent=oldText;showMessage(msg,err.message,'error');
-  }
+  }catch(err){submitting=false;buttons.forEach(b=>b.disabled=false);button.textContent=oldText;showMessage(msg,err.message,'error')}
 }
 
 async function submitAnswer(e){
   e.preventDefault();if(submitting)return;
-  const form=e.target;const data=new FormData(form);const answer=data.get('answer');
-  setFormBusy(form,true);
+  const form=e.target,data=new FormData(form),answer=data.get('answer');setFormBusy(form,true);window.stopSpeech?.();
   try{
     const url=state.mode==='bonus'?`/api/bonus/${state.bonus_run_id}/answer`:`/api/activity/${state.run_id}/answer`;
     const d=await api(url,{method:'POST',body:JSON.stringify({answer})});
@@ -77,8 +127,7 @@ async function submitAnswer(e){
       state.status='completed';state.points_awarded=d.points;submitting=false;renderCompleted(d.points,d.milestones||[]);return;
     }
     if(d.completed){
-      const participationPoints=Number(d.points||2);
-      showMessage(msg,`Resposta incorreta. +${participationPoints} pontos por participação.`,'error');
+      const participationPoints=Number(d.points||2);showMessage(msg,`Resposta incorreta. +${participationPoints} pontos por participação.`,'error');
       state.status='failed';state.points_awarded=participationPoints;submitting=false;renderParticipation(participationPoints);return;
     }
     showMessage(msg,`Resposta incorreta. Resta ${d.remaining} tentativa.`,'error');setFormBusy(form,false);
