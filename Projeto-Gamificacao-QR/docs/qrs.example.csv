@@ -1,13 +1,6 @@
-code,name
-BIB-01,Biblioteca
-CAN-01,Cantina
-TER-01,Salão de entrada
-BON-DIA-CAN,Bônus do Dia - Cantina
-BON-DIA-TER,Bônus do Dia - Térreo
-BON-DIA-1A,Bônus do Dia - 1º andar
-BON-DIN-CAN-A,Bônus Dinâmico - Cantina A
-BON-DIN-CAN-B,Bônus Dinâmico - Cantina B
-BON-DIN-TER-A,Bônus Dinâmico - Térreo A
-BON-DIN-TER-B,Bônus Dinâmico - Térreo B
-BON-DIN-1A-A,Bônus Dinâmico - 1º andar A
-BON-DIN-1A-B,Bônus Dinâmico - 1º andar B
+code,name,station_type,physical_code,points,location_hint
+TESTE-CAN-01,Poesia no espaço,permanent,POESIA01,10,Cantina — local exato a definir pelo GT3
+TESTE-TER-01,Fragmento 1 — Procurar,sequential,TRILHA01,15,Térreo — local exato a definir pelo GT3
+TESTE-1A-01,Fragmento 2 — Descobrir,sequential,TRILHA02,15,1º andar — local exato a definir pelo GT3
+TESTE-REGRA-VF,Verso Relâmpago,temporary,TEMPO01,30,Local acessível a definir pelo GT3
+TESTE-REGRA-MULTI,Cultura tecnologia e inclusão,special,ESPECIAL01,40,Local acessível a definir pelo GT3
