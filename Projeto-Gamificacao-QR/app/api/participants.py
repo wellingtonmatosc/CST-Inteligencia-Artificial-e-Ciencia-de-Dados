@@ -3,17 +3,18 @@ from pydantic import BaseModel, Field
 
 from app.api.deps import current_participant, get_gamification_service, get_participant_service
 from app.core.config import Settings, get_settings
-from app.core.errors import AppError
 from app.services.gamification import GamificationService
 from app.services.participants import ParticipantService
 
 router = APIRouter(prefix="/api/participants", tags=["participants"])
 
+PIN_PATTERN = r"^\d{4}$"
+
 
 class RegisterPayload(BaseModel):
     full_name: str = Field(min_length=3, max_length=120)
     nick: str = Field(min_length=3, max_length=24)
-    password: str = Field(min_length=8, max_length=128)
+    pin: str = Field(pattern=PIN_PATTERN)
     participant_type: str = Field(pattern="^(student|staff|external)$")
     registration: str | None = Field(default=None, max_length=50)
     course_class: str | None = Field(default=None, max_length=120)
@@ -22,16 +23,16 @@ class RegisterPayload(BaseModel):
 
 class LoginPayload(BaseModel):
     nick: str = Field(min_length=3, max_length=24)
-    password: str = Field(min_length=8, max_length=128)
+    pin: str = Field(pattern=PIN_PATTERN)
 
 
 class RecoverPayload(BaseModel):
     access_code: str = Field(min_length=6, max_length=20)
-    new_password: str = Field(min_length=8, max_length=128)
+    new_pin: str = Field(pattern=PIN_PATTERN)
 
 
-class PasswordPayload(BaseModel):
-    password: str = Field(min_length=8, max_length=128)
+class PinPayload(BaseModel):
+    pin: str = Field(pattern=PIN_PATTERN)
 
 
 def _set_cookie(response: Response, token: str, settings: Settings):
@@ -72,7 +73,7 @@ def login(
     service: ParticipantService = Depends(get_participant_service),
     settings: Settings = Depends(get_settings),
 ):
-    participant, token = service.login(payload.nick, payload.password)
+    participant, token = service.login(payload.nick, payload.pin)
     _set_cookie(response, token, settings)
     return {
         "participant": {
@@ -90,7 +91,7 @@ def recover(
     service: ParticipantService = Depends(get_participant_service),
     settings: Settings = Depends(get_settings),
 ):
-    participant, token, new_access_code = service.recover(payload.access_code, payload.new_password)
+    participant, token, new_access_code = service.recover(payload.access_code, payload.new_pin)
     _set_cookie(response, token, settings)
     return {
         "participant": {
@@ -102,13 +103,13 @@ def recover(
     }
 
 
-@router.post("/password")
-def set_password(
-    payload: PasswordPayload,
+@router.post("/pin")
+def set_pin(
+    payload: PinPayload,
     participant=Depends(current_participant),
     service: ParticipantService = Depends(get_participant_service),
 ):
-    service.set_password(participant["id"], payload.password)
+    service.set_pin(participant["id"], payload.pin)
     return {"ok": True}
 
 
@@ -142,7 +143,7 @@ def me(
             "nick": participant["nick"],
             "full_name": participant["full_name"],
             "participant_type": participant["participant_type"],
-            "has_password": bool(participant.get("has_password")),
+            "has_pin": bool(participant.get("has_password")),
         },
         "summary": game.participant_summary(participant["id"]),
     }
