@@ -104,6 +104,12 @@ pytest
 ## Vercel
 A configuração usa `app.main:app` em `pyproject.toml`. Defina a raiz do projeto para `Projeto-Gamificacao-QR`, configure as variáveis de ambiente, use `APP_ENV=production` e `SESSION_COOKIE_SECURE=true`, e faça o deploy a partir do GitHub.
 
+Homologação atual:
+- projeto Vercel: `gamificacao-qr-ifmt`;
+- domínio de produção: `https://gamificacao-qr-ifmt.vercel.app`;
+- branch de produção temporária: `feat/gamificacao-qr-evento`;
+- a `main` permanece sem merge até a homologação ser aprovada.
+
 ## Documentação adicional
 - `docs/REQUISITOS.md`
 - `docs/ARQUITETURA.md`
