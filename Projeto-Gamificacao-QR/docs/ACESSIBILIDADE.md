@@ -1,47 +1,91 @@
-# Acessibilidade e inclusão
+# Acessibilidade e inclusão — Trilhas Poéticas
 
-Regra central: **nenhuma necessidade de acessibilidade pode reduzir a pontuação máxima que a pessoa consegue alcançar**.
+A acessibilidade é requisito transversal da experiência, não um recurso opcional adicionado no final.
 
-## Espaço físico
-- Nenhuma pontuação necessária pode exigir escadas.
-- Bônus devem ter opções equivalentes nas zonas acessíveis definidas para o evento.
-- QR danificado deve ter substituição equivalente.
-- A equipe de espaços valida presencialmente circulação, rampas, portas e obstáculos.
+## Princípio
+
+Nenhum participante deve perder a possibilidade de obter a pontuação máxima por uma barreira exclusivamente:
+
+- visual;
+- auditiva;
+- motora;
+- cognitiva/comunicacional;
+- física do percurso;
+- de velocidade de resposta.
 
 ## Interface
-O botão **Acessibilidade** fica disponível em todas as telas.
 
-Recursos atuais:
-- aumentar ou diminuir o texto;
+O painel **Acessibilidade** oferece:
+
+- aumentar/diminuir o texto;
 - alto contraste;
-- reduzir animações;
-- **Ouvir tela**;
-- **Parar áudio**;
-- **Comando de voz**, quando o navegador oferece reconhecimento de fala.
+- redução de movimento;
+- ouvir a tela;
+- parar a síntese de voz;
+- comando de voz quando suportado pelo navegador.
 
-O comando de voz é complementar. Nenhuma função essencial depende dele: tudo continua disponível por toque, teclado ou leitor de tela.
+Comando de voz e síntese de voz são complementos. Nenhuma função essencial depende deles.
 
-Comandos reconhecidos incluem ações como criar conta, recuperar acesso, abrir ranking, ler QR, aumentar texto, ativar contraste, ouvir pergunta, ouvir alternativas, selecionar alternativa e responder.
+## Conteúdo das estações
 
-## Questões
-- Leitura em voz alta do enunciado.
-- Leitura do enunciado com alternativas.
-- Interrupção da leitura a qualquer momento.
-- Imagem essencial exige descrição equivalente.
-- Áudio ou vídeo essencial exige transcrição/legenda equivalente.
-- Sem pontuação baseada em velocidade.
-- Informação não depende apenas de cor.
+- texto compatível com leitor de tela;
+- linguagem direta e instruções claras;
+- imagem essencial deve possuir texto alternativo equivalente;
+- áudio/vídeo essencial deve possuir transcrição/legenda equivalente;
+- audiodescrição pode ser adicionada quando a obra/atividade exigir descrição visual mais rica;
+- conteúdo não deve depender apenas de cor;
+- conteúdo não deve exigir rapidez para pontuar;
+- se a proposta pedir para “observar” algo, deve oferecer percepção equivalente por descrição, som, tato/sensação ou outro meio adequado;
+- botão **Ouvir conteúdo** aparece nas estações textuais;
+- desafios oferecem **Ouvir desafio**.
 
-## Movimento e tema visual
-O sistema usa animações decorativas relacionadas a IA e Ciência de Dados, como nós, fluxo de dados, brilho e movimento de interface. Elas são desligadas quando:
-- o usuário ativa **Reduzir animações**; ou
-- o dispositivo informa `prefers-reduced-motion`.
+## Desafios
 
-As animações nunca carregam informação necessária para jogar.
+Antes de ativar uma questão, o sistema verifica metadados mínimos:
 
-## Privacidade e autenticação
-- Ranking público mostra somente nick.
-- Participante entra com nick + PIN de 4 dígitos.
-- PIN é armazenado como hash Argon2.
-- Cinco PINs incorretos provocam bloqueio temporário de 2 minutos.
-- Dados pessoais não aparecem no ranking público.
+- instrução clara;
+- sem dependência exclusiva de cor;
+- sem exigência de rapidez;
+- texto alternativo quando há imagem;
+- transcrição/legenda quando há áudio/vídeo.
+
+Tipos habilitados: múltipla escolha, verdadeiro/falso e resposta curta. Associação/ordenação foram retirados desta versão até existir interface equivalente acessível.
+
+## Navegação
+
+- link “Pular para o conteúdo”;
+- navegação por teclado;
+- foco visível;
+- controles grandes em celular;
+- mensagens de erro/sucesso com texto e `aria-live`;
+- nenhum estado importante é comunicado somente por cor;
+- `prefers-reduced-motion` e opção manual de redução de movimento são respeitados.
+
+## Espaço físico
+
+A aplicação registra zona/referência, mas a instalação cabe à frente de espaços. Na homologação física devem ser conferidos:
+
+- rota sem barreira para atividades necessárias à pontuação máxima;
+- altura e posição alcançáveis do QR e do código local;
+- segurança de circulação;
+- iluminação e contraste do material impresso;
+- leitura do QR por diferentes celulares;
+- alternativa equivalente se uma estação física ficar temporariamente inacessível.
+
+## Testes obrigatórios
+
+Antes do evento testar:
+
+- Android e iPhone;
+- zoom do navegador e texto ampliado;
+- teclado;
+- TalkBack e/ou leitor de tela Android;
+- VoiceOver no iPhone quando disponível;
+- alto contraste;
+- redução de movimento;
+- áudio desativado;
+- atividade sem visão da imagem;
+- atividade sem uso de comando de voz;
+- rota física acessível.
+
+A homologação não deve considerar acessibilidade concluída apenas porque o botão de acessibilidade existe.
