@@ -4,60 +4,96 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111827">
-<title>Administração — Desafio QR</title>
+<title>Administração — Trilhas Poéticas</title>
 <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 <main id="conteudo">
 <header class="hero">
-  <div class="hero-copy"><span class="eyebrow">Painel de controle</span><h1>Administração</h1><p>Gerencie conteúdo, QR Codes, acessibilidade, moderação e indicadores do evento.</p><div class="hero-tags"><span>Conteúdo</span><span>Dados</span><span>Inclusão</span></div></div>
-  <div class="hero-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+  <div class="hero-copy"><span class="eyebrow">Trilhas Poéticas • IFMT</span><h1>Administração</h1><p>Estações, trilhas, conteúdo, participantes, pontos extras e auditoria.</p></div>
 </header>
 <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
 
 <section id="loginCard" class="card auth-card">
-  <div class="card-heading"><span class="card-icon" aria-hidden="true">ADM</span><div><span class="eyebrow">Área restrita</span><h2>Entrar</h2></div></div>
+  <h2>Entrar no painel</h2>
   <form id="loginForm" class="grid two">
-    <div><label for="username">Usuário administrativo</label><input id="username" name="username" autocomplete="username" required></div>
-    <div><label for="password">Senha administrativa</label><input type="password" id="password" name="password" autocomplete="current-password" required></div>
-    <div class="form-action-end"><button type="submit">Entrar no painel</button></div>
+    <div><label for="username">Usuário</label><input id="username" name="username" autocomplete="username" required></div>
+    <div><label for="password">Senha</label><input type="password" id="password" name="password" autocomplete="current-password" required></div>
+    <div><button type="submit">Entrar</button></div>
   </form>
 </section>
 
 <section id="dashboard" class="hidden">
+  <div class="card"><div class="inline-actions"><div><span class="eyebrow">Sessão administrativa</span><h2 id="adminIdentity">Painel</h2></div><button type="button" class="secondary" id="adminLogout">Sair</button></div><div id="overview" class="admin-stat-grid"></div></div>
+
   <div class="grid two">
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">DB</span><div><span class="eyebrow">Visão geral</span><h2>Resumo</h2></div></div><div id="overview" class="admin-stat-grid"></div></div>
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">TXT</span><div><span class="eyebrow">Segurança</span><h2>Moderação de nick</h2></div></div><form id="blockedForm"><label for="blockedTerm">Adicionar termo proibido</label><input id="blockedTerm" name="term" required minlength="2"><label for="blockedReason">Motivo <span class="muted">(opcional)</span></label><input id="blockedReason" name="reason"><button type="submit">Adicionar termo</button></form><div id="blockedList"></div></div>
+    <section class="card"><h2>Participantes e equipes</h2><p class="muted">Organizadores ficam fora da competição e não recebem equipe/pontos.</p><div id="participantList"></div></section>
+    <section class="card"><h2>Moderação de nick</h2><form id="blockedForm"><label for="blockedTerm">Termo proibido</label><input id="blockedTerm" name="term" required minlength="2"><label for="blockedReason">Motivo</label><input id="blockedReason" name="reason"><button type="submit">Adicionar</button></form><div id="blockedList"></div></section>
   </div>
 
-  <div class="card">
-    <div class="card-heading"><span class="card-icon" aria-hidden="true">Q</span><div><span class="eyebrow">Banco de conhecimento</span><h2>Cadastrar questão</h2></div></div>
+  <section class="card">
+    <h2>Banco de desafios acessíveis</h2>
     <form id="questionForm" class="grid two">
       <div><label for="questionCategory">Categoria</label><select id="questionCategory" name="category_id" required></select></div>
       <div><label for="questionKind">Tipo</label><select id="questionKind" name="kind"><option value="multiple_choice">Múltipla escolha</option><option value="true_false">Verdadeiro/Falso</option><option value="short_text">Resposta curta</option></select></div>
       <div style="grid-column:1/-1"><label for="questionPrompt">Enunciado</label><textarea id="questionPrompt" name="prompt" required></textarea></div>
-      <div style="grid-column:1/-1"><label for="questionSimple">Versão em linguagem simples <span class="muted">(opcional)</span></label><textarea id="questionSimple" name="simplified_prompt" placeholder="Uma forma mais direta de apresentar a mesma questão, sem dar pista da resposta."></textarea></div>
-      <div><label for="questionOptions">Alternativas <span class="muted">(uma por linha)</span></label><textarea id="questionOptions" name="options"></textarea></div>
-      <div><label for="questionCorrect">Resposta correta <span class="muted">(resposta curta: variações com |)</span></label><input id="questionCorrect" name="correct" required><label for="questionExplanation">Explicação após resposta <span class="muted">(opcional)</span></label><textarea id="questionExplanation" name="explanation"></textarea></div>
-      <div><label for="questionDifficulty">Dificuldade</label><select id="questionDifficulty" name="difficulty"><option value="1">1 — introdutória</option><option value="2">2 — fácil</option><option value="3">3 — intermediária</option><option value="4">4 — avançada</option><option value="5">5 — desafio</option></select></div>
+      <div style="grid-column:1/-1"><label for="questionSimple">Versão em linguagem simples</label><textarea id="questionSimple" name="simplified_prompt"></textarea></div>
+      <div><label for="questionOptions">Alternativas — uma por linha</label><textarea id="questionOptions" name="options"></textarea></div>
+      <div><label for="questionCorrect">Resposta correta</label><input id="questionCorrect" name="correct" required><label for="questionExplanation">Explicação</label><textarea id="questionExplanation" name="explanation"></textarea></div>
+      <div><label for="questionDifficulty">Dificuldade</label><select id="questionDifficulty" name="difficulty"><option value="1">1 — fácil</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
       <div><label for="readingLevel">Nível de leitura</label><select id="readingLevel" name="reading_level"><option value="básica">Básica</option><option value="intermediária">Intermediária</option></select></div>
-      <div><label for="mediaType">Mídia</label><select id="mediaType" name="media_type"><option value="">Sem mídia</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option></select><label for="mediaUrl">URL da mídia <span class="muted">(se houver)</span></label><input id="mediaUrl" name="media_url" type="url"></div>
-      <div><label for="altText">Descrição equivalente da imagem</label><textarea id="altText" name="alt_text" placeholder="Obrigatória quando a imagem for necessária para compreender a questão."></textarea><label for="transcript">Transcrição/legenda equivalente</label><textarea id="transcript" name="transcript" placeholder="Obrigatória para áudio ou vídeo essencial."></textarea></div>
-      <div style="grid-column:1/-1" class="notice"><strong>Validação de inclusão</strong><p>A questão ativa não pode depender apenas de cor, velocidade, imagem sem descrição ou áudio/vídeo sem transcrição.</p><label class="switch-row"><input id="instructionsClear" name="instructions_clear" type="checkbox" checked><span><strong>Instruções claras e objetivas</strong><small>Confirme após revisar o enunciado.</small></span></label></div>
-      <div style="grid-column:1/-1"><button type="submit">Criar questão acessível</button></div>
+      <div><label for="mediaType">Mídia</label><select id="mediaType" name="media_type"><option value="">Sem mídia</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option></select><label for="mediaUrl">URL da mídia</label><input id="mediaUrl" name="media_url" type="url"></div>
+      <div><label for="altText">Descrição equivalente da imagem</label><textarea id="altText" name="alt_text"></textarea><label for="transcript">Transcrição/legenda equivalente</label><textarea id="transcript" name="transcript"></textarea></div>
+      <div style="grid-column:1/-1"><label class="switch-row"><input id="instructionsClear" name="instructions_clear" type="checkbox" checked><span><strong>Instruções claras e objetivas</strong></span></label><button type="submit">Criar desafio</button></div>
     </form>
     <div id="questionList"></div>
-  </div>
+  </section>
+
+  <section class="card">
+    <h2>Estações QR</h2>
+    <form id="stationForm" class="grid two">
+      <input type="hidden" id="stationId" name="station_id">
+      <div><label for="stationCode">Código do QR</label><input id="stationCode" name="code" required></div>
+      <div><label for="stationName">Nome</label><input id="stationName" name="name" required></div>
+      <div><label for="stationZone">Zona</label><select id="stationZone" name="zone_id" required></select></div>
+      <div><label for="stationType">Tipo</label><select id="stationType" name="station_type"><option value="permanent">Permanente — 10</option><option value="sequential">Sequencial — 15</option><option value="temporary">Temporário — 30</option><option value="special">Especial — 40</option></select></div>
+      <div><label for="stationPoints">Pontos-base</label><input id="stationPoints" name="base_points" type="number" min="0" max="1000" value="10" required></div>
+      <div><label for="physicalCode">Código físico</label><input id="physicalCode" name="physical_code" placeholder="Deixe vazio ao editar para manter o atual"></div>
+      <div><label for="activeFrom">Ativa a partir de</label><input id="activeFrom" name="active_from" type="datetime-local"></div>
+      <div><label for="activeUntil">Ativa até</label><input id="activeUntil" name="active_until" type="datetime-local"></div>
+      <div style="grid-column:1/-1"><label for="locationHint">Referência/local</label><input id="locationHint" name="location_hint"></div>
+      <div class="inline-actions"><button type="submit" id="stationSubmit">Criar estação</button><button type="button" class="secondary hidden" id="stationCancelEdit">Cancelar edição</button></div>
+    </form>
+    <div id="stationList"></div>
+  </section>
+
+  <section class="card">
+    <h2>Conteúdo cultural da estação</h2>
+    <form id="contentForm" class="grid two">
+      <div><label for="contentStation">Estação</label><select id="contentStation" name="station_id" required></select></div>
+      <div><label for="contentKind">Natureza</label><select id="contentKind" name="content_kind"><option value="poetry">Poesia</option><option value="literature">Literatura</option><option value="art">Arte</option><option value="culture">Cultura</option><option value="regional">Regional</option><option value="mixed">Misto</option></select></div>
+      <div><label for="contentTitle">Título</label><input id="contentTitle" name="title" required></div>
+      <div><label for="contentAuthor">Autor(a)/referência</label><input id="contentAuthor" name="author_name"></div>
+      <div style="grid-column:1/-1"><label for="contentBody">Conteúdo</label><textarea id="contentBody" name="body"></textarea></div>
+      <div><label for="contentMediaType">Mídia</label><select id="contentMediaType" name="media_type"><option value="">Sem mídia</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option></select><label for="contentMediaUrl">URL</label><input id="contentMediaUrl" name="media_url" type="url"></div>
+      <div><label for="contentAlt">Descrição da imagem</label><textarea id="contentAlt" name="alt_text"></textarea><label for="contentTranscript">Transcrição/legenda</label><textarea id="contentTranscript" name="transcript"></textarea></div>
+      <div><label for="contentQuestion">Desafio</label><select id="contentQuestion" name="challenge_question_id"><option value="">Sem desafio</option></select></div>
+      <div><label for="challengePoints">Pontos do desafio</label><input id="challengePoints" name="challenge_points" type="number" min="0" max="20" value="10"></div>
+      <div style="grid-column:1/-1"><label for="completionBody">Mensagem após conclusão</label><textarea id="completionBody" name="completion_body"></textarea><button type="submit">Salvar conteúdo</button></div>
+    </form>
+  </section>
 
   <div class="grid two">
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">QR</span><div><span class="eyebrow">Estações</span><h2>Cadastrar QR Code</h2></div></div><form id="qrForm" class="grid"><label for="qrCode">Código</label><input id="qrCode" name="code" required><label for="qrName">Nome</label><input id="qrName" name="name" required><label for="qrZone">Zona técnica</label><select id="qrZone" name="zone_id" required></select><label for="qrKind">Tipo</label><select id="qrKind" name="kind"><option value="normal">Normal</option><option value="daily_bonus">Bônus do dia</option><option value="dynamic_bonus">Bônus dinâmico</option></select><button type="submit">Criar QR</button></form><div id="qrList"></div></div>
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">↔</span><div><span class="eyebrow">Conteúdo</span><h2>Vincular questão a QR</h2></div></div><form id="linkForm" class="grid"><label for="linkQr">QR normal</label><select id="linkQr" name="qr_id" required></select><label for="linkQuestion">Questão</label><select id="linkQuestion" name="question_id" required></select><button type="submit">Vincular</button></form></div>
+    <section class="card"><h2>Trilhas sequenciais</h2><form id="trailForm"><label for="trailSlug">Identificador</label><input id="trailSlug" name="slug" placeholder="trilha-modernismo" required><label for="trailName">Nome</label><input id="trailName" name="name" required><label for="trailDescription">Descrição</label><textarea id="trailDescription" name="description"></textarea><label for="trailCompletionPoints">Bônus de conclusão</label><input id="trailCompletionPoints" name="completion_points" type="number" min="0" max="500" value="30"><button type="submit">Criar trilha</button></form><div id="trailList"></div></section>
+    <section class="card"><h2>Ordem da trilha</h2><form id="trailStepsForm"><label for="stepsTrail">Trilha</label><select id="stepsTrail" name="trail_id" required></select><label for="stepsStations">Estações na ordem desejada</label><select id="stepsStations" name="qr_point_ids" multiple size="8" required></select><p class="muted">Use Ctrl/Command para selecionar várias. A ordem escolhida no seletor será usada como sequência.</p><button type="submit">Salvar etapas</button></form></section>
   </div>
 
+  <section class="card"><h2>Pontos extras validados</h2><form id="manualForm" class="grid two"><div><label for="manualParticipant">Participante</label><select id="manualParticipant" name="participant_id" required></select></div><div><label for="manualType">Ação</label><select id="manualType" name="action_type"><option value="recitation">Declamação</option><option value="original_work">Obra autoral</option><option value="poem_suggestion">Sugestão de poema</option><option value="selected_suggestion">Sugestão selecionada</option><option value="artistic_production">Produção artística</option><option value="social_post">Postagem válida</option><option value="event_participation">Participação em atividade</option><option value="other">Outra</option></select></div><div><label for="manualPoints">Pontos</label><input id="manualPoints" name="points" type="number" min="0" max="200" value="20" required></div><div><label for="manualEvidence">Evidência/referência</label><input id="manualEvidence" name="evidence"></div><div style="grid-column:1/-1"><label for="manualDescription">Descrição</label><textarea id="manualDescription" name="description" required></textarea><button type="submit">Validar e conceder</button></div></form><div id="manualList"></div></section>
+
   <div class="grid two">
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">★</span><div><span class="eyebrow">Gamificação</span><h2>Bônus</h2></div></div><p class="muted">As janelas horárias são configuradas em lote para preservar opções equivalentes em Cantina, Térreo e 1º andar.</p><div id="bonusList"></div></div>
-    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">∑</span><div><span class="eyebrow">Indicadores</span><h2>Análises</h2></div></div><div id="analytics"></div></div>
+    <section class="card" id="adminUsersCard"><h2>Usuários administrativos</h2><form id="adminUserForm"><label for="newAdminUser">Usuário</label><input id="newAdminUser" name="username" required><label for="newAdminPassword">Senha</label><input id="newAdminPassword" name="password" type="password" minlength="10" required><label for="newAdminRole">Papel</label><select id="newAdminRole" name="role"><option value="admin">Administrador</option><option value="operator">Operador</option><option value="validator">Validador</option><option value="viewer">Consulta</option></select><button type="submit">Criar usuário</button></form><div id="adminUserList"></div></section>
+    <section class="card"><h2>Auditoria</h2><div id="auditList"></div></section>
   </div>
 </section>
 
