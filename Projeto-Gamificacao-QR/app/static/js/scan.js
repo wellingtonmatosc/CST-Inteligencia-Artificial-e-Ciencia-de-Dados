@@ -3,12 +3,7 @@ const code=decodeURIComponent(location.pathname.split('/').pop());
 let state;let submitting=false;
 
 function attemptInfo(q){
-  if(q.kind==='true_false')return '1 tentativa • 10 pontos se acertar • 2 por participar';
-  return 'Até 2 tentativas • 10 / 6 pontos • 2 por participar';
-}
-
-function kindLabel(kind){
-  return ({multiple_choice:'Múltipla escolha',true_false:'Verdadeiro/Falso',short_text:'Resposta curta',association:'Associação',ordering:'Ordenação'})[kind]||'Questão';
+  return q.kind==='true_false'?'1 tentativa':'2 tentativas';
 }
 
 function optionText(q){
@@ -27,8 +22,8 @@ function bindQuestionTools(q){
   const readAll=document.querySelector('#readOptions');
   const stop=document.querySelector('#stopAudio');
   const simple=document.querySelector('#simpleText');
-  if(read)read.onclick=()=>{if(!window.speakText(questionSpeechText(q,false)))showMessage(msg,'Leitura em voz alta não está disponível neste navegador.','warning')};
-  if(readAll)readAll.onclick=()=>{if(!window.speakText(questionSpeechText(q,true)))showMessage(msg,'Leitura em voz alta não está disponível neste navegador.','warning')};
+  if(read)read.onclick=()=>{if(!window.speakText(questionSpeechText(q,false)))showMessage(msg,'Áudio indisponível.','warning')};
+  if(readAll)readAll.onclick=()=>{if(!window.speakText(questionSpeechText(q,true)))showMessage(msg,'Áudio indisponível.','warning')};
   if(stop)stop.onclick=()=>window.stopSpeech?.();
   if(simple)simple.onclick=()=>{
     const prompt=document.querySelector('#questionPrompt');
@@ -44,28 +39,27 @@ function renderQuestion(q,submit){
   if(q.kind==='multiple_choice'||q.kind==='true_false'){
     options=(q.options||[]).map(o=>`<label><input type="radio" name="answer" value="${esc(o.value??o)}" required><span>${esc(o.label??o)}</span></label>`).join('');
   }else{
-    options='<label for="answerText">Sua resposta</label><input id="answerText" name="answer" required autocomplete="off">';
+    options='<label for="answerText">Resposta</label><input id="answerText" name="answer" required autocomplete="off">';
   }
 
   const a11y=q.accessibility||{};
   const support=[];
   if('speechSynthesis' in window){
-    support.push('<button type="button" id="readQuestion">Ouvir enunciado</button>');
-    if((q.options||[]).length)support.push('<button type="button" id="readOptions">Ouvir enunciado e alternativas</button>');
-    support.push('<button type="button" id="stopAudio">Parar leitura</button>');
+    support.push('<button type="button" id="readQuestion">Ouvir pergunta</button>');
+    if((q.options||[]).length)support.push('<button type="button" id="readOptions">Ouvir tudo</button>');
+    support.push('<button type="button" id="stopAudio">Parar</button>');
   }
   if(a11y.simplified_prompt)support.push('<button type="button" id="simpleText" data-simple="false">Texto simples</button>');
 
   const equivalents=[];
-  if(a11y.alt_text)equivalents.push(`<p class="alternative-description"><strong>Descrição da imagem:</strong> ${esc(a11y.alt_text)}</p>`);
+  if(a11y.alt_text)equivalents.push(`<p class="alternative-description"><strong>Descrição:</strong> ${esc(a11y.alt_text)}</p>`);
   if(a11y.transcript)equivalents.push(`<p class="alternative-description"><strong>Transcrição:</strong> ${esc(a11y.transcript)}</p>`);
 
   box.innerHTML=`<div class="card question-card">
-    <div class="question-eyebrow">${esc(kindLabel(q.kind))}</div>
     <h1>${esc(state.qr.name)}</h1>
     <p id="questionPrompt" class="question-prompt">${esc(q.prompt)}</p>
-    <div class="question-meta"><span class="meta-pill">${esc(attemptInfo(q))}</span><span class="meta-pill">Sem limite de tempo</span>${a11y.reading_level?`<span class="meta-pill">Leitura: ${esc(a11y.reading_level)}</span>`:''}</div>
-    ${support.length?`<div class="question-tools" aria-label="Apoios de acessibilidade">${support.join('')}</div>`:''}
+    <div class="question-meta"><span class="meta-pill">${esc(attemptInfo(q))}</span></div>
+    ${support.length?`<div class="question-tools" aria-label="Áudio e apoio de leitura">${support.join('')}</div>`:''}
     ${equivalents.join('')}
     <form id="answerForm" class="choices">${options}<button type="submit">Responder</button></form>
   </div>`;
@@ -76,20 +70,20 @@ function renderQuestion(q,submit){
 function setFormBusy(form,busy){
   submitting=busy;form.setAttribute('aria-busy',String(busy));
   form.querySelectorAll('button,input,select,textarea').forEach(el=>{el.disabled=busy});
-  const button=form.querySelector('button[type="submit"]');if(button)button.textContent=busy?'Enviando resposta…':'Responder';
+  const button=form.querySelector('button[type="submit"]');if(button)button.textContent=busy?'Enviando…':'Responder';
 }
 
 function renderCompleted(points,milestones=[]){
   window.stopSpeech?.();
   const bonus=(milestones||[]).reduce((sum,item)=>sum+Number(item.points||0),0);
-  const bonusText=bonus>0?`<p class="success notice">Bônus de progresso conquistado: <strong>+${bonus} pontos</strong>.</p>`:'';
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Atividade concluída</div><h1>Resposta registrada.</h1><p>Esta atividade já foi contabilizada para hoje.</p><p><span class="result-points">+${points||0} pontos</span></p>${bonusText}<div class="page-links"><a href="/ranking">Ver ranking</a><a href="/">Meu perfil</a></div></div>`;
+  const bonusText=bonus>0?`<p class="success notice">Bônus: <strong>+${bonus}</strong></p>`:'';
+  box.innerHTML=`<div class="card question-card"><h1>Resposta registrada</h1><p><span class="result-points">+${points||0} pontos</span></p>${bonusText}<div class="page-links"><a href="/ranking">Ranking</a><a href="/">Perfil</a></div></div>`;
 }
 
 function renderParticipation(points=2){
   window.stopSpeech?.();
   const label=points===1?'ponto':'pontos';
-  box.innerHTML=`<div class="card question-card"><div class="question-eyebrow">Participação registrada</div><h1>Atividade encerrada</h1><p>As tentativas disponíveis foram utilizadas.</p><p>Você recebeu <strong>${points} ${label}</strong> por participar.</p><p><span class="result-points">+${points} ${label}</span></p><div class="page-links"><a href="/ranking">Ver ranking</a><a href="/">Meu perfil</a></div></div>`;
+  box.innerHTML=`<div class="card question-card"><h1>Atividade encerrada</h1><p><span class="result-points">+${points} ${label}</span></p><div class="page-links"><a href="/ranking">Ranking</a><a href="/">Perfil</a></div></div>`;
 }
 
 async function load(){
@@ -98,7 +92,7 @@ async function load(){
     if(state.status==='completed'){renderCompleted(state.points_awarded);return}
     if(state.status==='failed'){renderParticipation(state.points_awarded||2);return}
     if(state.mode==='bonus'&&state.status==='choosing'){
-      box.innerHTML=`<div class="card question-card bonus-card"><div class="question-eyebrow">Bônus</div><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um dos três desafios. Todas as opções valem a mesma pontuação-base.</p><div class="question-meta"><span class="meta-pill">Opções equivalentes</span><span class="meta-pill">Sem velocidade</span></div><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
+      box.innerHTML=`<div class="card question-card bonus-card"><h1>${esc(state.campaign.name)}</h1><p class="question-prompt">Escolha um desafio.</p><div class="choices">${state.categories.map(c=>`<button type="button" data-cat="${c.id}">${esc(c.name)}</button>`).join('')}</div></div>`;
       document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>choose(b.dataset.cat,b));return;
     }
     if(state.question)renderQuestion(state.question,submitAnswer);
@@ -123,14 +117,14 @@ async function submitAnswer(e){
     const d=await api(url,{method:'POST',body:JSON.stringify({answer})});
     if(d.correct){
       const bonus=(d.milestones||[]).reduce((sum,item)=>sum+Number(item.points||0),0);
-      showMessage(msg,bonus>0?`Resposta correta! +${d.points} pontos e +${bonus} de bônus.`:`Resposta correta! +${d.points} pontos.`,'success');
+      showMessage(msg,bonus>0?`Correto! +${d.points} e bônus +${bonus}.`:`Correto! +${d.points}.`,'success');
       state.status='completed';state.points_awarded=d.points;submitting=false;renderCompleted(d.points,d.milestones||[]);return;
     }
     if(d.completed){
-      const participationPoints=Number(d.points||2);showMessage(msg,`Resposta incorreta. +${participationPoints} pontos por participação.`,'error');
+      const participationPoints=Number(d.points||2);showMessage(msg,`Incorreto. +${participationPoints} por participação.`,'error');
       state.status='failed';state.points_awarded=participationPoints;submitting=false;renderParticipation(participationPoints);return;
     }
-    showMessage(msg,`Resposta incorreta. Resta ${d.remaining} tentativa.`,'error');setFormBusy(form,false);
+    showMessage(msg,`Incorreto. Resta ${d.remaining} tentativa.`,'error');setFormBusy(form,false);
   }catch(err){setFormBusy(form,false);showMessage(msg,err.message,'error')}
 }
 
