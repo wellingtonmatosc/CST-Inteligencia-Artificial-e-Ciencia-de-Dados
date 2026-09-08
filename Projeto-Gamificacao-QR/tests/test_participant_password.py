@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
 
 import pytest
@@ -72,6 +73,8 @@ def make_service(pin="1234"):
         "active": True,
         "password_hash": hash_password(pin),
         "access_code_hash": sha256_hex("ABCDEFGH"),
+        "pin_failed_attempts": 0,
+        "pin_locked_until": None,
     }
     repo = FakeRepo(participant)
     service = ParticipantService(repo, NickModerationService(), session_days=30)
@@ -87,9 +90,30 @@ def test_participant_login_with_nick_and_pin_creates_session():
 
 
 def test_participant_login_rejects_wrong_pin():
-    service, _ = make_service()
+    service, repo = make_service()
     with pytest.raises(AppError):
         service.login("Wellington", "9999")
+    assert repo.participant["pin_failed_attempts"] == 1
+
+
+def test_participant_pin_is_temporarily_locked_after_repeated_failures():
+    service, repo = make_service()
+    for _ in range(5):
+        with pytest.raises(AppError):
+            service.login("Wellington", "9999")
+    assert repo.participant["pin_failed_attempts"] == 0
+    assert repo.participant["pin_locked_until"] is not None
+    with pytest.raises(AppError) as exc:
+        service.login("Wellington", "1234")
+    assert exc.value.status_code == 429
+
+
+def test_participant_login_respects_existing_lock():
+    service, repo = make_service()
+    repo.participant["pin_locked_until"] = (datetime.now(timezone.utc) + timedelta(minutes=1)).isoformat()
+    with pytest.raises(AppError) as exc:
+        service.login("Wellington", "1234")
+    assert exc.value.status_code == 429
 
 
 def test_authenticated_participant_can_define_new_pin():
@@ -105,3 +129,5 @@ def test_recovery_rotates_code_and_sets_new_pin():
     assert new_code != "ABCDEFGH"
     assert verify_password(repo.participant["password_hash"], "2468")
     assert repo.participant["access_code_hash"] == sha256_hex(new_code)
+    assert repo.participant["pin_failed_attempts"] == 0
+    assert repo.participant["pin_locked_until"] is None
