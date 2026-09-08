@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "Gamificação QR - Evento IFMT"
+    app_name: str = "Trilhas Poéticas - IFMT"
     app_env: str = "development"
     app_base_url: str = "http://127.0.0.1:8000"
     event_timezone: str = "America/Cuiaba"
@@ -15,14 +15,14 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_secret_key: str = ""
 
-    participant_cookie_name: str = "event_session"
+    participant_cookie_name: str = "trilhas_session"
     participant_session_days: int = 30
     session_cookie_secure: bool = False
 
     admin_username: str = "admin"
     admin_password_hash: str = ""
     admin_session_secret: str = Field(default="change-me", min_length=8)
-    admin_cookie_name: str = "event_admin"
+    admin_cookie_name: str = "trilhas_admin"
     admin_session_hours: int = 12
 
     blocked_nick_terms: str = ""
