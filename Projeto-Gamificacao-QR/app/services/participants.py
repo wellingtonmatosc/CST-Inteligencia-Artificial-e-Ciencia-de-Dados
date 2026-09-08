@@ -1,9 +1,16 @@
-"""Cadastro, sessão, recuperação e logout de participantes."""
+"""Cadastro, login, sessão, recuperação e logout de participantes."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+
 from app.core.errors import AppError
-from app.core.security import random_access_code, random_token, sha256_hex
+from app.core.security import (
+    hash_password,
+    random_access_code,
+    random_token,
+    sha256_hex,
+    verify_password,
+)
 from app.repositories.supabase_repo import SupabaseRepository
 from app.services.moderation import NickModerationService, normalize_for_moderation
 
@@ -31,40 +38,105 @@ class ParticipantService:
             if term and term in normalized_nick:
                 raise AppError("Esse nome de usuário não pode ser utilizado. Escolha outro.", 422)
 
-        existing = self.repo.raw_table("participants").select("id").ilike("nick", payload["nick"].strip()).execute().data or []
+        existing = (
+            self.repo.raw_table("participants")
+            .select("id")
+            .ilike("nick", payload["nick"].strip())
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
         if existing:
             raise AppError("Esse nick já está em uso.", 409)
 
         access_code = random_access_code()
-        participant = self.repo.insert("participants", {
-            "full_name": payload["full_name"].strip(),
-            "nick": payload["nick"].strip(),
-            "participant_type": participant_type,
-            "registration": payload.get("registration") or None,
-            "course_class": payload.get("course_class") or None,
-            "institution": payload.get("institution") or None,
-            "access_code_hash": sha256_hex(access_code),
-        })
+        participant = self.repo.insert(
+            "participants",
+            {
+                "full_name": payload["full_name"].strip(),
+                "nick": payload["nick"].strip(),
+                "participant_type": participant_type,
+                "registration": payload.get("registration") or None,
+                "course_class": payload.get("course_class") or None,
+                "institution": payload.get("institution") or None,
+                "password_hash": hash_password(payload["password"]),
+                "access_code_hash": sha256_hex(access_code),
+            },
+        )
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
-    def recover(self, access_code: str) -> tuple[dict, str]:
+    def login(self, nick: str, password: str) -> tuple[dict, str]:
+        rows = (
+            self.repo.raw_table("participants")
+            .select("*")
+            .ilike("nick", nick.strip())
+            .eq("active", True)
+            .limit(1)
+            .execute()
+            .data
+            or []
+        )
+        if not rows:
+            raise AppError("Nick ou senha inválidos.", 401)
+
+        participant = rows[0]
+        password_hash = participant.get("password_hash") or ""
+        if not password_hash:
+            raise AppError(
+                "Esta conta ainda não possui senha. Defina uma senha na sessão atual ou use o código de recuperação.",
+                409,
+            )
+        if not verify_password(password_hash, password):
+            raise AppError("Nick ou senha inválidos.", 401)
+
+        return participant, self._create_session(participant["id"])
+
+    def recover(self, access_code: str, new_password: str) -> tuple[dict, str, str]:
+        """Redefine a senha usando o código e rotaciona o próprio código de recuperação."""
         code_hash = sha256_hex(access_code.strip().upper())
         rows = self.repo.select("participants", access_code_hash=code_hash, active=True)
         if not rows:
             raise AppError("Código de recuperação inválido.", 404)
+
         participant = rows[0]
+        new_access_code = random_access_code()
+        self.repo.update(
+            "participants",
+            {
+                "password_hash": hash_password(new_password),
+                "access_code_hash": sha256_hex(new_access_code),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            id=participant["id"],
+        )
+        participant["password_hash"] = "updated"
         session_token = self._create_session(participant["id"])
-        return participant, session_token
+        return participant, session_token, new_access_code
+
+    def set_password(self, participant_id: str, password: str) -> None:
+        """Cria ou altera a senha a partir de uma sessão já autenticada."""
+        self.repo.update(
+            "participants",
+            {
+                "password_hash": hash_password(password),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            },
+            id=participant_id,
+        )
 
     def _create_session(self, participant_id: str) -> str:
         token = random_token()
         expires = datetime.now(timezone.utc) + timedelta(days=self.session_days)
-        self.repo.insert("participant_sessions", {
-            "participant_id": participant_id,
-            "token_hash": sha256_hex(token),
-            "expires_at": expires.isoformat(),
-        })
+        self.repo.insert(
+            "participant_sessions",
+            {
+                "participant_id": participant_id,
+                "token_hash": sha256_hex(token),
+                "expires_at": expires.isoformat(),
+            },
+        )
         return token
 
     def get_by_session(self, token: str) -> dict:
