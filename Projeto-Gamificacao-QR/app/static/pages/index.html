@@ -15,23 +15,39 @@
   .home-actions{display:grid;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid #2a395e}
   .home-actions p{margin:0;text-align:center}
   .home-actions .text-link{display:block;text-align:center;padding:8px}
-  .home-panel[hidden]{display:none!important}
+  .home-panel[hidden],.qr-panel[hidden]{display:none!important}
   .panel-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:18px}
   .panel-actions .secondary{width:auto;min-width:110px}
   .back-link{margin-top:16px}
   .back-link button{width:auto}
   .home-help{text-align:center;color:var(--muted);font-size:.92rem;margin:12px 0 0}
+  .qr-launch-card{margin-top:16px;text-align:center}
+  .qr-launch-card::before,.qr-scanner-card::before{background:linear-gradient(180deg,var(--cyan),transparent)}
+  .qr-launch-card .card-heading{justify-content:center}
+  .qr-launch-card .card-icon,.qr-scanner-card .card-icon{background:linear-gradient(135deg,#155e75,#2563eb)}
+  .qr-launch-card p{color:var(--muted);margin:.25rem 0 1rem}
+  .qr-launch-card button{max-width:420px;margin:0 auto}
+  .qr-scanner-card{margin-top:16px}
+  .qr-reader-wrap{margin-top:14px;padding:10px;border:1px solid #344a73;border-radius:16px;background:#080d18}
+  #qr-reader{width:100%;overflow:hidden;border-radius:12px}
+  #qr-reader video{border-radius:12px}
+  .qr-status{margin:12px 0 0;color:var(--muted);text-align:center}
+  .qr-manual{margin-top:18px;padding-top:18px;border-top:1px solid #2a395e}
+  .qr-manual-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+  .qr-manual-row button{width:auto;min-width:100px}
+  .qr-close{margin-top:14px}
+  .qr-close button{background:#141d34;border:1px solid #465779}
   @media(max-width:640px){
     main.home-shell{width:min(100% - 24px,720px);padding-top:18px}
     .compact-hero{padding:22px 20px;border-radius:22px}
     .compact-hero h1{font-size:2.15rem;margin-bottom:8px}
     .compact-hero .eyebrow{font-size:.69rem;letter-spacing:.08em}
     .compact-hero .hero-copy p{font-size:.97rem;line-height:1.45}
-    .home-auth .card{padding:20px}
+    .home-auth .card,.qr-launch-card,.qr-scanner-card{padding:20px}
     .card-heading{margin-bottom:8px}
     .card-icon{min-width:42px;height:42px}
-    .panel-actions{grid-template-columns:1fr}
-    .panel-actions .secondary{width:100%}
+    .panel-actions,.qr-manual-row{grid-template-columns:1fr}
+    .panel-actions .secondary,.qr-manual-row button{width:100%}
     .grid.two.compact-grid{grid-template-columns:1fr}
     .page-links{justify-content:center}
   }
@@ -144,10 +160,44 @@
   </section>
 </section>
 
+<section id="qrLaunch" class="card qr-launch-card" aria-labelledby="qrLaunchTitle">
+  <div class="card-heading">
+    <span class="card-icon" aria-hidden="true">▦</span>
+    <div><span class="eyebrow">Câmera</span><h2 id="qrLaunchTitle">Ler QR Code</h2></div>
+  </div>
+  <p>Aponte a câmera do celular para um QR Code do desafio.</p>
+  <button id="openQrScanner" type="button">Abrir câmera e ler QR</button>
+</section>
+
+<section id="qrScannerSection" class="card qr-scanner-card qr-panel" aria-labelledby="qrScannerTitle" hidden>
+  <div class="card-heading">
+    <span class="card-icon" aria-hidden="true">▦</span>
+    <div><span class="eyebrow">Leitor</span><h2 id="qrScannerTitle">Ler QR Code</h2></div>
+  </div>
+  <p class="muted">Permita o uso da câmera e enquadre o QR Code dentro da área de leitura.</p>
+  <div class="qr-reader-wrap"><div id="qr-reader" aria-label="Visualização da câmera para leitura do QR Code"></div></div>
+  <p id="qrStatus" class="qr-status" role="status" aria-live="polite">Preparando câmera…</p>
+
+  <div class="qr-manual">
+    <strong>Não conseguiu usar a câmera?</strong>
+    <p class="muted">Digite o código impresso junto ao QR Code.</p>
+    <form id="qrManualForm" class="qr-manual-row">
+      <div>
+        <label for="qrManualCode">Código do QR</label>
+        <input id="qrManualCode" name="code" autocomplete="off" maxlength="100" placeholder="Ex.: TESTE-UI-A11Y" required>
+      </div>
+      <button type="submit" class="secondary">Abrir</button>
+    </form>
+  </div>
+
+  <div class="qr-close"><button id="closeQrScanner" type="button" class="secondary">Fechar câmera</button></div>
+</section>
+
 <nav class="page-links" aria-label="Links principais"><a href="/ranking">Ver ranking público</a></nav>
 </main>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/index.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (() => {
   const login = document.querySelector('#loginSection');
@@ -183,6 +233,101 @@
 
   document.addEventListener('click', (event) => {
     if(event.target.closest('#logoutButton')) show(login);
+  });
+
+  const launch = document.querySelector('#qrLaunch');
+  const scannerSection = document.querySelector('#qrScannerSection');
+  const openScanner = document.querySelector('#openQrScanner');
+  const closeScanner = document.querySelector('#closeQrScanner');
+  const qrStatus = document.querySelector('#qrStatus');
+  const manualForm = document.querySelector('#qrManualForm');
+  let scanner = null;
+  let running = false;
+  let navigating = false;
+
+  function setQrStatus(text){
+    qrStatus.textContent = text;
+  }
+
+  function extractQrCode(value){
+    const text = String(value || '').trim();
+    if(!text) return null;
+
+    try{
+      const parsed = new URL(text, window.location.origin);
+      const match = parsed.pathname.match(/^\/q\/([^/?#]+)\/?$/i);
+      if(match) return decodeURIComponent(match[1]);
+    }catch(_){ }
+
+    if(/^[A-Za-z0-9_-]{2,100}$/.test(text)) return text;
+    return null;
+  }
+
+  async function stopScanner(){
+    if(scanner && running){
+      try{ await scanner.stop(); }catch(_){ }
+      running = false;
+    }
+  }
+
+  async function goToQr(decodedText){
+    if(navigating) return;
+    const code = extractQrCode(decodedText);
+    if(!code){
+      setQrStatus('Este QR Code não parece pertencer ao Desafio QR. Tente novamente.');
+      return;
+    }
+    navigating = true;
+    setQrStatus('QR Code reconhecido. Abrindo desafio…');
+    await stopScanner();
+    window.location.assign(`/q/${encodeURIComponent(code)}`);
+  }
+
+  async function startScanner(){
+    launch.hidden = true;
+    scannerSection.hidden = false;
+    scannerSection.scrollIntoView({behavior:'smooth',block:'start'});
+    setQrStatus('Solicitando acesso à câmera…');
+
+    if(typeof window.Html5Qrcode === 'undefined'){
+      setQrStatus('O leitor de câmera não pôde ser carregado. Use o campo de código abaixo.');
+      return;
+    }
+
+    try{
+      if(!scanner) scanner = new Html5Qrcode('qr-reader');
+      await scanner.start(
+        {facingMode:'environment'},
+        {fps:10,qrbox:{width:240,height:240},aspectRatio:1.0},
+        decodedText => { goToQr(decodedText); },
+        () => {}
+      );
+      running = true;
+      setQrStatus('Câmera ativa. Aponte para o QR Code.');
+    }catch(err){
+      running = false;
+      setQrStatus('Não foi possível abrir a câmera. Verifique a permissão do navegador ou use o código manual abaixo.');
+    }
+  }
+
+  async function closeQr(){
+    await stopScanner();
+    scannerSection.hidden = true;
+    launch.hidden = false;
+    setQrStatus('Preparando câmera…');
+    openScanner.focus({preventScroll:true});
+  }
+
+  openScanner.addEventListener('click', startScanner);
+  closeScanner.addEventListener('click', closeQr);
+  manualForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const value = new FormData(manualForm).get('code');
+    goToQr(value);
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden && running) stopScanner();
   });
 })();
 </script>
