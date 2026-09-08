@@ -1,8 +1,9 @@
-"""Primitivas de segurança para sessões e administração."""
+"""Primitivas de segurança para participantes e administração."""
 from __future__ import annotations
 
 import hashlib
 import secrets
+
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
@@ -36,15 +37,37 @@ def verify_password(password_hash: str, password: str) -> bool:
         return False
 
 
-def sign_admin_session(secret: str) -> str:
-    return URLSafeTimedSerializer(secret, salt="admin-session").dumps({"role": "admin"})
+def sign_admin_session(
+    secret: str,
+    username: str = "admin",
+    role: str = "admin",
+    source: str = "environment",
+) -> str:
+    return URLSafeTimedSerializer(secret, salt="admin-session").dumps(
+        {"username": username, "role": role, "source": source}
+    )
+
+
+def read_admin_session(secret: str, token: str, max_age_seconds: int) -> dict | None:
+    if not token:
+        return None
+    try:
+        data = URLSafeTimedSerializer(secret, salt="admin-session").loads(
+            token, max_age=max_age_seconds
+        )
+    except (BadSignature, SignatureExpired):
+        return None
+    role = data.get("role")
+    username = data.get("username")
+    if role not in {"admin", "operator", "validator", "viewer"} or not username:
+        return None
+    return {
+        "username": str(username),
+        "role": str(role),
+        "source": str(data.get("source") or "session"),
+    }
 
 
 def verify_admin_session(secret: str, token: str, max_age_seconds: int) -> bool:
-    if not token:
-        return False
-    try:
-        data = URLSafeTimedSerializer(secret, salt="admin-session").loads(token, max_age=max_age_seconds)
-        return data.get("role") == "admin"
-    except (BadSignature, SignatureExpired):
-        return False
+    """Compatibilidade com os testes antigos; a aplicação usa read_admin_session."""
+    return read_admin_session(secret, token, max_age_seconds) is not None
