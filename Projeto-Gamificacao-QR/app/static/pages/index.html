@@ -6,66 +6,185 @@
 <meta name="theme-color" content="#111827">
 <title>Desafio QR — IA e Ciência de Dados</title>
 <link rel="stylesheet" href="/static/css/styles.css">
+<style>
+  .home-shell{max-width:720px}
+  .compact-hero{grid-template-columns:1fr;padding:28px;margin-bottom:18px}
+  .compact-hero .hero-copy p{margin-bottom:0;max-width:600px}
+  .home-auth{display:grid;gap:16px}
+  .home-auth>.card{margin:0}
+  .home-actions{display:grid;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid #2a395e}
+  .home-actions p{margin:0;text-align:center}
+  .home-actions .text-link{display:block;text-align:center;padding:8px}
+  .home-panel[hidden]{display:none!important}
+  .panel-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:18px}
+  .panel-actions .secondary{width:auto;min-width:110px}
+  .back-link{margin-top:16px}
+  .back-link button{width:auto}
+  .home-help{text-align:center;color:var(--muted);font-size:.92rem;margin:12px 0 0}
+  @media(max-width:640px){
+    main.home-shell{width:min(100% - 24px,720px);padding-top:18px}
+    .compact-hero{padding:22px 20px;border-radius:22px}
+    .compact-hero h1{font-size:2.15rem;margin-bottom:8px}
+    .compact-hero .eyebrow{font-size:.69rem;letter-spacing:.08em}
+    .compact-hero .hero-copy p{font-size:.97rem;line-height:1.45}
+    .home-auth .card{padding:20px}
+    .card-heading{margin-bottom:8px}
+    .card-icon{min-width:42px;height:42px}
+    .panel-actions{grid-template-columns:1fr}
+    .panel-actions .secondary{width:100%}
+    .grid.two.compact-grid{grid-template-columns:1fr}
+    .page-links{justify-content:center}
+  }
+</style>
 </head>
 <body>
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-<main id="conteudo">
-<header class="hero">
+<main id="conteudo" class="home-shell">
+<header class="hero compact-hero">
   <div class="hero-copy">
     <span class="eyebrow">IFMT • Inteligência Artificial & Ciência de Dados</span>
     <h1>Desafio QR</h1>
-    <p>Explore o campus, responda desafios, acumule pontos e acompanhe sua evolução no ranking.</p>
-    <div class="hero-tags" aria-label="Temas do evento"><span>IA</span><span>Dados</span><span>Lógica</span><span>Cultura</span></div>
+    <p>Entre para continuar, responder desafios e acompanhar sua pontuação.</p>
   </div>
-  <div class="hero-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
 </header>
 
 <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="profile" class="card profile-card hidden" aria-live="polite"></section>
 
-<section id="forms" class="auth-layout">
-  <div class="card auth-card accent-blue">
-    <div class="card-heading"><span class="card-icon" aria-hidden="true">01</span><div><span class="eyebrow">Já tenho cadastro</span><h2>Entrar</h2></div></div>
+<section id="forms" class="home-auth">
+  <section id="loginSection" class="card auth-card accent-blue" aria-labelledby="loginTitle">
+    <div class="card-heading">
+      <span class="card-icon" aria-hidden="true">→</span>
+      <div><span class="eyebrow">Acesso principal</span><h2 id="loginTitle">Entrar</h2></div>
+    </div>
+
     <form id="loginForm">
       <label for="login_nick">Nick</label>
       <input id="login_nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" placeholder="Seu nick">
+
       <label for="login_pin">PIN de 4 dígitos</label>
       <input id="login_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" required aria-describedby="loginPinHelp" placeholder="••••">
       <small id="loginPinHelp">Use o PIN numérico criado no cadastro.</small>
+
       <button type="submit">Entrar no desafio</button>
     </form>
-  </div>
 
-  <div class="card auth-card accent-purple">
-    <div class="card-heading"><span class="card-icon" aria-hidden="true">02</span><div><span class="eyebrow">Primeira vez</span><h2>Novo participante</h2></div></div>
+    <div class="home-actions" aria-label="Outras opções de acesso">
+      <button id="showRegister" type="button" class="secondary" aria-expanded="false" aria-controls="registerSection">Criar conta / primeiro acesso</button>
+      <button id="showRecovery" type="button" class="secondary" aria-expanded="false" aria-controls="recoverSection">Esqueci meu PIN</button>
+      <a class="text-link" href="/ranking">Ver ranking público</a>
+    </div>
+  </section>
+
+  <section id="registerSection" class="card auth-card accent-purple home-panel" aria-labelledby="registerTitle" hidden>
+    <div class="card-heading">
+      <span class="card-icon" aria-hidden="true">01</span>
+      <div><span class="eyebrow">Primeira vez</span><h2 id="registerTitle">Criar conta</h2></div>
+    </div>
+
     <form id="registerForm">
-      <label for="full_name">Nome completo</label><input id="full_name" name="full_name" autocomplete="name" required minlength="3">
-      <label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não aparece no ranking público.</small>
+      <label for="full_name">Nome completo</label>
+      <input id="full_name" name="full_name" autocomplete="name" required minlength="3">
+
+      <label for="nick">Nick / nome no ranking</label>
+      <input id="nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" aria-describedby="nickHelp">
+      <small id="nickHelp">Seu nome completo não aparece no ranking público.</small>
+
       <div class="grid two compact-grid">
         <div><label for="pin">PIN de 4 dígitos</label><input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
         <div><label for="pin_confirm">Confirmar PIN</label><input id="pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
       </div>
       <small>O PIN é usado apenas neste evento. Evite sequências óbvias como 0000.</small>
-      <label for="participant_type">Tipo de participante</label><select id="participant_type" name="participant_type" required><option value="student">Aluno IFMT</option><option value="staff">Servidor IFMT</option><option value="external">Público externo</option></select>
-      <div id="studentFields"><label for="registration">Matrícula</label><input id="registration" name="registration"><label for="course_class">Curso / turma</label><input id="course_class" name="course_class"></div>
-      <div id="externalFields" class="hidden"><label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label><input id="institution" name="institution"></div>
-      <button type="submit">Criar cadastro</button>
+
+      <label for="participant_type">Tipo de participante</label>
+      <select id="participant_type" name="participant_type" required>
+        <option value="student">Aluno IFMT</option>
+        <option value="staff">Servidor IFMT</option>
+        <option value="external">Público externo</option>
+      </select>
+
+      <div id="studentFields">
+        <label for="registration">Matrícula</label><input id="registration" name="registration">
+        <label for="course_class">Curso / turma</label><input id="course_class" name="course_class">
+      </div>
+
+      <div id="externalFields" class="hidden">
+        <label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label>
+        <input id="institution" name="institution">
+      </div>
+
+      <div class="panel-actions">
+        <button type="submit">Criar cadastro</button>
+        <button id="backFromRegister" type="button" class="secondary">Voltar</button>
+      </div>
     </form>
-  </div>
+  </section>
+
+  <section id="recoverSection" class="card recovery-card home-panel" aria-labelledby="recoverTitle" hidden>
+    <div class="card-heading">
+      <span class="card-icon" aria-hidden="true">↺</span>
+      <div><span class="eyebrow">Recuperação</span><h2 id="recoverTitle">Recuperar acesso</h2></div>
+    </div>
+    <p class="muted">Use seu código de recuperação para definir um novo PIN.</p>
+
+    <form id="recoverForm">
+      <label for="access_code">Código de recuperação</label>
+      <input id="access_code" name="access_code" autocomplete="off" required>
+
+      <div class="grid two compact-grid">
+        <div><label for="recovery_pin">Novo PIN</label><input id="recovery_pin" name="new_pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+        <div><label for="recovery_pin_confirm">Confirmar novo PIN</label><input id="recovery_pin_confirm" name="new_pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+      </div>
+
+      <div class="panel-actions">
+        <button type="submit">Redefinir PIN</button>
+        <button id="backFromRecovery" type="button" class="secondary">Voltar</button>
+      </div>
+    </form>
+  </section>
 </section>
 
-<section class="card recovery-card">
-  <div class="card-heading"><span class="card-icon" aria-hidden="true">↺</span><div><span class="eyebrow">Plano B</span><h2>Recuperar acesso</h2></div></div>
-  <p class="muted">Use o código de recuperação apenas se esquecer o PIN. O sistema gera um novo código depois da recuperação.</p>
-  <form id="recoverForm" class="grid two">
-    <div><label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required></div>
-    <div><label for="recovery_pin">Novo PIN</label><input id="recovery_pin" name="new_pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
-    <div><label for="recovery_pin_confirm">Confirmar novo PIN</label><input id="recovery_pin_confirm" name="new_pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
-    <div class="form-action-end"><button type="submit" class="secondary">Redefinir PIN</button></div>
-  </form>
-</section>
-
-<nav class="page-links" aria-label="Links principais"><a href="/ranking">Ver ranking público</a><a href="/admin">Administração</a></nav>
+<nav class="page-links" aria-label="Links principais"><a href="/ranking">Ver ranking público</a></nav>
 </main>
-<script src="/static/js/common.js"></script><script src="/static/js/index.js"></script>
-</body></html>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/index.js"></script>
+<script>
+(() => {
+  const login = document.querySelector('#loginSection');
+  const register = document.querySelector('#registerSection');
+  const recovery = document.querySelector('#recoverSection');
+  const showRegister = document.querySelector('#showRegister');
+  const showRecovery = document.querySelector('#showRecovery');
+
+  function focusFirst(panel){
+    const field = panel.querySelector('input,select,button');
+    if(field) field.focus({preventScroll:true});
+  }
+
+  function show(panel){
+    login.hidden = panel !== login;
+    register.hidden = panel !== register;
+    recovery.hidden = panel !== recovery;
+    showRegister.setAttribute('aria-expanded', String(panel === register));
+    showRecovery.setAttribute('aria-expanded', String(panel === recovery));
+    if(panel !== login){
+      panel.scrollIntoView({behavior:'smooth',block:'start'});
+      setTimeout(() => focusFirst(panel), 180);
+    } else {
+      document.querySelector('#login_nick')?.focus({preventScroll:true});
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+  }
+
+  showRegister.addEventListener('click', () => show(register));
+  showRecovery.addEventListener('click', () => show(recovery));
+  document.querySelector('#backFromRegister').addEventListener('click', () => show(login));
+  document.querySelector('#backFromRecovery').addEventListener('click', () => show(login));
+
+  document.addEventListener('click', (event) => {
+    if(event.target.closest('#logoutButton')) show(login);
+  });
+})();
+</script>
+</body>
+</html>
