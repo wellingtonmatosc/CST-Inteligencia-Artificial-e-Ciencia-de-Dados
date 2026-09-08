@@ -1,7 +1,9 @@
 from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
 from app.api import admin, game, participants
 from app.core.config import get_settings
 from app.core.errors import AppError
@@ -10,7 +12,7 @@ from app.core.logging import configure_logging
 settings = get_settings()
 configure_logging(settings.log_level)
 
-app = FastAPI(title=settings.app_name, version="0.1.0")
+app = FastAPI(title=settings.app_name, version="0.2.0")
 app.include_router(participants.router)
 app.include_router(game.router)
 app.include_router(admin.router)
@@ -18,6 +20,18 @@ app.include_router(admin.router)
 BASE = Path(__file__).resolve().parent
 STATIC = BASE / "static"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.middleware("http")
+async def response_headers(request: Request, call_next):
+    response = await call_next(request)
+    path = request.url.path
+    if path.startswith("/static/"):
+        response.headers["Cache-Control"] = "public, max-age=60, s-maxage=3600, stale-while-revalidate=86400"
+    elif path in {"/", "/ranking", "/admin"} or path.startswith("/q/"):
+        response.headers["Cache-Control"] = "no-cache"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    return response
 
 
 @app.exception_handler(AppError)
