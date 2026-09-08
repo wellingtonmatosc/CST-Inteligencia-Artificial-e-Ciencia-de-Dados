@@ -1,0 +1,35 @@
+/* Preferências visuais carregadas pelo painel global de acessibilidade. */
+html.a11y-light body{color:#111827;background:radial-gradient(circle at 15% 0%,rgba(79,124,255,.12),transparent 30rem),linear-gradient(180deg,#eef3ff 0,#f8fafc 44%,#eef2f7 100%)}
+html.a11y-light body::before{opacity:.22;background-image:radial-gradient(circle,rgba(37,73,145,.35) 1px,transparent 1px)}
+html.a11y-light .hero,html.a11y-light .card,html.a11y-light .a11y-panel{background:rgba(255,255,255,.96);border-color:#c9d4e7;color:#111827;box-shadow:0 18px 45px rgba(30,55,95,.10)}
+html.a11y-light .hero-copy p,html.a11y-light .muted,html.a11y-light small{color:#526079}
+html.a11y-light .eyebrow,html.a11y-light a{color:#294da8}
+html.a11y-light .hero-tags span,html.a11y-light .page-links a,html.a11y-light .pill,html.a11y-light .meta-pill{background:#edf3ff;border-color:#b8c8e7;color:#183b86}
+html.a11y-light label{color:#1f2937}
+html.a11y-light input:not([type="radio"]):not([type="checkbox"]),html.a11y-light select,html.a11y-light textarea{background:#fff;color:#111827;border-color:#aab7cd}
+html.a11y-light input::placeholder,html.a11y-light textarea::placeholder{color:#68758a}
+html.a11y-light select option{background:#fff;color:#111827}
+html.a11y-light button.secondary,html.a11y-light .question-tools button{background:#fff;color:#183b86;border-color:#9fb0cc}
+html.a11y-light .choices label{background:#fff;color:#111827;border-color:#bac6d9}
+html.a11y-light .choices label:hover{background:#f3f6fb}
+html.a11y-light .choices label:has(input:checked){background:#e8f0ff;border-color:#5f83dd}
+html.a11y-light .choices input[type="radio"]{background:#fff;border-color:#6d7c95}
+html.a11y-light .notice{background:#f5f7fb;color:#111827;border-color:#b7c3d6}
+html.a11y-light .success{background:#e9f0ff;border-color:#6d91e8}
+html.a11y-light .warning{background:#fff4d6;border-color:#d6941d}
+html.a11y-light .error{background:#fee9e9;border-color:#d45a66}
+html.a11y-light .alternative-description{background:#f1edff;color:#3e2b71}
+html.a11y-light .admin-stat{background:#f5f8ff;border-color:#bdcbea;color:#111827}
+html.a11y-light .admin-list-item,html.a11y-light .profile-actions,html.a11y-light .a11y-control,html.a11y-light .switch-row,html.a11y-light .a11y-footer{border-color:#d3dbe8}
+html.a11y-light .ranking-row{border-color:#d7deea;color:#111827}
+html.a11y-light .ranking-head{color:#526079}
+html.a11y-light .a11y-toggle{background:#fff;color:#183b86;border-color:#91a6cc}
+
+/* Alto contraste sempre prevalece sobre o modo claro. */
+html.a11y-contrast body{background:#000!important;color:#fff!important}
+html.a11y-contrast body::before,html.a11y-contrast .hero-visual{display:none!important}
+html.a11y-contrast .card,html.a11y-contrast .hero,html.a11y-contrast .a11y-panel{background:#000!important;color:#fff!important;border-color:#fff!important;box-shadow:none!important}
+html.a11y-contrast label,html.a11y-contrast h1,html.a11y-contrast h2,html.a11y-contrast h3,html.a11y-contrast .muted,html.a11y-contrast small,html.a11y-contrast .eyebrow{color:#fff!important}
+html.a11y-contrast input,html.a11y-contrast select,html.a11y-contrast textarea,html.a11y-contrast .choices label{background:#000!important;color:#fff!important;border-color:#fff!important}
+html.a11y-contrast a{color:#fff!important;text-decoration:underline!important}
+html.a11y-contrast .notice,html.a11y-contrast .meta-pill,html.a11y-contrast .pill,html.a11y-contrast .hero-tags span{background:#000!important;color:#fff!important;border-color:#fff!important}
