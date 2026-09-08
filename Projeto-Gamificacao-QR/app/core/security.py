@@ -4,7 +4,7 @@ from __future__ import annotations
 import hashlib
 import secrets
 from argon2 import PasswordHasher
-from argon2.exceptions import VerificationError, VerifyMismatchError
+from argon2.exceptions import InvalidHashError, VerificationError, VerifyMismatchError
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 _ph = PasswordHasher()
@@ -32,7 +32,7 @@ def verify_password(password_hash: str, password: str) -> bool:
         return False
     try:
         return _ph.verify(password_hash, password)
-    except (VerifyMismatchError, VerificationError):
+    except (VerifyMismatchError, VerificationError, InvalidHashError):
         return False
 
 
