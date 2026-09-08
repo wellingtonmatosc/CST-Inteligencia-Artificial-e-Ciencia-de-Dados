@@ -4,15 +4,23 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 
 from app.core.errors import AppError
-from app.core.security import (
-    hash_password,
-    random_access_code,
-    random_token,
-    sha256_hex,
-    verify_password,
-)
+from app.core.security import hash_password, random_access_code, random_token, sha256_hex, verify_password
 from app.repositories.supabase_repo import SupabaseRepository
 from app.services.moderation import NickModerationService, normalize_for_moderation
+
+MAX_PIN_FAILURES = 5
+PIN_LOCK_MINUTES = 2
+
+
+def _parse_datetime(value) -> datetime | None:
+    if not value:
+        return None
+    if isinstance(value, datetime):
+        return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    try:
+        return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except ValueError:
+        return None
 
 
 class ParticipantService:
@@ -38,60 +46,50 @@ class ParticipantService:
             if term and term in normalized_nick:
                 raise AppError("Esse nome de usuário não pode ser utilizado. Escolha outro.", 422)
 
-        existing = (
-            self.repo.raw_table("participants")
-            .select("id")
-            .ilike("nick", payload["nick"].strip())
-            .limit(1)
-            .execute()
-            .data
-            or []
-        )
+        existing = self.repo.raw_table("participants").select("id").ilike("nick", payload["nick"].strip()).limit(1).execute().data or []
         if existing:
             raise AppError("Esse nick já está em uso.", 409)
 
         access_code = random_access_code()
-        participant = self.repo.insert(
-            "participants",
-            {
-                "full_name": payload["full_name"].strip(),
-                "nick": payload["nick"].strip(),
-                "participant_type": participant_type,
-                "registration": payload.get("registration") or None,
-                "course_class": payload.get("course_class") or None,
-                "institution": payload.get("institution") or None,
-                # O banco mantém o nome password_hash por compatibilidade, mas o participante usa PIN.
-                "password_hash": hash_password(payload["pin"]),
-                "access_code_hash": sha256_hex(access_code),
-            },
-        )
+        participant = self.repo.insert("participants", {
+            "full_name": payload["full_name"].strip(),
+            "nick": payload["nick"].strip(),
+            "participant_type": participant_type,
+            "registration": payload.get("registration") or None,
+            "course_class": payload.get("course_class") or None,
+            "institution": payload.get("institution") or None,
+            # O banco mantém o nome password_hash por compatibilidade, mas o participante usa PIN.
+            "password_hash": hash_password(payload["pin"]),
+            "access_code_hash": sha256_hex(access_code),
+        })
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
     def login(self, nick: str, pin: str) -> tuple[dict, str]:
-        rows = (
-            self.repo.raw_table("participants")
-            .select("*")
-            .ilike("nick", nick.strip())
-            .eq("active", True)
-            .limit(1)
-            .execute()
-            .data
-            or []
-        )
+        rows = self.repo.raw_table("participants").select("*").ilike("nick", nick.strip()).eq("active", True).limit(1).execute().data or []
         if not rows:
             raise AppError("Nick ou PIN inválidos.", 401)
 
         participant = rows[0]
+        now = datetime.now(timezone.utc)
+        locked_until = _parse_datetime(participant.get("pin_locked_until"))
+        if locked_until and locked_until > now:
+            raise AppError("Muitas tentativas de PIN. Aguarde alguns minutos e tente novamente.", 429)
+
         password_hash = participant.get("password_hash") or ""
         if not password_hash:
-            raise AppError(
-                "Esta conta ainda não possui PIN. Defina um PIN na sessão atual ou use o código de recuperação.",
-                409,
-            )
+            raise AppError("Esta conta ainda não possui PIN. Defina um PIN na sessão atual ou use o código de recuperação.", 409)
+
         if not verify_password(password_hash, pin):
+            failures = int(participant.get("pin_failed_attempts") or 0) + 1
+            update = {"pin_failed_attempts": failures, "pin_locked_until": None}
+            if failures >= MAX_PIN_FAILURES:
+                update = {"pin_failed_attempts": 0, "pin_locked_until": (now + timedelta(minutes=PIN_LOCK_MINUTES)).isoformat()}
+            self.repo.update("participants", update, id=participant["id"])
             raise AppError("Nick ou PIN inválidos.", 401)
 
+        if participant.get("pin_failed_attempts") or participant.get("pin_locked_until"):
+            self.repo.update("participants", {"pin_failed_attempts": 0, "pin_locked_until": None}, id=participant["id"])
         return participant, self._create_session(participant["id"])
 
     def recover(self, access_code: str, new_pin: str) -> tuple[dict, str, str]:
@@ -103,48 +101,34 @@ class ParticipantService:
 
         participant = rows[0]
         new_access_code = random_access_code()
-        self.repo.update(
-            "participants",
-            {
-                "password_hash": hash_password(new_pin),
-                "access_code_hash": sha256_hex(new_access_code),
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
-            id=participant["id"],
-        )
+        self.repo.update("participants", {
+            "password_hash": hash_password(new_pin),
+            "access_code_hash": sha256_hex(new_access_code),
+            "pin_failed_attempts": 0,
+            "pin_locked_until": None,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, id=participant["id"])
         session_token = self._create_session(participant["id"])
         return participant, session_token, new_access_code
 
     def set_pin(self, participant_id: str, pin: str) -> None:
         """Cria ou altera o PIN a partir de uma sessão já autenticada."""
-        self.repo.update(
-            "participants",
-            {
-                "password_hash": hash_password(pin),
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
-            id=participant_id,
-        )
+        self.repo.update("participants", {
+            "password_hash": hash_password(pin),
+            "pin_failed_attempts": 0,
+            "pin_locked_until": None,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }, id=participant_id)
 
     def _create_session(self, participant_id: str) -> str:
         token = random_token()
         expires = datetime.now(timezone.utc) + timedelta(days=self.session_days)
-        self.repo.insert(
-            "participant_sessions",
-            {
-                "participant_id": participant_id,
-                "token_hash": sha256_hex(token),
-                "expires_at": expires.isoformat(),
-            },
-        )
+        self.repo.insert("participant_sessions", {"participant_id": participant_id,"token_hash": sha256_hex(token),"expires_at": expires.isoformat()})
         return token
 
     def get_by_session(self, token: str) -> dict:
         """Valida a sessão e obtém o participante em uma única chamada ao banco."""
-        result = self.repo.rpc(
-            "game_participant_from_session",
-            {"p_token_hash": sha256_hex(token)},
-        )
+        result = self.repo.rpc("game_participant_from_session", {"p_token_hash": sha256_hex(token)})
         if not isinstance(result, dict) or not result.get("ok"):
             raise AppError("Sessão inválida ou expirada.", 401)
         participant = result.get("participant")
@@ -154,10 +138,5 @@ class ParticipantService:
 
     def logout(self, token: str | None) -> None:
         """Revoga a sessão atual no servidor; é idempotente."""
-        if not token:
-            return
-        self.repo.update(
-            "participant_sessions",
-            {"revoked_at": datetime.now(timezone.utc).isoformat()},
-            token_hash=sha256_hex(token),
-        )
+        if not token:return
+        self.repo.update("participant_sessions", {"revoked_at": datetime.now(timezone.utc).isoformat()}, token_hash=sha256_hex(token))
