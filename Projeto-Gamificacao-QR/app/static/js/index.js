@@ -8,8 +8,8 @@ function toggle(){
 type.addEventListener('change',toggle);toggle();
 
 function pinsMatch(a,b){
-  if(!/^\d{4}$/.test(String(a||''))){showMessage(msg,'O PIN deve ter exatamente 4 dígitos.','error');return false}
-  if(a!==b){showMessage(msg,'Os PINs digitados não conferem.','error');return false}
+  if(!/^\d{4}$/.test(String(a||''))){showMessage(msg,'O PIN deve ter 4 dígitos.','error');return false}
+  if(a!==b){showMessage(msg,'Os PINs não conferem.','error');return false}
   return true;
 }
 
@@ -21,7 +21,7 @@ async function logout(){
     profile.classList.add('hidden');profile.innerHTML='';
     document.querySelector('#forms').classList.remove('hidden');
     reg.reset();loginForm.reset();rec.reset();toggle();
-    showMessage(msg,'Sessão encerrada. Entre novamente com seu nick e PIN.','success');
+    showMessage(msg,'Sessão encerrada.','success');
   }catch(err){
     if(button){button.disabled=false;button.textContent='Sair'}
     showMessage(msg,err.message,'error');
@@ -36,7 +36,7 @@ async function setPin(e){
   button.disabled=true;button.textContent='Salvando…';
   try{
     await api('/api/participants/pin',{method:'POST',body:JSON.stringify({pin})});
-    showMessage(msg,'PIN definido com sucesso. A partir de agora você entra com seu nick e PIN.','success');
+    showMessage(msg,'PIN definido.','success');
     await loadMe();
   }catch(err){
     button.disabled=false;button.textContent='Definir PIN';showMessage(msg,err.message,'error');
@@ -46,10 +46,11 @@ async function setPin(e){
 async function loadMe(){
   try{
     const d=await api('/api/participants/me');
-    const pinSetup=d.participant.has_pin?'':`<div class="notice warning setup-pin"><strong>Defina seu PIN de 4 dígitos antes de sair.</strong><p>Seu cadastro foi criado antes desta regra. Seus pontos e histórico serão mantidos.</p><form id="setPinForm"><div class="grid two compact-grid"><div><label for="profile_pin">Novo PIN</label><input id="profile_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div><div><label for="profile_pin_confirm">Confirmar PIN</label><input id="profile_pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div></div><button type="submit">Definir PIN</button></form></div>`;
-    profile.innerHTML=`<div class="profile-top"><div><span class="eyebrow">Participante</span><h2>Olá, ${esc(d.participant.nick)}</h2><p><strong class="score-number">${d.summary.points}</strong> pontos</p><p class="muted">${d.summary.normal_completed_today} atividades normais concluídas hoje</p></div><div class="profile-node" aria-hidden="true">AI</div></div>${pinSetup}<div class="profile-actions"><button id="openQrScanner" type="button" class="compact">Ler QR Code</button><a class="button-link" href="/ranking">Ver ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
+    const pinSetup=d.participant.has_pin?'':`<div class="notice warning setup-pin"><strong>Defina um PIN antes de sair.</strong><form id="setPinForm"><div class="grid two compact-grid"><div><label for="profile_pin">Novo PIN</label><input id="profile_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div><div><label for="profile_pin_confirm">Confirmar PIN</label><input id="profile_pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div></div><button type="submit">Definir PIN</button></form></div>`;
+    profile.innerHTML=`<div class="profile-top"><div><h2>${esc(d.participant.nick)}</h2><p><strong class="score-number">${d.summary.points}</strong> pontos</p><p class="muted">${d.summary.normal_completed_today} concluídas hoje</p></div></div>${pinSetup}<div class="profile-actions"><button id="openQrScanner" type="button" class="compact">Ler QR Code</button><a class="button-link" href="/ranking">Ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
     profile.classList.remove('hidden');
     document.querySelector('#forms').classList.add('hidden');
+    msg.classList.add('hidden');
     document.querySelector('#logoutButton').addEventListener('click',logout);
     const setPinForm=document.querySelector('#setPinForm');if(setPinForm)setPinForm.addEventListener('submit',setPin);
   }catch(_){ }
@@ -60,7 +61,7 @@ loginForm.addEventListener('submit',async e=>{
   if(!/^\d{4}$/.test(pin)){showMessage(msg,'Informe um PIN de 4 dígitos.','error');return}
   try{
     await api('/api/participants/login',{method:'POST',body:JSON.stringify({nick:f.get('nick'),pin})});
-    showMessage(msg,'Login realizado com sucesso.','success');await loadMe();
+    await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
@@ -71,7 +72,7 @@ reg.addEventListener('submit',async e=>{
   for(const k of Object.keys(payload))if(payload[k]==='')payload[k]=null;
   try{
     const d=await api('/api/participants/register',{method:'POST',body:JSON.stringify(payload)});
-    showMessage(msg,`Cadastro concluído. Guarde seu código de recuperação: ${d.access_code}`,'success');await loadMe();
+    showMessage(msg,`Cadastro concluído. Código de recuperação: ${d.access_code}`,'success');await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
@@ -80,7 +81,7 @@ rec.addEventListener('submit',async e=>{
   if(!pinsMatch(f.get('new_pin'),f.get('new_pin_confirm')))return;
   try{
     const d=await api('/api/participants/recover',{method:'POST',body:JSON.stringify({access_code:f.get('access_code'),new_pin:f.get('new_pin')})});
-    showMessage(msg,`PIN redefinido. Guarde o NOVO código de recuperação: ${d.access_code}`,'success');rec.reset();await loadMe();
+    showMessage(msg,`PIN redefinido. Novo código de recuperação: ${d.access_code}`,'success');rec.reset();await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
