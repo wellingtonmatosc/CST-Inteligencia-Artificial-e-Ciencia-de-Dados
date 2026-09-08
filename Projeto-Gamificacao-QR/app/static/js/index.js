@@ -1,5 +1,5 @@
-const reg=document.querySelector('#registerForm'), loginForm=document.querySelector('#loginForm'), rec=document.querySelector('#recoverForm'), msg=document.querySelector('#message'), profile=document.querySelector('#profile');
-const type=document.querySelector('#participant_type'), student=document.querySelector('#studentFields'), external=document.querySelector('#externalFields');
+const reg=document.querySelector('#registerForm'),loginForm=document.querySelector('#loginForm'),rec=document.querySelector('#recoverForm'),msg=document.querySelector('#message'),profile=document.querySelector('#profile');
+const type=document.querySelector('#participant_type'),student=document.querySelector('#studentFields'),external=document.querySelector('#externalFields');
 
 function toggle(){
   student.classList.toggle('hidden',type.value!=='student');
@@ -7,8 +7,9 @@ function toggle(){
 }
 type.addEventListener('change',toggle);toggle();
 
-function passwordsMatch(a,b){
-  if(a!==b){showMessage(msg,'As senhas digitadas não conferem.','error');return false}
+function pinsMatch(a,b){
+  if(!/^\d{4}$/.test(String(a||''))){showMessage(msg,'O PIN deve ter exatamente 4 dígitos.','error');return false}
+  if(a!==b){showMessage(msg,'Os PINs digitados não conferem.','error');return false}
   return true;
 }
 
@@ -17,81 +18,71 @@ async function logout(){
   if(button){button.disabled=true;button.textContent='Saindo…'}
   try{
     await api('/api/participants/logout',{method:'POST'});
-    profile.classList.add('hidden');
-    profile.innerHTML='';
+    profile.classList.add('hidden');profile.innerHTML='';
     document.querySelector('#forms').classList.remove('hidden');
+    document.querySelector('.recovery-card')?.classList.remove('hidden');
     reg.reset();loginForm.reset();rec.reset();toggle();
-    showMessage(msg,'Sessão encerrada. Entre novamente com seu nick e senha.','success');
+    showMessage(msg,'Sessão encerrada. Entre novamente com seu nick e PIN.','success');
   }catch(err){
     if(button){button.disabled=false;button.textContent='Sair'}
     showMessage(msg,err.message,'error');
   }
 }
 
-async function setPassword(e){
+async function setPin(e){
   e.preventDefault();
-  const form=e.target;
-  const password=new FormData(form).get('password');
-  const confirm=new FormData(form).get('password_confirm');
-  if(!passwordsMatch(password,confirm))return;
+  const form=e.target,f=new FormData(form),pin=f.get('pin'),confirm=f.get('pin_confirm');
+  if(!pinsMatch(pin,confirm))return;
   const button=form.querySelector('button[type="submit"]');
   button.disabled=true;button.textContent='Salvando…';
   try{
-    await api('/api/participants/password',{method:'POST',body:JSON.stringify({password})});
-    showMessage(msg,'Senha definida com sucesso. A partir de agora você pode entrar com seu nick e senha.','success');
+    await api('/api/participants/pin',{method:'POST',body:JSON.stringify({pin})});
+    showMessage(msg,'PIN definido com sucesso. A partir de agora você entra com seu nick e PIN.','success');
     await loadMe();
   }catch(err){
-    button.disabled=false;button.textContent='Definir senha';
-    showMessage(msg,err.message,'error');
+    button.disabled=false;button.textContent='Definir PIN';showMessage(msg,err.message,'error');
   }
 }
 
 async function loadMe(){
   try{
     const d=await api('/api/participants/me');
-    const passwordSetup=d.participant.has_password?'':`<div class="notice warning"><strong>Defina uma senha para sua conta.</strong><p>Seu cadastro foi criado antes do login por senha. Você não perde pontos nem histórico.</p><form id="setPasswordForm"><label for="profile_password">Nova senha</label><input id="profile_password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><label for="profile_password_confirm">Confirmar senha</label><input id="profile_password_confirm" name="password_confirm" type="password" autocomplete="new-password" minlength="8" maxlength="128" required><button type="submit">Definir senha</button></form></div>`;
-    profile.innerHTML=`<h2>Olá, ${esc(d.participant.nick)}</h2><p><strong>${d.summary.points}</strong> pontos • ${d.summary.normal_completed_today} atividades normais concluídas hoje</p>${passwordSetup}<div class="profile-actions"><a href="/ranking">Ver ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
+    const pinSetup=d.participant.has_pin?'':`<div class="notice warning setup-pin"><strong>Defina seu PIN de 4 dígitos antes de sair.</strong><p>Seu cadastro foi criado antes desta regra. Seus pontos e histórico serão mantidos.</p><form id="setPinForm"><div class="grid two compact-grid"><div><label for="profile_pin">Novo PIN</label><input id="profile_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div><div><label for="profile_pin_confirm">Confirmar PIN</label><input id="profile_pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div></div><button type="submit">Definir PIN</button></form></div>`;
+    profile.innerHTML=`<div class="profile-top"><div><span class="eyebrow">Participante</span><h2>Olá, ${esc(d.participant.nick)}</h2><p><strong class="score-number">${d.summary.points}</strong> pontos</p><p class="muted">${d.summary.normal_completed_today} atividades normais concluídas hoje</p></div><div class="profile-node" aria-hidden="true">AI</div></div>${pinSetup}<div class="profile-actions"><a class="button-link" href="/ranking">Ver ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
     profile.classList.remove('hidden');
     document.querySelector('#forms').classList.add('hidden');
+    document.querySelector('.recovery-card')?.classList.add('hidden');
     document.querySelector('#logoutButton').addEventListener('click',logout);
-    const setPasswordForm=document.querySelector('#setPasswordForm');
-    if(setPasswordForm)setPasswordForm.addEventListener('submit',setPassword);
-  }catch(_){}}
+    const setPinForm=document.querySelector('#setPinForm');if(setPinForm)setPinForm.addEventListener('submit',setPin);
+  }catch(_){ }
+}
 
 loginForm.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const f=new FormData(loginForm);
-  const payload={nick:f.get('nick'),password:f.get('password')};
+  e.preventDefault();const f=new FormData(loginForm);const pin=String(f.get('pin')||'');
+  if(!/^\d{4}$/.test(pin)){showMessage(msg,'Informe um PIN de 4 dígitos.','error');return}
   try{
-    await api('/api/participants/login',{method:'POST',body:JSON.stringify(payload)});
-    showMessage(msg,'Login realizado com sucesso.','success');
-    await loadMe();
+    await api('/api/participants/login',{method:'POST',body:JSON.stringify({nick:f.get('nick'),pin})});
+    showMessage(msg,'Login realizado com sucesso.','success');await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
 reg.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const f=new FormData(reg);
-  if(!passwordsMatch(f.get('password'),f.get('password_confirm')))return;
-  const payload=Object.fromEntries(f.entries());
-  delete payload.password_confirm;
+  e.preventDefault();const f=new FormData(reg);
+  if(!pinsMatch(f.get('pin'),f.get('pin_confirm')))return;
+  const payload=Object.fromEntries(f.entries());delete payload.pin_confirm;
   for(const k of Object.keys(payload))if(payload[k]==='')payload[k]=null;
   try{
     const d=await api('/api/participants/register',{method:'POST',body:JSON.stringify(payload)});
-    showMessage(msg,`Cadastro concluído. Seu login é o nick escolhido. Guarde também o código de recuperação: ${d.access_code}`,'success');
-    await loadMe();
+    showMessage(msg,`Cadastro concluído. Guarde seu código de recuperação: ${d.access_code}`,'success');await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
 rec.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const f=new FormData(rec);
-  if(!passwordsMatch(f.get('new_password'),f.get('new_password_confirm')))return;
+  e.preventDefault();const f=new FormData(rec);
+  if(!pinsMatch(f.get('new_pin'),f.get('new_pin_confirm')))return;
   try{
-    const d=await api('/api/participants/recover',{method:'POST',body:JSON.stringify({access_code:f.get('access_code'),new_password:f.get('new_password')})});
-    showMessage(msg,`Senha redefinida. Guarde o NOVO código de recuperação: ${d.access_code}`,'success');
-    rec.reset();
-    await loadMe();
+    const d=await api('/api/participants/recover',{method:'POST',body:JSON.stringify({access_code:f.get('access_code'),new_pin:f.get('new_pin')})});
+    showMessage(msg,`PIN redefinido. Guarde o NOVO código de recuperação: ${d.access_code}`,'success');rec.reset();await loadMe();
   }catch(err){showMessage(msg,err.message,'error')}
 });
 
