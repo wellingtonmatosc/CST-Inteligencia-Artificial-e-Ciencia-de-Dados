@@ -8,10 +8,9 @@
 <link rel="stylesheet" href="/static/css/styles.css">
 <style>
   .home-shell{max-width:680px}
-  .compact-hero{display:block;background:transparent;box-shadow:none;padding:4px 2px 10px;margin:0}
-  .compact-hero::after{display:none}
-  .compact-hero h1{font-size:clamp(2rem,7vw,3rem);margin-bottom:4px}
-  .compact-hero p{margin:0;color:var(--muted);font-size:1rem}
+  .compact-hero{display:block;padding:18px 20px;margin:0 0 10px}
+  .compact-hero h1{font-size:clamp(2rem,7vw,3rem);margin:0 0 4px}
+  .compact-hero p{margin:0;color:var(--muted);font-size:.95rem}
   .quick-tools{display:flex;justify-content:flex-end;gap:8px;margin:0 0 10px}
   .quick-tools button{width:auto;min-height:40px;padding:8px 12px}
   .home-auth{display:grid;gap:10px}
@@ -19,13 +18,12 @@
   .home-auth h2,.qr-scanner-card h2{margin-bottom:10px}
   .home-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
   .home-actions .text-link{grid-column:1/-1;text-align:center;padding:7px;text-decoration:none}
-  .home-actions button.secondary{border:0}
   .home-panel[hidden],.qr-panel[hidden]{display:none!important}
   .panel-actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px}
-  .panel-actions .secondary{width:auto;min-width:96px;border:0}
-  .qr-reader-wrap{margin-top:10px;padding:6px;border-radius:12px;background:#080d18}
+  .panel-actions .secondary{width:auto;min-width:96px}
+  .qr-reader-wrap{margin-top:10px;padding:6px;border-radius:12px;background:#080d18;min-height:220px;display:grid;place-items:center}
   #qr-reader{width:100%;overflow:hidden;border-radius:10px}
-  #qr-reader video{border-radius:10px}
+  #qr-reader video{display:block;width:100%;border-radius:10px}
   .qr-status{margin:8px 0 0;color:var(--muted);text-align:center}
   .qr-manual{margin-top:12px}
   .qr-manual-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}
@@ -48,8 +46,9 @@
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 <main id="conteudo" class="home-shell">
 <header class="hero compact-hero">
+  <span class="eyebrow">IA • Ciência de Dados</span>
   <h1>Desafio QR</h1>
-  <p>Entre para continuar.</p>
+  <p>Entre para jogar.</p>
 </header>
 
 <div class="quick-tools" aria-label="Áudio e acessibilidade">
@@ -139,7 +138,6 @@
 
 <section id="qrScannerSection" class="card qr-scanner-card qr-panel" aria-labelledby="qrScannerTitle" hidden>
   <h2 id="qrScannerTitle">Ler QR Code</h2>
-  <p class="muted">Aponte a câmera para o QR.</p>
   <div class="qr-reader-wrap"><div id="qr-reader" aria-label="Câmera para leitura do QR Code"></div></div>
   <p id="qrStatus" class="qr-status" role="status" aria-live="polite">Preparando câmera…</p>
 
@@ -158,129 +156,133 @@
 </main>
 <script src="/static/js/common.js"></script>
 <script src="/static/js/index.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (() => {
-  const login = document.querySelector('#loginSection');
-  const register = document.querySelector('#registerSection');
-  const recovery = document.querySelector('#recoverSection');
-  const showRegister = document.querySelector('#showRegister');
-  const showRecovery = document.querySelector('#showRecovery');
-  const scannerSection = document.querySelector('#qrScannerSection');
-  const closeScanner = document.querySelector('#closeQrScanner');
-  const qrStatus = document.querySelector('#qrStatus');
-  const manualForm = document.querySelector('#qrManualForm');
-  let scanner = null;
-  let running = false;
-  let navigating = false;
+  const login=document.querySelector('#loginSection');
+  const register=document.querySelector('#registerSection');
+  const recovery=document.querySelector('#recoverSection');
+  const showRegister=document.querySelector('#showRegister');
+  const showRecovery=document.querySelector('#showRecovery');
+  const scannerSection=document.querySelector('#qrScannerSection');
+  const closeScanner=document.querySelector('#closeQrScanner');
+  const qrStatus=document.querySelector('#qrStatus');
+  const manualForm=document.querySelector('#qrManualForm');
+  const reader=document.querySelector('#qr-reader');
+  let stream=null;
+  let video=null;
+  let detector=null;
+  let scanFrame=0;
+  let running=false;
+  let navigating=false;
 
   function focusFirst(panel){
-    const field = panel.querySelector('input,select,button');
-    if(field) field.focus({preventScroll:true});
+    const field=panel.querySelector('input,select,button');
+    if(field)field.focus({preventScroll:true});
   }
 
   function show(panel){
-    login.hidden = panel !== login;
-    register.hidden = panel !== register;
-    recovery.hidden = panel !== recovery;
-    showRegister.setAttribute('aria-expanded', String(panel === register));
-    showRecovery.setAttribute('aria-expanded', String(panel === recovery));
-    if(panel !== login){
-      panel.scrollIntoView({behavior:'smooth',block:'start'});
-      setTimeout(() => focusFirst(panel), 150);
-    } else {
-      document.querySelector('#login_nick')?.focus({preventScroll:true});
-    }
+    login.hidden=panel!==login;
+    register.hidden=panel!==register;
+    recovery.hidden=panel!==recovery;
+    showRegister.setAttribute('aria-expanded',String(panel===register));
+    showRecovery.setAttribute('aria-expanded',String(panel===recovery));
+    if(panel!==login){panel.scrollIntoView({behavior:'smooth',block:'start'});setTimeout(()=>focusFirst(panel),150)}
+    else document.querySelector('#login_nick')?.focus({preventScroll:true});
   }
 
-  showRegister.addEventListener('click', () => show(register));
-  showRecovery.addEventListener('click', () => show(recovery));
-  document.querySelector('#backFromRegister').addEventListener('click', () => show(login));
-  document.querySelector('#backFromRecovery').addEventListener('click', () => show(login));
-  document.querySelector('#openAccessibilityQuick').addEventListener('click', () => window.openAccessibilityPanel?.());
-  document.querySelector('#readPageQuick').addEventListener('click', () => window.speakPage?.());
+  showRegister.addEventListener('click',()=>show(register));
+  showRecovery.addEventListener('click',()=>show(recovery));
+  document.querySelector('#backFromRegister').addEventListener('click',()=>show(login));
+  document.querySelector('#backFromRecovery').addEventListener('click',()=>show(login));
+  document.querySelector('#openAccessibilityQuick').addEventListener('click',()=>window.openAccessibilityPanel?.());
+  document.querySelector('#readPageQuick').addEventListener('click',()=>window.speakPage?.());
 
-  function setQrStatus(text){qrStatus.textContent = text}
+  function setQrStatus(text){qrStatus.textContent=text}
 
   function extractQrCode(value){
-    const text = String(value || '').trim();
-    if(!text) return null;
+    const text=String(value||'').trim();
+    if(!text)return null;
     try{
-      const parsed = new URL(text, window.location.origin);
-      const match = parsed.pathname.match(/^\/q\/([^/?#]+)\/?$/i);
-      if(match) return decodeURIComponent(match[1]);
+      const parsed=new URL(text,window.location.origin);
+      const match=parsed.pathname.match(/^\/q\/([^/?#]+)\/?$/i);
+      if(match)return decodeURIComponent(match[1]);
     }catch(_){ }
-    if(/^[A-Za-z0-9_-]{2,100}$/.test(text)) return text;
+    if(/^[A-Za-z0-9_-]{2,100}$/.test(text))return text;
     return null;
   }
 
-  async function stopScanner(){
-    if(scanner && running){
-      try{ await scanner.stop(); }catch(_){ }
-      running = false;
-    }
-  }
-
-  async function goToQr(decodedText){
-    if(navigating) return;
-    const code = extractQrCode(decodedText);
+  async function goToQr(value){
+    if(navigating)return;
+    const code=extractQrCode(value);
     if(!code){setQrStatus('QR inválido.');return}
-    navigating = true;
+    navigating=true;
     setQrStatus('Abrindo desafio…');
     await stopScanner();
     window.location.assign(`/q/${encodeURIComponent(code)}`);
   }
 
-  async function startScanner(){
-    scannerSection.hidden = false;
-    scannerSection.scrollIntoView({behavior:'smooth',block:'start'});
-    setQrStatus('Solicitando câmera…');
+  async function scanLoop(){
+    if(!running||!video||!detector)return;
+    try{
+      const codes=await detector.detect(video);
+      const found=codes.find(item=>item.rawValue);
+      if(found){goToQr(found.rawValue);return}
+    }catch(_){ }
+    scanFrame=requestAnimationFrame(scanLoop);
+  }
 
-    if(typeof window.Html5Qrcode === 'undefined'){
-      setQrStatus('Câmera indisponível. Digite o código abaixo.');
+  async function startScanner(){
+    scannerSection.hidden=false;
+    scannerSection.scrollIntoView({behavior:'smooth',block:'start'});
+    setQrStatus('Abrindo câmera…');
+
+    if(!('BarcodeDetector' in window)||!navigator.mediaDevices?.getUserMedia){
+      setQrStatus('Use a câmera do celular para abrir o QR ou digite o código abaixo.');
       return;
     }
 
     try{
-      if(!scanner) scanner = new Html5Qrcode('qr-reader');
-      await scanner.start(
-        {facingMode:'environment'},
-        {fps:10,qrbox:{width:240,height:240},aspectRatio:1.0},
-        decodedText => { goToQr(decodedText); },
-        () => {}
-      );
-      running = true;
+      const formats=await BarcodeDetector.getSupportedFormats();
+      if(!formats.includes('qr_code')){setQrStatus('Leitura interna indisponível. Digite o código abaixo.');return}
+      detector=new BarcodeDetector({formats:['qr_code']});
+      stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
+      video=document.createElement('video');
+      video.autoplay=true;video.muted=true;video.playsInline=true;video.setAttribute('aria-label','Visualização da câmera');
+      video.srcObject=stream;
+      reader.replaceChildren(video);
+      await video.play();
+      running=true;
       setQrStatus('Câmera ativa.');
+      scanLoop();
     }catch(_){
-      running = false;
+      await stopScanner();
       setQrStatus('Não foi possível abrir a câmera. Digite o código abaixo.');
     }
   }
 
-  async function closeQr(restoreFocus=true){
-    await stopScanner();
-    scannerSection.hidden = true;
-    setQrStatus('Preparando câmera…');
-    if(restoreFocus) document.querySelector('#openQrScanner')?.focus({preventScroll:true});
+  async function stopScanner(){
+    running=false;
+    cancelAnimationFrame(scanFrame);
+    if(stream){stream.getTracks().forEach(track=>track.stop());stream=null}
+    if(video){video.srcObject=null;video.remove();video=null}
+    reader.replaceChildren();
   }
 
-  document.addEventListener('click', event => {
-    if(event.target.closest('#openQrScanner')) startScanner();
-    if(event.target.closest('#logoutButton')){
-      closeQr(false);
-      show(login);
-    }
+  async function closeQr(restoreFocus=true){
+    await stopScanner();
+    scannerSection.hidden=true;
+    setQrStatus('Preparando câmera…');
+    if(restoreFocus)document.querySelector('#openQrScanner')?.focus({preventScroll:true});
+  }
+
+  document.addEventListener('click',event=>{
+    if(event.target.closest('#openQrScanner'))startScanner();
+    if(event.target.closest('#logoutButton')){closeQr(false);show(login)}
   });
 
-  closeScanner.addEventListener('click', () => closeQr(true));
-  manualForm.addEventListener('submit', event => {
-    event.preventDefault();
-    goToQr(new FormData(manualForm).get('code'));
-  });
-
-  document.addEventListener('visibilitychange', () => {
-    if(document.hidden && running) stopScanner();
-  });
+  closeScanner.addEventListener('click',()=>closeQr(true));
+  manualForm.addEventListener('submit',event=>{event.preventDefault();goToQr(new FormData(manualForm).get('code'))});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&running)stopScanner()});
 })();
 </script>
 </body>
