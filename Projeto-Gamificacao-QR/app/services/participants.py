@@ -1,4 +1,4 @@
-"""Cadastro, login, sessão, recuperação e logout de participantes."""
+"""Cadastro, login, sessão, recuperação e vínculo opcional à base institucional."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -55,13 +55,18 @@ class ParticipantService:
             "full_name": payload["full_name"].strip(),
             "nick": payload["nick"].strip(),
             "participant_type": participant_type,
-            "registration": payload.get("registration") or None,
+            "registration": (payload.get("registration") or "").strip() or None,
             "course_class": payload.get("course_class") or None,
             "institution": payload.get("institution") or None,
-            # O banco mantém o nome password_hash por compatibilidade, mas o participante usa PIN.
             "password_hash": hash_password(payload["pin"]),
             "access_code_hash": sha256_hex(access_code),
         })
+
+        if not participant.get("is_organizer") and not participant.get("team_id"):
+            team_id = self.repo.rpc("trilhas_assign_team", {"p_participant_id": participant["id"]})
+            if team_id:
+                participant["team_id"] = team_id
+
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
@@ -93,7 +98,6 @@ class ParticipantService:
         return participant, self._create_session(participant["id"])
 
     def recover(self, access_code: str, new_pin: str) -> tuple[dict, str, str]:
-        """Redefine o PIN usando o código e rotaciona o próprio código de recuperação."""
         code_hash = sha256_hex(access_code.strip().upper())
         rows = self.repo.select("participants", access_code_hash=code_hash, active=True)
         if not rows:
@@ -112,7 +116,6 @@ class ParticipantService:
         return participant, session_token, new_access_code
 
     def set_pin(self, participant_id: str, pin: str) -> None:
-        """Cria ou altera o PIN a partir de uma sessão já autenticada."""
         self.repo.update("participants", {
             "password_hash": hash_password(pin),
             "pin_failed_attempts": 0,
@@ -123,11 +126,10 @@ class ParticipantService:
     def _create_session(self, participant_id: str) -> str:
         token = random_token()
         expires = datetime.now(timezone.utc) + timedelta(days=self.session_days)
-        self.repo.insert("participant_sessions", {"participant_id": participant_id,"token_hash": sha256_hex(token),"expires_at": expires.isoformat()})
+        self.repo.insert("participant_sessions", {"participant_id": participant_id, "token_hash": sha256_hex(token), "expires_at": expires.isoformat()})
         return token
 
     def get_by_session(self, token: str) -> dict:
-        """Valida a sessão e obtém o participante em uma única chamada ao banco."""
         result = self.repo.rpc("game_participant_from_session", {"p_token_hash": sha256_hex(token)})
         if not isinstance(result, dict) or not result.get("ok"):
             raise AppError("Sessão inválida ou expirada.", 401)
@@ -137,6 +139,6 @@ class ParticipantService:
         return participant
 
     def logout(self, token: str | None) -> None:
-        """Revoga a sessão atual no servidor; é idempotente."""
-        if not token:return
+        if not token:
+            return
         self.repo.update("participant_sessions", {"revoked_at": datetime.now(timezone.utc).isoformat()}, token_hash=sha256_hex(token))
