@@ -13,14 +13,26 @@
 <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="profile" class="card hidden" aria-live="polite"></section>
 <section id="forms">
-<div class="card"><h2>Cadastro</h2><form id="registerForm">
+<div class="grid two">
+<div class="card"><h2>Entrar</h2><form id="loginForm">
+<label for="login_nick">Nick</label><input id="login_nick" name="nick" autocomplete="username" required minlength="3" maxlength="24">
+<label for="login_password">Senha</label><input id="login_password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128">
+<button type="submit">Entrar</button></form></div>
+<div class="card"><h2>Novo participante</h2><form id="registerForm">
 <label for="full_name">Nome completo</label><input id="full_name" name="full_name" autocomplete="name" required minlength="3">
-<label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não será exibido no ranking público.</small>
+<label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não será exibido no ranking público.</small>
+<label for="password">Senha</label><input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" aria-describedby="passwordHelp"><small id="passwordHelp">Use pelo menos 8 caracteres. Não reutilize uma senha importante de outro serviço.</small>
+<label for="password_confirm">Confirmar senha</label><input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
 <label for="participant_type">Tipo de participante</label><select id="participant_type" name="participant_type" required><option value="student">Aluno IFMT</option><option value="staff">Servidor IFMT</option><option value="external">Público externo</option></select>
 <div id="studentFields"><label for="registration">Matrícula</label><input id="registration" name="registration"><label for="course_class">Curso / turma</label><input id="course_class" name="course_class"></div>
 <div id="externalFields" class="hidden"><label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label><input id="institution" name="institution"></div>
 <button type="submit">Criar cadastro</button></form></div>
-<div class="card"><h2>Já participou?</h2><form id="recoverForm"><label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required><button type="submit" class="secondary">Recuperar sessão</button></form></div>
+</div>
+<div class="card"><h2>Esqueceu a senha?</h2><p class="muted">Use seu código de recuperação para definir uma nova senha. Ao recuperar, o sistema gera um novo código.</p><form id="recoverForm">
+<label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required>
+<label for="recovery_password">Nova senha</label><input id="recovery_password" name="new_password" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
+<label for="recovery_password_confirm">Confirmar nova senha</label><input id="recovery_password_confirm" name="new_password_confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
+<button type="submit" class="secondary">Redefinir senha</button></form></div>
 </section>
 <p><a href="/ranking">Ver ranking público</a> · <a href="/admin">Administração</a></p>
 </main>
