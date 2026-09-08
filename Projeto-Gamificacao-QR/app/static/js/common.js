@@ -60,12 +60,14 @@ function initA11yPanel(){
   panel.innerHTML=`
     <div class="a11y-panel-head"><div><span class="eyebrow">Preferências</span><h2 id="a11yTitle">Acessibilidade</h2></div><button type="button" class="secondary compact" id="a11yClose" aria-label="Fechar painel de acessibilidade">Fechar</button></div>
     <p class="muted">As preferências ficam salvas somente neste navegador.</p>
+    <div class="a11y-control"><span><strong>Baixa visão</strong><small>Aumenta o texto, reforça o contraste, amplia o espaçamento e prioriza a leitura.</small></span><div class="inline-actions"><button type="button" class="secondary" data-a11y="low-vision">Ativar modo baixa visão</button></div></div>
     <div class="a11y-control"><span><strong>Tamanho do texto</strong><small id="a11yFontStatus" aria-live="polite"></small></span><div class="inline-actions"><button type="button" class="secondary compact" data-a11y="font-down" aria-label="Diminuir texto">A−</button><button type="button" class="secondary compact" data-a11y="font-up" aria-label="Aumentar texto">A+</button></div></div>
     <label class="switch-row"><input type="checkbox" data-a11y-check="lightMode"><span><strong>Modo claro</strong><small>Troca para fundo claro mantendo contraste.</small></span></label>
     <label class="switch-row"><input type="checkbox" data-a11y-check="contrast"><span><strong>Alto contraste</strong><small>Reforça contraste e contornos.</small></span></label>
     <label class="switch-row"><input type="checkbox" data-a11y-check="reducedMotion"><span><strong>Reduzir animações</strong><small>Remove movimentos e transições desnecessárias.</small></span></label>
     <label class="switch-row"><input type="checkbox" data-a11y-check="roomy"><span><strong>Mais espaçamento</strong><small>Aumenta áreas de toque e separação entre elementos.</small></span></label>
     <label class="switch-row"><input type="checkbox" data-a11y-check="reading"><span><strong>Modo leitura</strong><small>Remove elementos decorativos e prioriza o conteúdo.</small></span></label>
+    <p class="muted"><small>A interface usa rótulos, foco visível e navegação por teclado para apoiar o uso com leitores de tela.</small></p>
     <div class="inline-actions a11y-footer"><button type="button" class="secondary" data-a11y="reset">Restaurar padrão</button></div>`;
 
   document.body.append(toggle,panel);
@@ -75,7 +77,14 @@ function initA11yPanel(){
   const close=()=>{panel.classList.add('hidden');toggle.setAttribute('aria-expanded','false');toggle.focus()};
   toggle.addEventListener('click',()=>panel.classList.contains('hidden')?open():close());panel.querySelector('#a11yClose').addEventListener('click',close);
   panel.querySelectorAll('[data-a11y-check]').forEach(input=>input.addEventListener('change',()=>{prefs[input.dataset.a11yCheck]=input.checked;sync()}));
-  panel.querySelectorAll('[data-a11y]').forEach(button=>button.addEventListener('click',()=>{const action=button.dataset.a11y;if(action==='font-up')prefs.fontScale=Math.min(1.4,Math.round((prefs.fontScale+0.1)*10)/10);if(action==='font-down')prefs.fontScale=Math.max(0.9,Math.round((prefs.fontScale-0.1)*10)/10);if(action==='reset')prefs={...A11Y_DEFAULTS};sync()}));
+  panel.querySelectorAll('[data-a11y]').forEach(button=>button.addEventListener('click',()=>{
+    const action=button.dataset.a11y;
+    if(action==='font-up')prefs.fontScale=Math.min(1.4,Math.round((prefs.fontScale+0.1)*10)/10);
+    if(action==='font-down')prefs.fontScale=Math.max(0.9,Math.round((prefs.fontScale-0.1)*10)/10);
+    if(action==='low-vision')prefs={...prefs,fontScale:1.3,contrast:true,reducedMotion:true,roomy:true,reading:true};
+    if(action==='reset')prefs={...A11Y_DEFAULTS};
+    sync();
+  }));
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.classList.contains('hidden'))close()});sync();
 }
 
