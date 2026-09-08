@@ -1,125 +1,172 @@
-# Projeto Gamificação QR — Evento IFMT
+# Trilhas Poéticas — IFMT
 
-**Status:** MVP em homologação na branch `feat/gamificacao-qr-evento`; ainda não mesclado à `main`.
+Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**.
 
-Aplicação web acessível para atividades e gamificação por QR Codes, com identidade visual inspirada em Inteligência Artificial e Ciência de Dados. O sistema atende público interno e externo, mantém ranking por nick e evita repetição de perguntas por participante enquanto houver conteúdo inédito.
+**Status:** homologação na branch `feat/gamificacao-qr-evento`. A `main` permanece sem merge até a homologação final.
+
+## O que o sistema faz
+
+- cadastro, ativação institucional, login por nick + PIN e recuperação de acesso;
+- cinco equipes secretas: Tarsila, Anita, Mário, Oswald e Pagu;
+- distribuição equilibrada por tipo de participante, curso/turma e tamanho da equipe;
+- organizadores fora da competição;
+- estações QR `permanent`, `sequential`, `temporary` e `special`;
+- código físico local como validação antifraude, sem GPS;
+- uma única pontuação válida por participante + QR;
+- trilhas sequenciais com bloqueio de etapas e bônus de conclusão;
+- conteúdo cultural em texto, imagem, áudio ou vídeo, com equivalentes acessíveis;
+- desafios de múltipla escolha, verdadeiro/falso ou resposta curta;
+- ranking coletivo por equipes;
+- pontos extras validados, estorno e auditoria;
+- painel administrativo com papéis `admin`, `operator`, `validator` e `viewer`;
+- importação da base institucional;
+- geração de PNGs, manifesto e folha de impressão dos QRs;
+- acessibilidade: texto ajustável, alto contraste, redução de movimento, leitura da tela/conteúdo/desafio e comando de voz opcional.
 
 ## Stack
-- Python 3.12+
+
+- Python 3.12
 - FastAPI
 - Supabase / PostgreSQL
-- HTML, CSS e JavaScript
+- HTML, CSS e JavaScript sem framework
 - Vercel
 - Pytest
-- `qrcode` para geração dos QR Codes físicos
+- `qrcode`
 
-## Acesso dos participantes
-- Cadastro novo: nome, nick e **PIN numérico de 4 dígitos**.
-- Login normal: **nick + PIN**.
-- A sessão permanece autenticada em cookie HttpOnly.
-- Depois de 5 PINs incorretos, a conta fica temporariamente bloqueada por 2 minutos contra tentativas automatizadas.
-- O código de recuperação é uma contingência para redefinir o PIN, não o método principal de login.
-- Ao usar o código de recuperação, ele é rotacionado e um novo código é exibido.
-- Participantes criados antes da regra do PIN podem defini-lo na sessão atual sem perder pontos ou histórico.
-- Sair revoga a sessão no servidor e apaga o cookie local.
+## Fluxo principal
+
+```text
+base institucional / cadastro
+        ↓
+participante + equipe secreta
+        ↓
+QR físico
+        ↓
+login/ativação, se necessário
+        ↓
+código físico
+        ↓
+duplicidade + sequência + horário
+        ↓
+conteúdo cultural acessível
+        ↓
+desafio opcional
+        ↓
+pontuação individual → equipe → ranking
+```
+
+## Pontuação-base adotada
+
+| Tipo | Pontos |
+|---|---:|
+| Permanente | 10 |
+| Sequencial | 15 |
+| Temporário | 30 |
+| Especial | 40 |
+| Conclusão da trilha | +30 por padrão |
+| Desafio | 0–20 configurável |
+
+A velocidade de resposta/deslocamento não gera vantagem.
+
+## Banco
+
+`supabase/schema.sql` é o **schema canônico do sistema atual**. O diretório antigo de migrations foi removido porque descrevia o protótipo anterior.
+
+Para um banco novo:
+
+1. execute `supabase/schema.sql`;
+2. execute `supabase/seed.sql` para categorias, zonas e os 12 desafios iniciais acessíveis;
+3. configure as variáveis do `.env`;
+4. opcionalmente importe a base institucional com `scripts/import_participants.py`.
+
+O Data API não fica disponível para `anon` ou `authenticated`. O navegador fala apenas com o FastAPI; as RPCs críticas são executáveis somente pelo backend com `service_role`.
+
+## Base institucional
+
+CSV esperado:
+
+```csv
+full_name,participant_type,registration,course_class,institution,is_organizer
+Pessoa Exemplo,student,20260001,IA 1A,IFMT,false
+```
+
+Importação:
+
+```bash
+python scripts/import_participants.py --input participantes.csv
+```
+
+O script gera localmente `participantes_ativacao.csv` com códigos de ativação. Esse arquivo é ignorado pelo Git e **não deve ser commitado**.
+
+Participantes pré-carregados usam **Ativar cadastro IFMT**, escolhem o nick e criam o PIN. O código de ativação é rotacionado e passa a funcionar como código de recuperação.
 
 ## Administração
-- Login administrativo: **usuário + senha forte**.
-- Usuário configurado por `ADMIN_USERNAME` (padrão local: `admin`).
-- A senha fica apenas como hash Argon2 em `ADMIN_PASSWORD_HASH`.
 
-## Regras principais
-- QR normal: uma pontuação por pessoa/QR/dia.
-- Questão não se repete para a mesma pessoa enquanto houver questão inédita.
-- Verdadeiro/Falso: 1 tentativa; 10 pontos se acertar; 2 pontos por participação se errar.
-- Demais questões: até 2 tentativas; 10 pontos na 1ª, 6 na 2ª; 2 pontos por participação se errar as duas.
-- Pontos de participação não contam como atividade concluída para marcos de progresso.
-- Verdadeiro/Falso deve ser minoria do banco para evitar vantagem pelo chute.
-- Marco de 3 atividades concluídas: +5; marco de 5: +10.
-- Bônus do Dia: 1/pessoa/dia, base 15.
-- Bônus Dinâmico: 1/pessoa/dia, muda de hora em hora, base 20.
-- Bônus oferecem alternativas equivalentes em Cantina, Térreo e 1º andar.
-- Não há GPS nem mecanismo invasivo para impedir compartilhamento de QR.
+O primeiro acesso pode usar o administrador bootstrap configurado em variáveis de ambiente. Depois, usuários administrativos podem ser criados no painel ou localmente:
 
-## Acessibilidade e inclusão
-O botão **Acessibilidade** aparece nas telas e oferece:
-- ajuste de tamanho do texto;
-- alto contraste;
-- redução de animações;
-- **Ouvir tela**;
-- interrupção do áudio;
-- **comando de voz** quando o navegador oferece reconhecimento de fala.
+```bash
+python scripts/create_admin_user.py usuario --role admin
+```
 
-O comando de voz é opcional. Nenhuma ação essencial depende dele. Nas atividades, também há leitura em voz alta do enunciado e das alternativas. Questões podem armazenar descrição equivalente de imagem e transcrição de áudio/vídeo.
+Papéis:
 
-## Visual
-O tema usa azul, roxo, ciano e âmbar, sem verde como cor principal. Há elementos visuais inspirados em IA e Ciência de Dados: nós, fluxo de dados, brilho, hover, sombras e movimento sutil. As animações são automaticamente reduzidas por `prefers-reduced-motion` e também podem ser desligadas no painel de acessibilidade.
+- `admin`: acesso total e gestão de usuários/organizadores;
+- `operator`: estações, conteúdo, trilhas, desafios e pontos extras;
+- `validator`: valida/estorna pontos extras e consulta dados;
+- `viewer`: somente consulta.
 
-## Leitor de QR
-O leitor interno aparece após o login e usa APIs nativas do navegador quando disponíveis. Ele não depende de biblioteca JavaScript carregada de CDN. Se o navegador não oferecer leitura interna, a câmera normal do celular e o código manual continuam disponíveis.
+Senhas ficam somente como hash Argon2.
 
-## Banco inicial de questões
-A migration `20260908_initial_accessible_question_bank.sql` adiciona **24 questões acessíveis**, distribuídas nas 12 categorias iniciais, sendo apenas 3 de Verdadeiro/Falso. Durante a homologação, essas questões são vinculadas aos QR Codes `TESTE-*`.
+## QR Codes físicos
 
-Categorias: Inteligência Artificial, Ciência de Dados, Lógica/Tecnologia, História de Mato Grosso, Geografia de Mato Grosso, Cultura Regional, Literatura, Poesia, Arte, Sustentabilidade, IFMT e Cidadania/Ética Digital.
+Use `docs/qrs.example.csv` como modelo:
+
+```bash
+python scripts/generate_qr_codes.py \
+  --input qrs.csv \
+  --base-url https://gamificacao-qr-ifmt.vercel.app
+```
+
+Saída em `qr_output/`:
+
+- um PNG por estação;
+- `manifest.csv`;
+- `folha_impressao.html` com QR, código físico, tipo, pontos e referência de local.
+
+A escolha do **ponto físico exato** pertence à frente responsável pelos espaços.
 
 ## Desenvolvimento local
+
 ```bash
 python -m venv .venv
 # Windows PowerShell
 .venv\Scripts\Activate.ps1
 pip install -r requirements-dev.txt
 copy .env.example .env
-python scripts/hash_admin_password.py
 uvicorn app.main:app --reload
 ```
 
 Abra `http://127.0.0.1:8000`.
 
-## Banco Supabase
-1. Use um projeto Supabase exclusivo para a aplicação.
-2. Aplique `supabase/schema.sql` e as migrations em ordem.
-3. Preencha `SUPABASE_URL` e `SUPABASE_SECRET_KEY` no `.env`.
-4. Execute `python scripts/seed_content.py` quando necessário para categorias e zonas.
-
-> A secret key nunca deve aparecer no frontend ou ser commitada. PINs e senhas administrativas são armazenados apenas como hash Argon2.
-
-## Configurar bônus de um dia
-Use `docs/bonus-config.example.json` como modelo e execute:
-```bash
-python scripts/configure_bonus_day.py --config docs/bonus-config.example.json
-```
-
-## Gerar QR Codes
-Prepare um CSV:
-```csv
-code,name
-BIB-01,Biblioteca
-CAN-01,Cantina
-```
-Execute:
-```bash
-python scripts/generate_qr_codes.py --input qrs.csv --base-url https://seu-app.vercel.app
-```
-
 ## Testes
+
 ```bash
 pytest
 ```
 
-## Vercel
-A configuração usa `app.main:app` em `pyproject.toml`. Defina a raiz do projeto para `Projeto-Gamificacao-QR`, configure as variáveis de ambiente, use `APP_ENV=production` e `SESSION_COOKIE_SECURE=true`, e faça o deploy a partir do GitHub.
+O CI também compila Python, valida os arquivos JavaScript e impede o retorno dos módulos/regras do motor antigo.
 
-Homologação atual:
-- projeto Vercel: `gamificacao-qr-ifmt`;
-- domínio de produção: `https://gamificacao-qr-ifmt.vercel.app`;
-- branch de produção temporária: `feat/gamificacao-qr-evento`;
-- a `main` permanece sem merge até a homologação ser aprovada.
+## Produção / homologação
 
-## Documentação adicional
+- domínio: `https://gamificacao-qr-ifmt.vercel.app`;
+- Vercel continua usando o mesmo projeto e domínio já adotados;
+- a branch de homologação é `feat/gamificacao-qr-evento`;
+- a `main` só deve receber merge depois da homologação em celular, acessibilidade e fluxo físico.
+
+## Documentação
+
 - `docs/REQUISITOS.md`
 - `docs/ARQUITETURA.md`
 - `docs/ACESSIBILIDADE.md`
 - `docs/OPERACAO_EVENTO.md`
 - `docs/HOMOLOGACAO_FINAL.md`
-- API interativa em `/docs` quando o FastAPI estiver em execução.
