@@ -1,100 +1,155 @@
-# Requisitos funcionais — Gamificação QR
+# Requisitos funcionais — Trilhas Poéticas
+
+Este documento registra apenas o sistema atual, alinhado ao projeto-base Trilhas Poéticas.
 
 ## Participantes
+
 - Público interno e externo.
-- Cadastro: nome completo, nick público, **PIN numérico de 4 dígitos** e tipo de participante.
-- Login normal: **nick + PIN**.
-- PIN é armazenado somente como hash Argon2; o valor em texto puro não é persistido.
-- Após 5 PINs incorretos, o login daquele participante fica bloqueado por 2 minutos para reduzir tentativas automatizadas.
-- Aluno: matrícula e curso/turma obrigatórios.
-- Público externo: instituição/empresa opcional.
-- Nome completo e matrícula não aparecem no ranking público.
-- O sistema fornece um código de recuperação como contingência para redefinir o PIN.
-- Ao usar o código de recuperação, o código antigo deixa de valer e um novo é gerado.
-- A sessão é mantida em cookie HttpOnly e pode ser encerrada pelo botão Sair; o logout também revoga a sessão no servidor.
-- Participantes criados antes do PIN podem defini-lo a partir de uma sessão válida, sem perder pontos ou histórico.
+- A base institucional pode ser pré-importada com minimização de dados.
+- Participante pré-importado ativa a conta com código de ativação, escolhe nick e define PIN de 4 dígitos.
+- Quem não estiver na base pode usar cadastro público quando essa opção for mantida pela organização.
+- Aluno em cadastro público informa matrícula e curso/turma.
+- Login normal: nick + PIN.
+- Recuperação por código rotativo.
+- PIN armazenado somente como Argon2.
+- Após 5 PINs incorretos, bloqueio temporário por 2 minutos.
+- Sessão em cookie HttpOnly; logout revoga a sessão no servidor.
+- Organizadores ficam fora da competição e não pontuam.
 
-## Administração
-- Login administrativo exige usuário + senha forte.
-- Usuário é configurável por `ADMIN_USERNAME`; localmente o padrão é `admin`.
-- Senha administrativa é armazenada apenas como hash Argon2.
+## Equipes
 
-## QR e atividades normais
-- Várias pessoas podem ler o mesmo QR simultaneamente.
-- Cada participante pontua em cada QR normal no máximo uma vez por dia.
-- No dia seguinte o mesmo QR pode ser usado novamente.
-- A pergunta sorteada nunca se repete para a mesma pessoa enquanto houver perguntas inéditas.
-- Questões de verdadeiro/falso: **1 tentativa**. Acerto = **10 pontos**; erro = **2 pontos por participação**.
-- Demais tipos: **até 2 tentativas**. Acerto na 1ª = **10 pontos**; acerto na 2ª = **6 pontos**; se errar as duas = **2 pontos por participação**.
-- A pontuação por participação não transforma uma resposta errada em atividade concluída para fins dos marcos de 3 e 5 atividades.
-- Questões de verdadeiro/falso devem representar uma parcela menor do banco, pois possuem 50% de chance de acerto ao acaso.
-- Não há cronômetro de resposta nem perda de pontos por demora.
-- Compartilhamento de QR não será combatido com GPS/códigos invasivos.
-- QR danificado pode ser desativado e substituído pelo administrador.
+- Cinco equipes secretas: Tarsila, Anita, Mário, Oswald e Pagu.
+- O participante não escolhe a equipe.
+- A distribuição busca equilíbrio por tipo de participante, curso/turma e tamanho da equipe.
+- A equipe fica oculta até a primeira estação validada.
 
-## Progressão diária
-- 3 atividades normais concluídas corretamente: +5 pontos.
-- 5 atividades normais concluídas corretamente: +10 pontos adicionais.
-- O ledger impede concessão duplicada do mesmo marco.
+## Estações QR
 
-## Bônus
-### Bônus do Dia
-- 1 por pessoa por dia.
-- Disponível durante todo o período configurado do evento.
-- Mesmo bônus simultaneamente em Cantina, Térreo e 1º andar.
-- Pontuação-base atual do MVP: 15.
+Tipos suportados:
 
-### Bônus Dinâmico
-- 1 por pessoa por dia.
-- Local ativo muda de 1 em 1 hora.
-- A cada hora deve existir alternativa simultânea em Cantina, Térreo e 1º andar.
-- Ao encontrar, o participante escolhe 1 de 3 categorias/desafios disponíveis.
-- Pontuação-base atual do MVP: 20.
+- `permanent` — referência 10 pontos;
+- `sequential` — referência 15 pontos;
+- `temporary` — referência 30 pontos;
+- `special` — referência 40 pontos.
 
-## Categorias iniciais
-IA, Ciência de Dados, Lógica/Tecnologia, História de Mato Grosso, Geografia de Mato Grosso, Cultura Regional, Literatura, Poesia, Arte, Sustentabilidade, IFMT e Cidadania/Ética Digital.
+Regras:
 
-## Banco inicial de conteúdo
-- 24 questões iniciais acessíveis, 2 por categoria.
-- Apenas 3 das 24 são Verdadeiro/Falso.
-- Cada questão inclui metadados mínimos de acessibilidade.
-- Na homologação, o banco inicial é vinculado aos QR Codes `TESTE-*`.
+- uma pessoa + um QR = uma única pontuação válida;
+- várias pessoas podem usar a mesma estação simultaneamente;
+- o link do QR sozinho não concede pontos quando a estação possui código físico;
+- código/palavra-chave local é comparado por hash;
+- não é usado GPS;
+- temporários/especiais podem ter janela de início/fim;
+- QR inativo, não iniciado ou expirado não pontua;
+- estação danificada pode ser desativada pelo painel.
+
+## Trilhas sequenciais
+
+- Uma trilha possui etapas ordenadas.
+- Etapa posterior fica bloqueada enquanto faltar etapa anterior.
+- Ao validar todas as etapas, o participante recebe o bônus configurado uma única vez.
+- Referência inicial de bônus: +30 pontos.
+
+## Conteúdo cultural
+
+Uma estação pode conter:
+
+- poesia;
+- literatura;
+- arte;
+- cultura brasileira/regional;
+- texto contextual;
+- imagem com descrição equivalente;
+- áudio/vídeo com transcrição ou legenda equivalente;
+- desafio opcional.
+
+Nem toda estação precisa usar todas essas mídias. A curadoria cultural é cadastrada após aprovação da frente responsável.
+
+## Desafios
+
+Tipos habilitados atualmente:
+
+- múltipla escolha;
+- verdadeiro/falso;
+- resposta curta.
+
+Associação e ordenação não fazem parte da versão atual porque exigiriam interface própria para garantir boa usabilidade e acessibilidade.
+
+- desafio pode conceder de 0 a 20 pontos;
+- verdadeiro/falso: 1 tentativa;
+- demais tipos: até 2 tentativas;
+- erro não retira os pontos-base já obtidos na validação da estação;
+- não existe cronômetro de resposta nem bônus por velocidade.
 
 ## Ranking
-Ordem: maior pontuação; mais atividades normais concluídas; maior diversidade de categorias; mais acertos na primeira tentativa. Se todos esses critérios forem iguais, permanece empate. Velocidade/deslocamento não é critério.
 
-## Interface e identidade visual
-- Identidade inspirada em Inteligência Artificial e Ciência de Dados: redes, nós, dados, painéis e geometria digital de forma sutil.
-- Não utilizar verde como cor principal ou de estado do sistema.
-- Paleta principal: azul e roxo; âmbar/laranja para avisos; vermelho para erros; cinzas para base.
-- Cor nunca pode ser o único meio de transmitir informação.
-- Design responsivo, com controles grandes e legíveis em celular.
+- Ranking público principal é por equipe, sem exposição de nome completo/matrícula.
+- Indicadores: pontos, participantes ativos, percentual de ativação, média por ativo, estações e trilhas concluídas.
+- Desempate: pontos, ativação, média por participante ativo, trilhas concluídas.
+- Enquanto ninguém iniciou a experiência, nenhuma equipe recebe posição artificial.
 
-## Acessibilidade e inclusão na interface
-O botão **Acessibilidade** deve estar disponível nas páginas principais com preferências persistidas apenas no navegador:
-- aumentar/diminuir texto entre 90% e 140%;
-- modo claro;
+## Área do participante
+
+Exibe:
+
+- nick;
+- pontos individuais;
+- equipe após revelação;
+- posição da equipe quando houver classificação iniciada;
+- estações validadas;
+- trilhas concluídas;
+- desafios pendentes;
+- temporários/especiais ativos;
+- acesso ao leitor de QR e ranking.
+
+## Pontos extras
+
+Ações extras são concedidas somente por usuário autorizado. Tipos previstos pelo sistema:
+
+- declamação;
+- obra autoral;
+- sugestão de poema;
+- sugestão selecionada;
+- produção artística;
+- postagem válida;
+- participação em atividade;
+- outra ação aprovada.
+
+Cada lançamento registra participante, descrição, evidência/referência, pontos, aprovador e data. O estorno gera lançamento negativo e mantém o histórico original.
+
+## Administração e papéis
+
+- `admin`: tudo, inclusive usuários administrativos e status de organizador;
+- `operator`: desafios, estações, conteúdo, trilhas, moderação e pontos extras;
+- `validator`: consulta e validação/estorno de pontos extras;
+- `viewer`: somente consulta.
+
+Toda alteração relevante produz registro de auditoria.
+
+## Segurança
+
+- Browser → FastAPI → Supabase.
+- Secret key somente no backend.
+- RLS habilitado nas tabelas expostas pela Data API.
+- `anon` e `authenticated` sem acesso direto às tabelas do jogo.
+- RPCs críticas `SECURITY DEFINER` executáveis somente por `service_role`.
+- Sessões administrativas assinadas e com expiração.
+- Senhas administrativas e PINs nunca persistidos em texto puro.
+
+## Acessibilidade
+
+- nenhuma atividade pode depender exclusivamente de visão, audição, cor, rapidez ou precisão motora;
+- texto ajustável;
 - alto contraste;
-- redução de animações;
-- maior espaçamento e áreas de toque;
-- modo leitura.
+- redução de movimento;
+- leitura de tela/conteúdo/desafio quando o navegador oferece síntese de voz;
+- comando de voz opcional, nunca obrigatório;
+- navegação por teclado e foco visível;
+- mensagens com texto e `aria-live`;
+- imagem essencial exige descrição equivalente;
+- áudio/vídeo essencial exige transcrição/legenda;
+- conteúdo que mencione percepção do ambiente deve permitir formas sensoriais equivalentes.
 
-Nas questões:
-- opção de ouvir o enunciado;
-- opção de ouvir enunciado + alternativas quando o navegador oferecer síntese de voz;
-- versão opcional em linguagem simples sem alterar a resposta correta;
-- imagem essencial exige descrição textual equivalente;
-- áudio/vídeo essencial exige transcrição ou legenda equivalente;
-- nenhuma questão pode depender apenas de cor ou rapidez;
-- foco por teclado deve ser claramente visível;
-- mensagens importantes usam texto e regiões `aria-live`.
+## Responsabilidade física
 
-## Zonas
-A equipe de tecnologia sugere as zonas; a escolha do ponto físico exato pertence à frente responsável pelos espaços.
-- Cantina.
-- Térreo: biblioteca, auditório, secretaria, salão de entrada e corredores.
-- 1º andar: salas/corredores e áreas públicas próximas.
-- Estacionamento/ponto de ônibus: opcionais; não podem ser necessários para alcançar a pontuação máxima.
-
-## Administração
-O painel permite cadastrar/ativar/desativar questões e QR Codes, vincular questão a QR, moderar nicks, acompanhar bônus, ranking, tentativas e estatísticas. Ao cadastrar questão, o painel também registra nível de leitura, versão simples e alternativas equivalentes de mídia. A configuração horária dos bônus é feita em lote para preservar a regra das três zonas.
+A tecnologia suporta zona, referência e regras de acessibilidade. A definição do ponto físico exato, percurso e instalação dos QR Codes pertence à frente de espaços/logística.
