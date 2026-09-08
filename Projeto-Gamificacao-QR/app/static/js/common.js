@@ -1,3 +1,10 @@
+function ensureStylesheet(href){
+  if(document.querySelector(`link[href="${href}"]`))return;
+  const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);
+}
+ensureStylesheet('/static/css/accessibility.css');
+ensureStylesheet('/static/css/compact.css');
+
 async function api(url,options={}){
   const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
   let data={};
