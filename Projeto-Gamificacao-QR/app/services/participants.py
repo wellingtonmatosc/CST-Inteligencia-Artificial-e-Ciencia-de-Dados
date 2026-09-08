@@ -1,4 +1,4 @@
-"""Cadastro, sessão e recuperação de participantes."""
+"""Cadastro, sessão, recuperação e logout de participantes."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -79,3 +79,13 @@ class ParticipantService:
         if not participant:
             raise AppError("Participante não encontrado.", 401)
         return participant
+
+    def logout(self, token: str | None) -> None:
+        """Revoga a sessão atual no servidor; é idempotente."""
+        if not token:
+            return
+        self.repo.update(
+            "participant_sessions",
+            {"revoked_at": datetime.now(timezone.utc).isoformat()},
+            token_hash=sha256_hex(token),
+        )
