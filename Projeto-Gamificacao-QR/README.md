@@ -42,15 +42,21 @@ Aplicação web acessível para atividades e gamificação por QR Codes, com ide
 - Não há GPS nem mecanismo invasivo para impedir compartilhamento de QR.
 
 ## Acessibilidade e inclusão
-O botão **Acessibilidade** aparece nas telas públicas e administrativas e salva preferências apenas no navegador:
-- tamanho de texto de 90% a 140%;
-- modo claro;
+O botão **Acessibilidade** aparece nas telas e oferece:
+- ajuste de tamanho do texto;
 - alto contraste;
 - redução de animações;
-- mais espaçamento e áreas de toque;
-- modo leitura.
+- **Ouvir tela**;
+- interrupção do áudio;
+- **comando de voz** quando o navegador oferece reconhecimento de fala.
 
-Nas atividades, quando suportado pelo navegador, há leitura em voz alta do enunciado e alternativas. As questões podem armazenar versão em linguagem simples, descrição equivalente de imagem e transcrição de áudio/vídeo. Nenhuma atividade pode depender exclusivamente de cor, velocidade, imagem sem descrição ou áudio/vídeo sem alternativa textual.
+O comando de voz é opcional. Nenhuma ação essencial depende dele. Nas atividades, também há leitura em voz alta do enunciado e das alternativas. Questões podem armazenar descrição equivalente de imagem e transcrição de áudio/vídeo.
+
+## Visual
+O tema usa azul, roxo, ciano e âmbar, sem verde como cor principal. Há elementos visuais inspirados em IA e Ciência de Dados: nós, fluxo de dados, brilho, hover, sombras e movimento sutil. As animações são automaticamente reduzidas por `prefers-reduced-motion` e também podem ser desligadas no painel de acessibilidade.
+
+## Leitor de QR
+O leitor interno aparece após o login e usa APIs nativas do navegador quando disponíveis. Ele não depende de biblioteca JavaScript carregada de CDN. Se o navegador não oferecer leitura interna, a câmera normal do celular e o código manual continuam disponíveis.
 
 ## Banco inicial de questões
 A migration `20260908_initial_accessible_question_bank.sql` adiciona **24 questões acessíveis**, distribuídas nas 12 categorias iniciais, sendo apenas 3 de Verdadeiro/Falso. Durante a homologação, essas questões são vinculadas aos QR Codes `TESTE-*`.
@@ -114,4 +120,6 @@ Homologação atual:
 - `docs/REQUISITOS.md`
 - `docs/ARQUITETURA.md`
 - `docs/ACESSIBILIDADE.md`
+- `docs/OPERACAO_EVENTO.md`
+- `docs/HOMOLOGACAO_FINAL.md`
 - API interativa em `/docs` quando o FastAPI estiver em execução.
