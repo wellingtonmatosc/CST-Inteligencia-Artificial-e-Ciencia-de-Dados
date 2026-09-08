@@ -55,6 +55,7 @@ button{font:inherit;min-height:48px;width:100%;padding:12px 18px;border:0;border
 button:hover:not(:disabled){background:var(--primary-dark)}
 button:active:not(:disabled){transform:translateY(1px)}
 button.secondary{background:#fff;color:var(--primary-dark);border:1px solid #aeb8c8}
+button.compact{width:auto;min-height:42px;padding:9px 16px}
 button:disabled{cursor:wait;opacity:.62}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #92400e;outline-offset:3px}
 
@@ -90,6 +91,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 
 #profile{background:linear-gradient(135deg,#fff 0,#f8faff 100%)}
 #profile strong{font-size:1.15em}
+.profile-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
 
 .question-card{padding:28px}
 .question-eyebrow{font-size:.78rem;text-transform:uppercase;letter-spacing:.09em;color:var(--primary-dark);font-weight:850;margin-bottom:8px}
@@ -105,4 +107,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   h1{font-size:2rem}
   .ranking-row{grid-template-columns:56px 1fr 88px;padding:13px 6px;gap:8px}
   .choices label{padding:14px 12px}
+  .profile-actions{align-items:stretch}
+  .profile-actions button.compact{width:100%}
 }
