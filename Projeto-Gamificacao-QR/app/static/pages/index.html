@@ -3,38 +3,69 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Gamificação QR — Evento IFMT</title>
+<meta name="theme-color" content="#111827">
+<title>Desafio QR — IA e Ciência de Dados</title>
 <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
 <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
 <main id="conteudo">
-<header><h1>Gamificação QR — Evento IFMT</h1><p>Cadastre-se uma vez e use os QR Codes distribuídos pelo evento.</p></header>
+<header class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">IFMT • Inteligência Artificial & Ciência de Dados</span>
+    <h1>Desafio QR</h1>
+    <p>Explore o campus, responda desafios, acumule pontos e acompanhe sua evolução no ranking.</p>
+    <div class="hero-tags" aria-label="Temas do evento"><span>IA</span><span>Dados</span><span>Lógica</span><span>Cultura</span></div>
+  </div>
+  <div class="hero-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+</header>
+
 <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
-<section id="profile" class="card hidden" aria-live="polite"></section>
-<section id="forms">
-<div class="grid two">
-<div class="card"><h2>Entrar</h2><form id="loginForm">
-<label for="login_nick">Nick</label><input id="login_nick" name="nick" autocomplete="username" required minlength="3" maxlength="24">
-<label for="login_password">Senha</label><input id="login_password" name="password" type="password" autocomplete="current-password" required minlength="8" maxlength="128">
-<button type="submit">Entrar</button></form></div>
-<div class="card"><h2>Novo participante</h2><form id="registerForm">
-<label for="full_name">Nome completo</label><input id="full_name" name="full_name" autocomplete="name" required minlength="3">
-<label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não será exibido no ranking público.</small>
-<label for="password">Senha</label><input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" maxlength="128" aria-describedby="passwordHelp"><small id="passwordHelp">Use pelo menos 8 caracteres. Não reutilize uma senha importante de outro serviço.</small>
-<label for="password_confirm">Confirmar senha</label><input id="password_confirm" name="password_confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
-<label for="participant_type">Tipo de participante</label><select id="participant_type" name="participant_type" required><option value="student">Aluno IFMT</option><option value="staff">Servidor IFMT</option><option value="external">Público externo</option></select>
-<div id="studentFields"><label for="registration">Matrícula</label><input id="registration" name="registration"><label for="course_class">Curso / turma</label><input id="course_class" name="course_class"></div>
-<div id="externalFields" class="hidden"><label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label><input id="institution" name="institution"></div>
-<button type="submit">Criar cadastro</button></form></div>
-</div>
-<div class="card"><h2>Esqueceu a senha?</h2><p class="muted">Use seu código de recuperação para definir uma nova senha. Ao recuperar, o sistema gera um novo código.</p><form id="recoverForm">
-<label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required>
-<label for="recovery_password">Nova senha</label><input id="recovery_password" name="new_password" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
-<label for="recovery_password_confirm">Confirmar nova senha</label><input id="recovery_password_confirm" name="new_password_confirm" type="password" autocomplete="new-password" required minlength="8" maxlength="128">
-<button type="submit" class="secondary">Redefinir senha</button></form></div>
+<section id="profile" class="card profile-card hidden" aria-live="polite"></section>
+
+<section id="forms" class="auth-layout">
+  <div class="card auth-card accent-blue">
+    <div class="card-heading"><span class="card-icon" aria-hidden="true">01</span><div><span class="eyebrow">Já tenho cadastro</span><h2>Entrar</h2></div></div>
+    <form id="loginForm">
+      <label for="login_nick">Nick</label>
+      <input id="login_nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" placeholder="Seu nick">
+      <label for="login_pin">PIN de 4 dígitos</label>
+      <input id="login_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="current-password" required aria-describedby="loginPinHelp" placeholder="••••">
+      <small id="loginPinHelp">Use o PIN numérico criado no cadastro.</small>
+      <button type="submit">Entrar no desafio</button>
+    </form>
+  </div>
+
+  <div class="card auth-card accent-purple">
+    <div class="card-heading"><span class="card-icon" aria-hidden="true">02</span><div><span class="eyebrow">Primeira vez</span><h2>Novo participante</h2></div></div>
+    <form id="registerForm">
+      <label for="full_name">Nome completo</label><input id="full_name" name="full_name" autocomplete="name" required minlength="3">
+      <label for="nick">Nick / nome no ranking</label><input id="nick" name="nick" autocomplete="username" required minlength="3" maxlength="24" aria-describedby="nickHelp"><small id="nickHelp">Seu nome completo não aparece no ranking público.</small>
+      <div class="grid two compact-grid">
+        <div><label for="pin">PIN de 4 dígitos</label><input id="pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+        <div><label for="pin_confirm">Confirmar PIN</label><input id="pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+      </div>
+      <small>O PIN é usado apenas neste evento. Evite sequências óbvias como 0000.</small>
+      <label for="participant_type">Tipo de participante</label><select id="participant_type" name="participant_type" required><option value="student">Aluno IFMT</option><option value="staff">Servidor IFMT</option><option value="external">Público externo</option></select>
+      <div id="studentFields"><label for="registration">Matrícula</label><input id="registration" name="registration"><label for="course_class">Curso / turma</label><input id="course_class" name="course_class"></div>
+      <div id="externalFields" class="hidden"><label for="institution">Instituição / empresa <span class="muted">(opcional)</span></label><input id="institution" name="institution"></div>
+      <button type="submit">Criar cadastro</button>
+    </form>
+  </div>
 </section>
-<p><a href="/ranking">Ver ranking público</a> · <a href="/admin">Administração</a></p>
+
+<section class="card recovery-card">
+  <div class="card-heading"><span class="card-icon" aria-hidden="true">↺</span><div><span class="eyebrow">Plano B</span><h2>Recuperar acesso</h2></div></div>
+  <p class="muted">Use o código de recuperação apenas se esquecer o PIN. O sistema gera um novo código depois da recuperação.</p>
+  <form id="recoverForm" class="grid two">
+    <div><label for="access_code">Código de recuperação</label><input id="access_code" name="access_code" autocomplete="off" required></div>
+    <div><label for="recovery_pin">Novo PIN</label><input id="recovery_pin" name="new_pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+    <div><label for="recovery_pin_confirm">Confirmar novo PIN</label><input id="recovery_pin_confirm" name="new_pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div>
+    <div class="form-action-end"><button type="submit" class="secondary">Redefinir PIN</button></div>
+  </form>
+</section>
+
+<nav class="page-links" aria-label="Links principais"><a href="/ranking">Ver ranking público</a><a href="/admin">Administração</a></nav>
 </main>
 <script src="/static/js/common.js"></script><script src="/static/js/index.js"></script>
 </body></html>
