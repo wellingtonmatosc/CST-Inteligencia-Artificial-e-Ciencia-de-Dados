@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, Field
 from app.api.deps import current_participant, get_participant_service, get_gamification_service
 from app.core.config import Settings, get_settings
@@ -42,6 +42,20 @@ def recover(payload: RecoverPayload, response: Response, service: ParticipantSer
     participant, token = service.recover(payload.access_code)
     _set_cookie(response, token, settings)
     return {"participant": {"id": participant["id"], "nick": participant["nick"], "full_name": participant["full_name"]}}
+
+
+@router.post("/logout")
+def logout(request: Request, response: Response, service: ParticipantService = Depends(get_participant_service), settings: Settings = Depends(get_settings)):
+    token = request.cookies.get(settings.participant_cookie_name)
+    service.logout(token)
+    response.delete_cookie(
+        key=settings.participant_cookie_name,
+        path="/",
+        secure=settings.session_cookie_secure,
+        httponly=True,
+        samesite="lax",
+    )
+    return {"ok": True}
 
 
 @router.get("/me")
