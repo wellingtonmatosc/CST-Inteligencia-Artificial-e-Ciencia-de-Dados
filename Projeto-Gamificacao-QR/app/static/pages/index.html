@@ -8,8 +8,10 @@
 <link rel="stylesheet" href="/static/css/styles.css">
 <style>
   .home-shell{max-width:720px}
-  .compact-hero{grid-template-columns:1fr;padding:28px;margin-bottom:18px}
+  .compact-hero{grid-template-columns:1fr;padding:28px;margin-bottom:14px}
   .compact-hero .hero-copy p{margin-bottom:0;max-width:600px}
+  .accessibility-shortcut{display:flex;justify-content:flex-end;margin:0 0 14px}
+  .accessibility-shortcut button{width:auto;min-height:42px;padding:9px 14px}
   .home-auth{display:grid;gap:16px}
   .home-auth>.card{margin:0}
   .home-actions{display:grid;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid #2a395e}
@@ -18,16 +20,10 @@
   .home-panel[hidden],.qr-panel[hidden]{display:none!important}
   .panel-actions{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:18px}
   .panel-actions .secondary{width:auto;min-width:110px}
-  .back-link{margin-top:16px}
-  .back-link button{width:auto}
   .home-help{text-align:center;color:var(--muted);font-size:.92rem;margin:12px 0 0}
-  .qr-launch-card{margin-top:16px;text-align:center}
-  .qr-launch-card::before,.qr-scanner-card::before{background:linear-gradient(180deg,var(--cyan),transparent)}
-  .qr-launch-card .card-heading{justify-content:center}
-  .qr-launch-card .card-icon,.qr-scanner-card .card-icon{background:linear-gradient(135deg,#155e75,#2563eb)}
-  .qr-launch-card p{color:var(--muted);margin:.25rem 0 1rem}
-  .qr-launch-card button{max-width:420px;margin:0 auto}
   .qr-scanner-card{margin-top:16px}
+  .qr-scanner-card::before{background:linear-gradient(180deg,var(--cyan),transparent)}
+  .qr-scanner-card .card-icon{background:linear-gradient(135deg,#155e75,#2563eb)}
   .qr-reader-wrap{margin-top:14px;padding:10px;border:1px solid #344a73;border-radius:16px;background:#080d18}
   #qr-reader{width:100%;overflow:hidden;border-radius:12px}
   #qr-reader video{border-radius:12px}
@@ -43,7 +39,9 @@
     .compact-hero h1{font-size:2.15rem;margin-bottom:8px}
     .compact-hero .eyebrow{font-size:.69rem;letter-spacing:.08em}
     .compact-hero .hero-copy p{font-size:.97rem;line-height:1.45}
-    .home-auth .card,.qr-launch-card,.qr-scanner-card{padding:20px}
+    .accessibility-shortcut{justify-content:stretch}
+    .accessibility-shortcut button{width:100%}
+    .home-auth .card,.qr-scanner-card{padding:20px}
     .card-heading{margin-bottom:8px}
     .card-icon{min-width:42px;height:42px}
     .panel-actions,.qr-manual-row{grid-template-columns:1fr}
@@ -63,6 +61,10 @@
     <p>Entre para continuar, responder desafios e acompanhar sua pontuação.</p>
   </div>
 </header>
+
+<div class="accessibility-shortcut">
+  <button id="openAccessibilityQuick" type="button" class="secondary compact" aria-label="Abrir opções de acessibilidade, incluindo modo para baixa visão">Acessibilidade</button>
+</div>
 
 <div id="message" class="notice hidden" role="status" aria-live="polite"></div>
 <section id="profile" class="card profile-card hidden" aria-live="polite"></section>
@@ -160,15 +162,6 @@
   </section>
 </section>
 
-<section id="qrLaunch" class="card qr-launch-card" aria-labelledby="qrLaunchTitle">
-  <div class="card-heading">
-    <span class="card-icon" aria-hidden="true">▦</span>
-    <div><span class="eyebrow">Câmera</span><h2 id="qrLaunchTitle">Ler QR Code</h2></div>
-  </div>
-  <p>Aponte a câmera do celular para um QR Code do desafio.</p>
-  <button id="openQrScanner" type="button">Abrir câmera e ler QR</button>
-</section>
-
 <section id="qrScannerSection" class="card qr-scanner-card qr-panel" aria-labelledby="qrScannerTitle" hidden>
   <div class="card-heading">
     <span class="card-icon" aria-hidden="true">▦</span>
@@ -205,6 +198,13 @@
   const recovery = document.querySelector('#recoverSection');
   const showRegister = document.querySelector('#showRegister');
   const showRecovery = document.querySelector('#showRecovery');
+  const scannerSection = document.querySelector('#qrScannerSection');
+  const closeScanner = document.querySelector('#closeQrScanner');
+  const qrStatus = document.querySelector('#qrStatus');
+  const manualForm = document.querySelector('#qrManualForm');
+  let scanner = null;
+  let running = false;
+  let navigating = false;
 
   function focusFirst(panel){
     const field = panel.querySelector('input,select,button');
@@ -230,20 +230,9 @@
   showRecovery.addEventListener('click', () => show(recovery));
   document.querySelector('#backFromRegister').addEventListener('click', () => show(login));
   document.querySelector('#backFromRecovery').addEventListener('click', () => show(login));
-
-  document.addEventListener('click', (event) => {
-    if(event.target.closest('#logoutButton')) show(login);
+  document.querySelector('#openAccessibilityQuick').addEventListener('click', () => {
+    document.querySelector('#a11yToggle')?.click();
   });
-
-  const launch = document.querySelector('#qrLaunch');
-  const scannerSection = document.querySelector('#qrScannerSection');
-  const openScanner = document.querySelector('#openQrScanner');
-  const closeScanner = document.querySelector('#closeQrScanner');
-  const qrStatus = document.querySelector('#qrStatus');
-  const manualForm = document.querySelector('#qrManualForm');
-  let scanner = null;
-  let running = false;
-  let navigating = false;
 
   function setQrStatus(text){
     qrStatus.textContent = text;
@@ -252,13 +241,11 @@
   function extractQrCode(value){
     const text = String(value || '').trim();
     if(!text) return null;
-
     try{
       const parsed = new URL(text, window.location.origin);
       const match = parsed.pathname.match(/^\/q\/([^/?#]+)\/?$/i);
       if(match) return decodeURIComponent(match[1]);
     }catch(_){ }
-
     if(/^[A-Za-z0-9_-]{2,100}$/.test(text)) return text;
     return null;
   }
@@ -284,7 +271,6 @@
   }
 
   async function startScanner(){
-    launch.hidden = true;
     scannerSection.hidden = false;
     scannerSection.scrollIntoView({behavior:'smooth',block:'start'});
     setQrStatus('Solicitando acesso à câmera…');
@@ -304,22 +290,28 @@
       );
       running = true;
       setQrStatus('Câmera ativa. Aponte para o QR Code.');
-    }catch(err){
+    }catch(_){
       running = false;
       setQrStatus('Não foi possível abrir a câmera. Verifique a permissão do navegador ou use o código manual abaixo.');
     }
   }
 
-  async function closeQr(){
+  async function closeQr(restoreFocus=true){
     await stopScanner();
     scannerSection.hidden = true;
-    launch.hidden = false;
     setQrStatus('Preparando câmera…');
-    openScanner.focus({preventScroll:true});
+    if(restoreFocus) document.querySelector('#openQrScanner')?.focus({preventScroll:true});
   }
 
-  openScanner.addEventListener('click', startScanner);
-  closeScanner.addEventListener('click', closeQr);
+  document.addEventListener('click', event => {
+    if(event.target.closest('#openQrScanner')) startScanner();
+    if(event.target.closest('#logoutButton')){
+      closeQr(false);
+      show(login);
+    }
+  });
+
+  closeScanner.addEventListener('click', () => closeQr(true));
   manualForm.addEventListener('submit', event => {
     event.preventDefault();
     const value = new FormData(manualForm).get('code');
