@@ -1,3 +1,6 @@
+const a11yStylesheet=document.createElement('link');
+a11yStylesheet.rel='stylesheet';a11yStylesheet.href='/static/css/accessibility.css';document.head.appendChild(a11yStylesheet);
+
 async function api(url, options={}){
   const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
   let data={};
