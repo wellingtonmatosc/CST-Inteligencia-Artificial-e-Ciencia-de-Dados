@@ -1,18 +1,3 @@
 const list=document.querySelector('#rankingList'),status=document.querySelector('#status');
-
-function positionLabel(position){
-  if(position===1)return '1º';
-  if(position===2)return '2º';
-  if(position===3)return '3º';
-  return `${position}º`;
-}
-
-async function load(){
-  try{
-    const d=await api('/api/ranking');
-    list.innerHTML=d.ranking.length?d.ranking.map(r=>`<div class="ranking-row" data-position="${r.position}"><strong>${positionLabel(r.position)}</strong><span>${esc(r.nick)}</span><strong>${r.points} pts</strong></div>`).join(''):'<p>Ainda não há pontuação registrada.</p>';
-    status.textContent='Atualizado automaticamente a cada 15 segundos.';
-  }catch(e){status.textContent=e.message}
-}
-
-load();setInterval(load,15000);
+async function loadRanking(){try{const data=await api('/api/ranking');const rows=data.ranking||[];if(!rows.length){status.textContent='Ranking ainda sem dados.';return}list.innerHTML=rows.map(r=>`<article class="team-ranking-card"><div class="team-rank-position" aria-label="${r.position}º lugar">${r.position}º</div><div class="team-rank-main"><span class="eyebrow">${esc(r.reference_name||'')}</span><h3>${esc(r.name)}</h3><p>${Number(r.activated||0)} participantes ativos • ${Number(r.activation_rate||0)}% de ativação</p></div><div class="team-rank-score"><strong>${Number(r.points||0)}</strong><span>pontos</span></div><div class="team-rank-details"><span>${Number(r.stations_validated||0)} estações</span><span>${Number(r.trails_completed||0)} trilhas</span><span>média ${Number(r.avg_points_active||0)}</span></div></article>`).join('');status.textContent=''}catch(err){status.textContent=err.message}}
+loadRanking();
