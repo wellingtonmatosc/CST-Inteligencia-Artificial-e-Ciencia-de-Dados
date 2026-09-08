@@ -1,5 +1,8 @@
+import secrets
+
 from fastapi import APIRouter, Depends, Response
 from pydantic import BaseModel, Field
+
 from app.api.deps import current_admin, get_repo
 from app.core.config import Settings, get_settings
 from app.core.errors import AppError
@@ -11,6 +14,7 @@ router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 
 class LoginPayload(BaseModel):
+    username: str = Field(min_length=1, max_length=80)
     password: str
 
 
@@ -38,10 +42,22 @@ class QrPayload(BaseModel):
 
 @router.post("/login")
 def login(payload: LoginPayload, response: Response, settings: Settings = Depends(get_settings)):
-    if not verify_password(settings.admin_password_hash, payload.password):
+    username_ok = secrets.compare_digest(
+        payload.username.strip().casefold(), settings.admin_username.strip().casefold()
+    )
+    password_ok = verify_password(settings.admin_password_hash, payload.password)
+    if not (username_ok and password_ok):
         raise AppError("Credenciais inválidas.", 401)
     token = sign_admin_session(settings.admin_session_secret)
-    response.set_cookie(settings.admin_cookie_name, token, max_age=settings.admin_session_hours * 3600, httponly=True, secure=settings.session_cookie_secure, samesite="lax", path="/")
+    response.set_cookie(
+        settings.admin_cookie_name,
+        token,
+        max_age=settings.admin_session_hours * 3600,
+        httponly=True,
+        secure=settings.session_cookie_secure,
+        samesite="lax",
+        path="/",
+    )
     return {"ok": True}
 
 
@@ -51,16 +67,33 @@ def overview(_: bool = Depends(current_admin), repo: SupabaseRepository = Depend
     questions = repo.raw_table("questions").select("id", count="exact").execute()
     qrs = repo.raw_table("qr_points").select("id", count="exact").execute()
     attempts = repo.raw_table("attempts").select("id,correct").execute().data or []
-    return {"participants": participants.count or 0, "questions": questions.count or 0, "qr_points": qrs.count or 0, "attempts": len(attempts), "correct_attempts": sum(1 for a in attempts if a.get("correct"))}
+    return {
+        "participants": participants.count or 0,
+        "questions": questions.count or 0,
+        "qr_points": qrs.count or 0,
+        "attempts": len(attempts),
+        "correct_attempts": sum(1 for a in attempts if a.get("correct")),
+    }
 
 
 @router.get("/questions")
 def list_questions(_: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {"questions": repo.raw_table("questions").select("id,prompt,kind,difficulty,active,category_id").order("created_at", desc=True).execute().data or []}
+    return {
+        "questions": repo.raw_table("questions")
+        .select("id,prompt,kind,difficulty,active,category_id")
+        .order("created_at", desc=True)
+        .execute()
+        .data
+        or []
+    }
 
 
 @router.post("/questions")
-def create_question(payload: QuestionPayload, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def create_question(
+    payload: QuestionPayload,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     data = payload.model_dump()
     issues = validate_accessibility_metadata(data)
     if issues and data["active"]:
@@ -70,16 +103,31 @@ def create_question(payload: QuestionPayload, _: bool = Depends(current_admin), 
 
 @router.get("/qrs")
 def list_qrs(_: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {"qrs": repo.raw_table("qr_points").select("*,zones(name)").order("created_at").execute().data or []}
+    return {
+        "qrs": repo.raw_table("qr_points")
+        .select("*,zones(name)")
+        .order("created_at")
+        .execute()
+        .data
+        or []
+    }
 
 
 @router.post("/qrs")
-def create_qr(payload: QrPayload, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def create_qr(
+    payload: QrPayload,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     return {"qr": repo.insert("qr_points", payload.model_dump())}
 
 
 @router.post("/qrs/{qr_id}/toggle")
-def toggle_qr(qr_id: str, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def toggle_qr(
+    qr_id: str,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     rows = repo.select("qr_points", id=qr_id)
     if not rows:
         raise AppError("QR não encontrado.", 404)
@@ -90,7 +138,26 @@ def toggle_qr(qr_id: str, _: bool = Depends(current_admin), repo: SupabaseReposi
 
 @router.get("/catalog")
 def catalog(_: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {"categories": repo.raw_table("categories").select("id,slug,name,active").order("name").execute().data or [], "zones": repo.raw_table("zones").select("id,slug,name,active").order("name").execute().data or [], "blocked_terms": repo.raw_table("blocked_terms").select("id,term,reason,active").order("term").execute().data or []}
+    return {
+        "categories": repo.raw_table("categories")
+        .select("id,slug,name,active")
+        .order("name")
+        .execute()
+        .data
+        or [],
+        "zones": repo.raw_table("zones")
+        .select("id,slug,name,active")
+        .order("name")
+        .execute()
+        .data
+        or [],
+        "blocked_terms": repo.raw_table("blocked_terms")
+        .select("id,term,reason,active")
+        .order("term")
+        .execute()
+        .data
+        or [],
+    }
 
 
 class BlockedTermPayload(BaseModel):
@@ -99,12 +166,25 @@ class BlockedTermPayload(BaseModel):
 
 
 @router.post("/blocked-terms")
-def create_blocked_term(payload: BlockedTermPayload, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {"blocked_term": repo.insert("blocked_terms", {"term": payload.term.strip().lower(), "reason": payload.reason, "active": True})}
+def create_blocked_term(
+    payload: BlockedTermPayload,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    return {
+        "blocked_term": repo.insert(
+            "blocked_terms",
+            {"term": payload.term.strip().lower(), "reason": payload.reason, "active": True},
+        )
+    }
 
 
 @router.post("/blocked-terms/{term_id}/toggle")
-def toggle_blocked_term(term_id: str, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def toggle_blocked_term(
+    term_id: str,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     rows = repo.select("blocked_terms", id=term_id)
     if not rows:
         raise AppError("Termo não encontrado.", 404)
@@ -114,7 +194,11 @@ def toggle_blocked_term(term_id: str, _: bool = Depends(current_admin), repo: Su
 
 
 @router.post("/questions/{question_id}/toggle")
-def toggle_question(question_id: str, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def toggle_question(
+    question_id: str,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     rows = repo.select("questions", id=question_id)
     if not rows:
         raise AppError("Questão não encontrada.", 404)
@@ -128,7 +212,12 @@ def toggle_question(question_id: str, _: bool = Depends(current_admin), repo: Su
 
 
 @router.post("/qrs/{qr_id}/questions/{question_id}")
-def link_question(qr_id: str, question_id: str, _: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+def link_question(
+    qr_id: str,
+    question_id: str,
+    _: bool = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
     if not repo.select("qr_points", id=qr_id):
         raise AppError("QR não encontrado.", 404)
     if not repo.select("questions", id=question_id):
@@ -141,8 +230,18 @@ def link_question(qr_id: str, question_id: str, _: bool = Depends(current_admin)
 
 @router.get("/bonus")
 def list_bonus(_: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    campaigns = repo.raw_table("bonus_campaigns").select("*").order("event_date", desc=True).execute().data or []
-    locations = repo.raw_table("bonus_locations").select("*,qr_points(code,name),zones(name)").order("starts_at", desc=True).execute().data or []
+    campaigns = (
+        repo.raw_table("bonus_campaigns").select("*").order("event_date", desc=True).execute().data
+        or []
+    )
+    locations = (
+        repo.raw_table("bonus_locations")
+        .select("*,qr_points(code,name),zones(name)")
+        .order("starts_at", desc=True)
+        .execute()
+        .data
+        or []
+    )
     return {"campaigns": campaigns, "locations": locations}
 
 
@@ -150,8 +249,13 @@ def list_bonus(_: bool = Depends(current_admin), repo: SupabaseRepository = Depe
 def analytics(_: bool = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
     participants = repo.raw_table("participants").select("participant_type").execute().data or []
     questions = repo.raw_table("questions").select("id,category_id").execute().data or []
-    categories = {row["id"]: row["name"] for row in repo.raw_table("categories").select("id,name").execute().data or []}
-    attempts = repo.raw_table("attempts").select("question_id,correct,answered_at").execute().data or []
+    categories = {
+        row["id"]: row["name"]
+        for row in repo.raw_table("categories").select("id,name").execute().data or []
+    }
+    attempts = (
+        repo.raw_table("attempts").select("question_id,correct,answered_at").execute().data or []
+    )
     question_categories = {question["id"]: question["category_id"] for question in questions}
     by_type: dict[str, int] = {}
     for row in participants:
@@ -167,4 +271,8 @@ def analytics(_: bool = Depends(current_admin), repo: SupabaseRepository = Depen
         hour = (attempt.get("answered_at") or "")[11:13]
         if hour:
             by_hour[hour] = by_hour.get(hour, 0) + 1
-    return {"participants_by_type": by_type, "questions_by_category": by_category, "attempts_by_hour": by_hour}
+    return {
+        "participants_by_type": by_type,
+        "questions_by_category": by_category,
+        "attempts_by_hour": by_hour,
+    }
