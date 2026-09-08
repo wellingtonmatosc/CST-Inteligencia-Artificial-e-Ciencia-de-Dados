@@ -1,4 +1,4 @@
-name: Gamificacao QR - testes
+name: Trilhas Poeticas - testes
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
           python-version: '3.12'
           cache: 'pip'
           cache-dependency-path: Projeto-Gamificacao-QR/requirements-dev.txt
-      - name: Instalar dependências
+      - name: Instalar dependencias
         run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
       - name: Compilar Python
         run: python -m compileall -q app scripts
@@ -32,5 +32,12 @@ jobs:
           for file in app/static/js/*.js; do
             node --check "$file"
           done
+      - name: Verificar ausencia do motor legado
+        run: |
+          test ! -f app/services/gamification.py
+          test ! -f app/services/gamification_optimized.py
+          test ! -f app/services/scoring.py
+          test ! -f app/services/bonus_schedule.py
+          ! grep -R "game_get_normal_activity\|game_answer_normal\|daily_bonus\|dynamic_bonus" app supabase/schema.sql --exclude-dir=__pycache__
       - name: Executar testes
         run: pytest
