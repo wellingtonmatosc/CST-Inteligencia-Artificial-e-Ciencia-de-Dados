@@ -20,7 +20,6 @@ async function logout(){
     await api('/api/participants/logout',{method:'POST'});
     profile.classList.add('hidden');profile.innerHTML='';
     document.querySelector('#forms').classList.remove('hidden');
-    document.querySelector('.recovery-card')?.classList.remove('hidden');
     reg.reset();loginForm.reset();rec.reset();toggle();
     showMessage(msg,'Sessão encerrada. Entre novamente com seu nick e PIN.','success');
   }catch(err){
@@ -48,10 +47,9 @@ async function loadMe(){
   try{
     const d=await api('/api/participants/me');
     const pinSetup=d.participant.has_pin?'':`<div class="notice warning setup-pin"><strong>Defina seu PIN de 4 dígitos antes de sair.</strong><p>Seu cadastro foi criado antes desta regra. Seus pontos e histórico serão mantidos.</p><form id="setPinForm"><div class="grid two compact-grid"><div><label for="profile_pin">Novo PIN</label><input id="profile_pin" name="pin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div><div><label for="profile_pin_confirm">Confirmar PIN</label><input id="profile_pin_confirm" name="pin_confirm" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required placeholder="••••"></div></div><button type="submit">Definir PIN</button></form></div>`;
-    profile.innerHTML=`<div class="profile-top"><div><span class="eyebrow">Participante</span><h2>Olá, ${esc(d.participant.nick)}</h2><p><strong class="score-number">${d.summary.points}</strong> pontos</p><p class="muted">${d.summary.normal_completed_today} atividades normais concluídas hoje</p></div><div class="profile-node" aria-hidden="true">AI</div></div>${pinSetup}<div class="profile-actions"><a class="button-link" href="/ranking">Ver ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
+    profile.innerHTML=`<div class="profile-top"><div><span class="eyebrow">Participante</span><h2>Olá, ${esc(d.participant.nick)}</h2><p><strong class="score-number">${d.summary.points}</strong> pontos</p><p class="muted">${d.summary.normal_completed_today} atividades normais concluídas hoje</p></div><div class="profile-node" aria-hidden="true">AI</div></div>${pinSetup}<div class="profile-actions"><button id="openQrScanner" type="button" class="compact">Ler QR Code</button><a class="button-link" href="/ranking">Ver ranking</a><button id="logoutButton" type="button" class="secondary compact">Sair</button></div>`;
     profile.classList.remove('hidden');
     document.querySelector('#forms').classList.add('hidden');
-    document.querySelector('.recovery-card')?.classList.add('hidden');
     document.querySelector('#logoutButton').addEventListener('click',logout);
     const setPinForm=document.querySelector('#setPinForm');if(setPinForm)setPinForm.addEventListener('submit',setPin);
   }catch(_){ }
