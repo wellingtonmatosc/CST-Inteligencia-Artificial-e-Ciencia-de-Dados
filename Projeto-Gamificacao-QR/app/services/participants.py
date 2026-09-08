@@ -60,14 +60,15 @@ class ParticipantService:
                 "registration": payload.get("registration") or None,
                 "course_class": payload.get("course_class") or None,
                 "institution": payload.get("institution") or None,
-                "password_hash": hash_password(payload["password"]),
+                # O banco mantém o nome password_hash por compatibilidade, mas o participante usa PIN.
+                "password_hash": hash_password(payload["pin"]),
                 "access_code_hash": sha256_hex(access_code),
             },
         )
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
-    def login(self, nick: str, password: str) -> tuple[dict, str]:
+    def login(self, nick: str, pin: str) -> tuple[dict, str]:
         rows = (
             self.repo.raw_table("participants")
             .select("*")
@@ -79,22 +80,22 @@ class ParticipantService:
             or []
         )
         if not rows:
-            raise AppError("Nick ou senha inválidos.", 401)
+            raise AppError("Nick ou PIN inválidos.", 401)
 
         participant = rows[0]
         password_hash = participant.get("password_hash") or ""
         if not password_hash:
             raise AppError(
-                "Esta conta ainda não possui senha. Defina uma senha na sessão atual ou use o código de recuperação.",
+                "Esta conta ainda não possui PIN. Defina um PIN na sessão atual ou use o código de recuperação.",
                 409,
             )
-        if not verify_password(password_hash, password):
-            raise AppError("Nick ou senha inválidos.", 401)
+        if not verify_password(password_hash, pin):
+            raise AppError("Nick ou PIN inválidos.", 401)
 
         return participant, self._create_session(participant["id"])
 
-    def recover(self, access_code: str, new_password: str) -> tuple[dict, str, str]:
-        """Redefine a senha usando o código e rotaciona o próprio código de recuperação."""
+    def recover(self, access_code: str, new_pin: str) -> tuple[dict, str, str]:
+        """Redefine o PIN usando o código e rotaciona o próprio código de recuperação."""
         code_hash = sha256_hex(access_code.strip().upper())
         rows = self.repo.select("participants", access_code_hash=code_hash, active=True)
         if not rows:
@@ -105,7 +106,7 @@ class ParticipantService:
         self.repo.update(
             "participants",
             {
-                "password_hash": hash_password(new_password),
+                "password_hash": hash_password(new_pin),
                 "access_code_hash": sha256_hex(new_access_code),
                 "updated_at": datetime.now(timezone.utc).isoformat(),
             },
@@ -114,12 +115,12 @@ class ParticipantService:
         session_token = self._create_session(participant["id"])
         return participant, session_token, new_access_code
 
-    def set_password(self, participant_id: str, password: str) -> None:
-        """Cria ou altera a senha a partir de uma sessão já autenticada."""
+    def set_pin(self, participant_id: str, pin: str) -> None:
+        """Cria ou altera o PIN a partir de uma sessão já autenticada."""
         self.repo.update(
             "participants",
             {
-                "password_hash": hash_password(password),
+                "password_hash": hash_password(pin),
                 "updated_at": datetime.now(timezone.utc).isoformat(),
             },
             id=participant_id,
