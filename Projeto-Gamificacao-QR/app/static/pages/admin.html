@@ -1,12 +1,67 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administração — Gamificação QR</title><link rel="stylesheet" href="/static/css/styles.css"></head>
-<body><a class="skip-link" href="#conteudo">Pular para o conteúdo</a><main id="conteudo"><h1>Administração</h1><div id="message" class="notice hidden" role="status" aria-live="polite"></div>
-<section id="loginCard" class="card"><h2>Entrar</h2><form id="loginForm"><label for="password">Senha administrativa</label><input type="password" id="password" name="password" autocomplete="current-password" required><button>Entrar</button></form></section>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111827">
+<title>Administração — Desafio QR</title>
+<link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<main id="conteudo">
+<header class="hero">
+  <div class="hero-copy"><span class="eyebrow">Painel de controle</span><h1>Administração</h1><p>Gerencie conteúdo, QR Codes, acessibilidade, moderação e indicadores do evento.</p><div class="hero-tags"><span>Conteúdo</span><span>Dados</span><span>Inclusão</span></div></div>
+  <div class="hero-visual" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+</header>
+<div id="message" class="notice hidden" role="status" aria-live="polite"></div>
+
+<section id="loginCard" class="card auth-card">
+  <div class="card-heading"><span class="card-icon" aria-hidden="true">ADM</span><div><span class="eyebrow">Área restrita</span><h2>Entrar</h2></div></div>
+  <form id="loginForm" class="grid two">
+    <div><label for="username">Usuário administrativo</label><input id="username" name="username" autocomplete="username" required></div>
+    <div><label for="password">Senha administrativa</label><input type="password" id="password" name="password" autocomplete="current-password" required></div>
+    <div class="form-action-end"><button type="submit">Entrar no painel</button></div>
+  </form>
+</section>
+
 <section id="dashboard" class="hidden">
-<div class="grid two"><div class="card"><h2>Resumo</h2><div id="overview"></div></div><div class="card"><h2>Moderação de nick</h2><form id="blockedForm"><label for="blockedTerm">Adicionar termo proibido</label><input id="blockedTerm" name="term" required minlength="2"><label for="blockedReason">Motivo <span class="muted">(opcional)</span></label><input id="blockedReason" name="reason"><button>Adicionar</button></form><div id="blockedList"></div></div></div>
-<div class="card"><h2>Cadastrar questão</h2><form id="questionForm" class="grid"><label for="questionCategory">Categoria</label><select id="questionCategory" name="category_id" required></select><label for="questionKind">Tipo</label><select id="questionKind" name="kind"><option value="multiple_choice">Múltipla escolha</option><option value="true_false">Verdadeiro/Falso</option><option value="short_text">Resposta curta</option></select><label for="questionPrompt">Enunciado</label><textarea id="questionPrompt" name="prompt" required></textarea><label for="questionOptions">Alternativas <span class="muted">(uma por linha; não usar em resposta curta)</span></label><textarea id="questionOptions" name="options"></textarea><label for="questionCorrect">Resposta correta <span class="muted">(em resposta curta, separe variações com |)</span></label><input id="questionCorrect" name="correct" required><label for="questionDifficulty">Dificuldade (1–5)</label><input id="questionDifficulty" name="difficulty" type="number" min="1" max="5" value="1"><button>Criar questão acessível</button></form><div id="questionList"></div></div>
-<div class="card"><h2>Cadastrar QR Code</h2><form id="qrForm" class="grid"><label for="qrCode">Código</label><input id="qrCode" name="code" required><label for="qrName">Nome</label><input id="qrName" name="name" required><label for="qrZone">Zona</label><select id="qrZone" name="zone_id" required></select><label for="qrKind">Tipo</label><select id="qrKind" name="kind"><option value="normal">Normal</option><option value="daily_bonus">Bônus do dia</option><option value="dynamic_bonus">Bônus dinâmico</option></select><button>Criar QR</button></form><div id="qrList"></div></div>
-<div class="card"><h2>Vincular questão a QR normal</h2><form id="linkForm" class="grid"><label for="linkQr">QR</label><select id="linkQr" name="qr_id" required></select><label for="linkQuestion">Questão</label><select id="linkQuestion" name="question_id" required></select><button>Vincular</button></form></div>
-<div class="card"><h2>Bônus</h2><p class="muted">As janelas horárias são configuradas em lote pelo script de bônus para garantir simultaneamente Cantina, Térreo e 1º andar.</p><div id="bonusList"></div></div>
-<div class="card"><h2>Análises</h2><div id="analytics"></div></div>
-</section><p><a href="/">Início</a> · <a href="/ranking">Ranking público</a></p></main><script src="/static/js/common.js"></script><script src="/static/js/admin.js"></script></body></html>
+  <div class="grid two">
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">DB</span><div><span class="eyebrow">Visão geral</span><h2>Resumo</h2></div></div><div id="overview" class="admin-stat-grid"></div></div>
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">TXT</span><div><span class="eyebrow">Segurança</span><h2>Moderação de nick</h2></div></div><form id="blockedForm"><label for="blockedTerm">Adicionar termo proibido</label><input id="blockedTerm" name="term" required minlength="2"><label for="blockedReason">Motivo <span class="muted">(opcional)</span></label><input id="blockedReason" name="reason"><button type="submit">Adicionar termo</button></form><div id="blockedList"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-heading"><span class="card-icon" aria-hidden="true">Q</span><div><span class="eyebrow">Banco de conhecimento</span><h2>Cadastrar questão</h2></div></div>
+    <form id="questionForm" class="grid two">
+      <div><label for="questionCategory">Categoria</label><select id="questionCategory" name="category_id" required></select></div>
+      <div><label for="questionKind">Tipo</label><select id="questionKind" name="kind"><option value="multiple_choice">Múltipla escolha</option><option value="true_false">Verdadeiro/Falso</option><option value="short_text">Resposta curta</option><option value="association">Associação</option><option value="ordering">Ordenação</option></select></div>
+      <div style="grid-column:1/-1"><label for="questionPrompt">Enunciado</label><textarea id="questionPrompt" name="prompt" required></textarea></div>
+      <div style="grid-column:1/-1"><label for="questionSimple">Versão em linguagem simples <span class="muted">(opcional)</span></label><textarea id="questionSimple" name="simplified_prompt" placeholder="Uma forma mais direta de apresentar a mesma questão, sem dar pista da resposta."></textarea></div>
+      <div><label for="questionOptions">Alternativas <span class="muted">(uma por linha)</span></label><textarea id="questionOptions" name="options"></textarea></div>
+      <div><label for="questionCorrect">Resposta correta <span class="muted">(resposta curta: variações com |)</span></label><input id="questionCorrect" name="correct" required><label for="questionExplanation">Explicação após resposta <span class="muted">(opcional)</span></label><textarea id="questionExplanation" name="explanation"></textarea></div>
+      <div><label for="questionDifficulty">Dificuldade</label><select id="questionDifficulty" name="difficulty"><option value="1">1 — introdutória</option><option value="2">2 — fácil</option><option value="3">3 — intermediária</option><option value="4">4 — avançada</option><option value="5">5 — desafio</option></select></div>
+      <div><label for="readingLevel">Nível de leitura</label><select id="readingLevel" name="reading_level"><option value="básica">Básica</option><option value="intermediária">Intermediária</option></select></div>
+      <div><label for="mediaType">Mídia</label><select id="mediaType" name="media_type"><option value="">Sem mídia</option><option value="image">Imagem</option><option value="audio">Áudio</option><option value="video">Vídeo</option></select><label for="mediaUrl">URL da mídia <span class="muted">(se houver)</span></label><input id="mediaUrl" name="media_url" type="url"></div>
+      <div><label for="altText">Descrição equivalente da imagem</label><textarea id="altText" name="alt_text" placeholder="Obrigatória quando a imagem for necessária para compreender a questão."></textarea><label for="transcript">Transcrição/legenda equivalente</label><textarea id="transcript" name="transcript" placeholder="Obrigatória para áudio ou vídeo essencial."></textarea></div>
+      <div style="grid-column:1/-1" class="notice"><strong>Validação de inclusão</strong><p>A questão ativa não pode depender apenas de cor, velocidade, imagem sem descrição ou áudio/vídeo sem transcrição.</p><label class="switch-row"><input id="instructionsClear" name="instructions_clear" type="checkbox" checked><span><strong>Instruções claras e objetivas</strong><small>Confirme após revisar o enunciado.</small></span></label></div>
+      <div style="grid-column:1/-1"><button type="submit">Criar questão acessível</button></div>
+    </form>
+    <div id="questionList"></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">QR</span><div><span class="eyebrow">Estações</span><h2>Cadastrar QR Code</h2></div></div><form id="qrForm" class="grid"><label for="qrCode">Código</label><input id="qrCode" name="code" required><label for="qrName">Nome</label><input id="qrName" name="name" required><label for="qrZone">Zona técnica</label><select id="qrZone" name="zone_id" required></select><label for="qrKind">Tipo</label><select id="qrKind" name="kind"><option value="normal">Normal</option><option value="daily_bonus">Bônus do dia</option><option value="dynamic_bonus">Bônus dinâmico</option></select><button type="submit">Criar QR</button></form><div id="qrList"></div></div>
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">↔</span><div><span class="eyebrow">Conteúdo</span><h2>Vincular questão a QR</h2></div></div><form id="linkForm" class="grid"><label for="linkQr">QR normal</label><select id="linkQr" name="qr_id" required></select><label for="linkQuestion">Questão</label><select id="linkQuestion" name="question_id" required></select><button type="submit">Vincular</button></form></div>
+  </div>
+
+  <div class="grid two">
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">★</span><div><span class="eyebrow">Gamificação</span><h2>Bônus</h2></div></div><p class="muted">As janelas horárias são configuradas em lote para preservar opções equivalentes em Cantina, Térreo e 1º andar.</p><div id="bonusList"></div></div>
+    <div class="card"><div class="card-heading"><span class="card-icon" aria-hidden="true">∑</span><div><span class="eyebrow">Indicadores</span><h2>Análises</h2></div></div><div id="analytics"></div></div>
+  </div>
+</section>
+
+<nav class="page-links" aria-label="Navegação"><a href="/">Início</a><a href="/ranking">Ranking público</a></nav>
+</main>
+<script src="/static/js/common.js"></script><script src="/static/js/admin.js"></script>
+</body></html>
