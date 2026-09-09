@@ -47,13 +47,12 @@ create table if not exists public.participants (
   course_class text,
   institution text,
   access_code_hash char(64) not null unique,
-  password_hash text,
+  password_hash text not null,
   pin_failed_attempts smallint not null default 0 check (pin_failed_attempts between 0 and 20),
   pin_locked_until timestamptz,
   team_id uuid references public.teams(id),
   team_revealed_at timestamptz,
   is_organizer boolean not null default false,
-  activated_at timestamptz,
   active boolean not null default true,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -330,7 +329,7 @@ begin
   update public.participant_sessions set last_seen_at=now() where token_hash=p_token_hash and revoked_at is null and expires_at>now() and (last_seen_at is null or last_seen_at<now()-interval '5 minutes');
   return jsonb_build_object('ok',true,'participant',jsonb_build_object('id',v_p.id,'full_name',v_p.full_name,'nick',v_p.nick,'participant_type',v_p.participant_type,
     'registration',v_p.registration,'course_class',v_p.course_class,'institution',v_p.institution,'active',v_p.active,'team_id',v_p.team_id,
-    'team_revealed_at',v_p.team_revealed_at,'is_organizer',v_p.is_organizer,'activated_at',v_p.activated_at,'has_password',v_p.password_hash is not null));
+    'team_revealed_at',v_p.team_revealed_at,'is_organizer',v_p.is_organizer,'has_password',true));
 end $$;
 
 create or replace function public.trilhas_home_state_from_session(p_token_hash text)
@@ -405,7 +404,7 @@ begin
   values(p_participant_id,v_q.id,v_c.challenge_question_id,v_status,v_points,0,v_points,case when v_status='completed' then now() else null end) returning * into v_v;
   if v_points>0 then insert into public.point_ledger(participant_id,event_type,source_id,points,activity_date,dedupe_key,metadata)
     values(p_participant_id,'station_validation',v_v.id,v_points,(now() at time zone 'America/Cuiaba')::date,'station:'||p_participant_id::text||':'||v_q.id::text,jsonb_build_object('qr_code',v_q.code,'station_type',v_q.station_type)) on conflict(dedupe_key) do nothing; end if;
-  if not v_p.is_organizer and v_p.team_revealed_at is null then update public.participants set team_revealed_at=now(),activated_at=coalesce(activated_at,now()),updated_at=now() where id=p_participant_id; end if;
+  if not v_p.is_organizer and v_p.team_revealed_at is null then update public.participants set team_revealed_at=now(),updated_at=now() where id=p_participant_id; end if;
   if v_q.station_type='sequential' and v_s.trail_id is not null then
     select * into v_t from public.trails where id=v_s.trail_id and active=true;
     select exists(select 1 from public.trail_steps ts where ts.trail_id=v_s.trail_id and not exists(select 1 from public.station_visits sv where sv.participant_id=p_participant_id and sv.qr_point_id=ts.qr_point_id)) into v_missing;
