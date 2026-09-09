@@ -1,4 +1,4 @@
-"""Cadastro, ativação institucional, login, sessão e recuperação."""
+"""Cadastro, login, sessão e recuperação de participantes."""
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -62,8 +62,6 @@ class ParticipantService:
                 "participants", registration=(payload.get("registration") or "").strip()
             )
             if existing_registration:
-                if not existing_registration[0].get("password_hash"):
-                    raise AppError("Esta matrícula já está na base institucional. Use 'Ativar cadastro IFMT'.", 409)
                 raise AppError("Esta matrícula já possui cadastro.", 409)
 
         nick = self._validate_nick(payload["nick"])
@@ -88,35 +86,6 @@ class ParticipantService:
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
-    def activate(self, access_code: str, nick: str, pin: str) -> tuple[dict, str, str]:
-        code_hash = sha256_hex(access_code.strip().upper())
-        rows = self.repo.select("participants", access_code_hash=code_hash, active=True)
-        if not rows:
-            raise AppError("Código de ativação inválido.", 404)
-        participant = rows[0]
-        if participant.get("password_hash"):
-            raise AppError("Este cadastro já foi ativado. Use Entrar ou Recuperar acesso.", 409)
-        validated_nick = self._validate_nick(nick, ignore_participant_id=participant["id"])
-        new_access_code = random_access_code()
-        updated = self.repo.update(
-            "participants",
-            {
-                "nick": validated_nick,
-                "password_hash": hash_password(pin),
-                "access_code_hash": sha256_hex(new_access_code),
-                "pin_failed_attempts": 0,
-                "pin_locked_until": None,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
-            id=participant["id"],
-        )
-        participant = updated[0] if updated else {**participant, "nick": validated_nick}
-        if not participant.get("is_organizer") and not participant.get("team_id"):
-            team_id = self.repo.rpc("trilhas_assign_team", {"p_participant_id": participant["id"]})
-            if team_id:
-                participant["team_id"] = team_id
-        return participant, self._create_session(participant["id"]), new_access_code
-
     def login(self, nick: str, pin: str) -> tuple[dict, str]:
         rows = (
             self.repo.raw_table("participants")
@@ -135,9 +104,7 @@ class ParticipantService:
         if locked_until and locked_until > now:
             raise AppError("Muitas tentativas de PIN. Aguarde alguns minutos e tente novamente.", 429)
         password_hash = participant.get("password_hash") or ""
-        if not password_hash:
-            raise AppError("Este cadastro ainda não foi ativado. Use 'Ativar cadastro IFMT'.", 409)
-        if not verify_password(password_hash, pin):
+        if not password_hash or not verify_password(password_hash, pin):
             failures = int(participant.get("pin_failed_attempts") or 0) + 1
             update = {"pin_failed_attempts": failures, "pin_locked_until": None}
             if failures >= MAX_PIN_FAILURES:
@@ -157,8 +124,6 @@ class ParticipantService:
         if not rows:
             raise AppError("Código de recuperação inválido.", 404)
         participant = rows[0]
-        if not participant.get("password_hash"):
-            raise AppError("Este cadastro ainda não foi ativado. Use 'Ativar cadastro IFMT'.", 409)
         new_access_code = random_access_code()
         self.repo.update(
             "participants",
