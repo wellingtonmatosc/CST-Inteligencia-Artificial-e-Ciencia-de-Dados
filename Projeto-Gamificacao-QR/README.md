@@ -6,7 +6,7 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 
 ## O que o sistema faz
 
-- cadastro, ativação institucional, login por nick + PIN e recuperação de acesso;
+- cadastro, login por nick + PIN e recuperação de acesso;
 - cinco equipes secretas: Tarsila, Anita, Mário, Oswald e Pagu;
 - distribuição equilibrada por tipo de participante, curso/turma e tamanho da equipe;
 - organizadores fora da competição;
@@ -19,7 +19,6 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 - ranking coletivo por equipes;
 - pontos extras validados, estorno e auditoria;
 - painel administrativo com papéis `admin`, `operator`, `validator` e `viewer`;
-- importação da base institucional;
 - geração de PNGs, manifesto e folha de impressão dos QRs;
 - acessibilidade: texto ajustável, alto contraste, redução de movimento, leitura da tela/conteúdo/desafio e comando de voz opcional.
 
@@ -36,13 +35,13 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 ## Fluxo principal
 
 ```text
-base institucional / cadastro
+cadastro do participante
         ↓
-participante + equipe secreta
+equipe secreta
         ↓
 QR físico
         ↓
-login/ativação, se necessário
+login, se necessário
         ↓
 código físico
         ↓
@@ -70,35 +69,25 @@ A velocidade de resposta/deslocamento não gera vantagem.
 
 ## Banco
 
-`supabase/schema.sql` é o **schema canônico do sistema atual**. O diretório antigo de migrations foi removido porque descrevia o protótipo anterior.
+`supabase/schema.sql` é o **schema canônico do sistema atual**.
 
 Para um banco novo:
 
 1. execute `supabase/schema.sql`;
 2. execute `supabase/seed.sql` para categorias, zonas e os 12 desafios iniciais acessíveis;
-3. configure as variáveis do `.env`;
-4. opcionalmente importe a base institucional com `scripts/import_participants.py`.
+3. configure as variáveis do `.env`.
 
 O Data API não fica disponível para `anon` ou `authenticated`. O navegador fala apenas com o FastAPI; as RPCs críticas são executáveis somente pelo backend com `service_role`.
 
-## Base institucional
+## Cadastro de participantes
 
-CSV esperado:
+O sistema usa um único fluxo de cadastro. O participante informa os dados necessários, escolhe nick e PIN e recebe um código de recuperação.
 
-```csv
-full_name,participant_type,registration,course_class,institution,is_organizer
-Pessoa Exemplo,student,20260001,IA 1A,IFMT,false
-```
+- aluno IFMT: matrícula e curso/turma;
+- servidor IFMT: identificação como servidor;
+- público externo: instituição/empresa opcional.
 
-Importação:
-
-```bash
-python scripts/import_participants.py --input participantes.csv
-```
-
-O script gera localmente `participantes_ativacao.csv` com códigos de ativação. Esse arquivo é ignorado pelo Git e **não deve ser commitado**.
-
-Participantes pré-carregados usam **Ativar cadastro IFMT**, escolhem o nick e criam o PIN. O código de ativação é rotacionado e passa a funcionar como código de recuperação.
+Não existe etapa separada de **ativação de cadastro IFMT**.
 
 ## Administração
 
