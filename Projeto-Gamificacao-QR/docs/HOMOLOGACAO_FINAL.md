@@ -9,7 +9,7 @@ Não pode existir bloqueador de:
 - segurança;
 - pontuação duplicada/incorreta;
 - sequência;
-- autenticação/ativação;
+- autenticação/cadastro;
 - acessibilidade;
 - uso em celular;
 - operação administrativa.
@@ -30,10 +30,10 @@ Não pode existir bloqueador de:
 
 Testar pelo menos:
 
-- [ ] cadastro externo;
-- [ ] cadastro público de aluno não pré-carregado;
-- [ ] matrícula já pré-carregada direciona para ativação;
-- [ ] ativação institucional por código;
+- [ ] cadastro de aluno IFMT;
+- [ ] cadastro de servidor IFMT;
+- [ ] cadastro de público externo;
+- [ ] matrícula duplicada é recusada;
 - [ ] nick bloqueado;
 - [ ] nick duplicado;
 - [ ] login por nick + PIN;
@@ -141,7 +141,7 @@ Somente depois de todos os bloqueadores resolvidos:
 
 1. remover usuários/dados temporários de homologação;
 2. zerar pontuação para início oficial;
-3. carregar base oficial;
+3. confirmar cadastros e organizadores;
 4. cadastrar conteúdo/estações definitivos;
 5. gerar e imprimir QRs finais;
 6. testar fisicamente;
