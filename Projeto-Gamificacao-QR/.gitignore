@@ -5,7 +5,6 @@ __pycache__/
 .env
 logs/
 qr_output/
-participantes_ativacao*.csv
 qrs.csv
 .DS_Store
 .vercel/
