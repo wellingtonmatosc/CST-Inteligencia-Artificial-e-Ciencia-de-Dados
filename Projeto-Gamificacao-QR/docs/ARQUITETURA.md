@@ -20,7 +20,7 @@ O navegador nunca acessa o Supabase diretamente.
 
 HTML/CSS/JavaScript simples, responsivo e acessível:
 
-- `index.html` / `index.js`: login, ativação institucional, cadastro, recuperação, perfil e leitor de QR;
+- `index.html` / `index.js`: login, cadastro, recuperação, perfil e leitor de QR;
 - `scan.html` / `scan.js`: validação física, conteúdo cultural e desafio;
 - `ranking.html` / `ranking.js`: ranking coletivo;
 - `admin.html` / `admin.js`: operação administrativa;
@@ -28,19 +28,19 @@ HTML/CSS/JavaScript simples, responsivo e acessível:
 
 ### API FastAPI
 
-- `api/participants.py`: cadastro, ativação, login, recuperação, sessão e logout;
+- `api/participants.py`: cadastro, login, recuperação, sessão e logout;
 - `api/game.py`: estação, validação, resposta, resumo e ranking;
 - `api/admin.py`: administração, RBAC, pontos extras e auditoria;
 - `api/deps.py`: injeção de dependências e autorização.
 
 ### Serviços
 
-- `services/participants.py`: regras de conta, PIN, ativação e sessão;
+- `services/participants.py`: regras de conta, PIN, recuperação e sessão;
 - `services/trilhas.py`: fachada das regras de gamificação;
 - `services/questions.py`: avaliação/validação acessível dos desafios;
 - `services/moderation.py`: moderação de nick.
 
-O motor antigo de gamificação, bônus diário/dinâmico e scoring 10/6/2 foi removido.
+O motor antigo de gamificação, bônus diário/dinâmico, scoring 10/6/2 e ativação institucional foram removidos.
 
 ## Banco
 
@@ -87,7 +87,7 @@ Validação/pontuação ocorre dentro do PostgreSQL para reduzir condições de 
 - RPCs críticas executáveis somente pelo `service_role`;
 - browser não recebe chave de banco;
 - PIN e senha administrativa com Argon2;
-- código físico e código de ativação/recuperação persistidos somente como SHA-256;
+- código físico e código de recuperação persistidos somente como SHA-256;
 - sessão participante por token aleatório armazenado no banco apenas como hash;
 - sessão admin assinada com expiração;
 - CSP não foi implantada de forma rígida porque ainda há JavaScript inline na página inicial; cabeçalho de frame, MIME sniffing, referrer e Permissions-Policy estão habilitados.
