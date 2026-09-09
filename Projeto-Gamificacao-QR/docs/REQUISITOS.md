@@ -5,16 +5,18 @@ Este documento registra apenas o sistema atual, alinhado ao projeto-base Trilhas
 ## Participantes
 
 - Público interno e externo.
-- A base institucional pode ser pré-importada com minimização de dados.
-- Participante pré-importado ativa a conta com código de ativação, escolhe nick e define PIN de 4 dígitos.
-- Quem não estiver na base pode usar cadastro público quando essa opção for mantida pela organização.
-- Aluno em cadastro público informa matrícula e curso/turma.
+- Existe um único fluxo de cadastro.
+- Aluno informa matrícula e curso/turma.
+- Servidor informa o tipo de participante.
+- Público externo pode informar instituição/empresa.
+- O participante escolhe nick e define PIN de 4 dígitos no próprio cadastro.
 - Login normal: nick + PIN.
 - Recuperação por código rotativo.
 - PIN armazenado somente como Argon2.
 - Após 5 PINs incorretos, bloqueio temporário por 2 minutos.
 - Sessão em cookie HttpOnly; logout revoga a sessão no servidor.
 - Organizadores ficam fora da competição e não pontuam.
+- Não existe etapa separada de ativação institucional.
 
 ## Equipes
 
