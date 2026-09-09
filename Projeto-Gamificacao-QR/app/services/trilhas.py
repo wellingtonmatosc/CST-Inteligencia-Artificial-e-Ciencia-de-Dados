@@ -63,7 +63,7 @@ class TrilhasService:
                 422,
             ),
             "sequence_locked": (
-                "Esta etapa está bloqueada. Conclua primeiro as etapas anteriores da trilha.",
+                "Esta etapa está bloqueada. Finalize primeiro as etapas anteriores da trilha.",
                 409,
             ),
             "sequence_not_configured": (
@@ -93,7 +93,10 @@ class TrilhasService:
         if result.get("ok"):
             return result
         mapping = {
+            "participant_not_found": ("Participante não encontrado ou inativo.", 401),
             "invalid_qr": ("QR Code inválido ou inativo.", 404),
+            "not_started": ("Esta estação ainda não está disponível.", 409),
+            "expired": ("O período desta estação terminou. O desafio não aceita mais respostas.", 409),
             "station_not_validated": (
                 "Valide primeiro o código físico desta estação.",
                 409,
