@@ -17,6 +17,8 @@ Este documento registra apenas o sistema atual, alinhado ao projeto-base Trilhas
 - Sessão em cookie HttpOnly; logout revoga a sessão no servidor.
 - Organizadores ficam fora da competição e não pontuam.
 - Não existe etapa separada de ativação institucional.
+- Desativar um participante impede novas ações, mas não apaga os pontos que ele já conquistou para sua equipe.
+- Se um participante for transferido de equipe, somente as novas ações passam a pontuar para a nova equipe; o histórico permanece com a equipe do momento da conquista.
 
 ## Equipes
 
@@ -42,14 +44,17 @@ Regras:
 - código/palavra-chave local é comparado por hash;
 - não é usado GPS;
 - temporários/especiais podem ter janela de início/fim;
+- a janela temporal é validada tanto ao abrir/validar a estação quanto ao enviar a resposta do desafio;
 - QR inativo, não iniciado ou expirado não pontua;
 - estação danificada pode ser desativada pelo painel.
 
 ## Trilhas sequenciais
 
 - Uma trilha possui etapas ordenadas.
-- Etapa posterior fica bloqueada enquanto faltar etapa anterior.
-- Ao validar todas as etapas, o participante recebe o bônus configurado uma única vez.
+- Etapa posterior fica bloqueada enquanto faltar uma etapa anterior finalizada.
+- Se a estação anterior possuir desafio, a etapa só é considerada finalizada depois de o participante acertar ou esgotar as tentativas permitidas.
+- Errar o desafio não bloqueia definitivamente a trilha: ao esgotar as tentativas, a etapa é finalizada sem os pontos extras do desafio.
+- Ao finalizar todas as etapas, o participante recebe o bônus configurado uma única vez.
 - Referência inicial de bônus: +30 pontos.
 
 ## Conteúdo cultural
@@ -86,8 +91,11 @@ Associação e ordenação não fazem parte da versão atual porque exigiriam in
 ## Ranking
 
 - Ranking público principal é por equipe, sem exposição de nome completo/matrícula.
-- Indicadores: pontos, participantes ativos, percentual de ativação, média por ativo, estações e trilhas concluídas.
-- Desempate: pontos, ativação, média por participante ativo, trilhas concluídas.
+- Cada lançamento de pontuação, visita, conclusão de trilha e ação manual registra também a equipe do momento da conquista.
+- Pontos históricos não desaparecem quando o participante é desativado e não migram quando ele muda de equipe.
+- A classificação principal prioriza a média de pontos por participante que efetivamente contribuiu para a equipe.
+- Pontos totais, trilhas concluídas, estações validadas e nome da equipe são usados como critérios sucessivos de desempate.
+- Número atual de integrantes e percentual de ativação continuam visíveis como indicadores, mas não alteram a posição por si só; assim, uma entrada tardia sem atividade não derruba a equipe no ranking.
 - Enquanto ninguém iniciou a experiência, nenhuma equipe recebe posição artificial.
 
 ## Área do participante
@@ -117,7 +125,7 @@ Ações extras são concedidas somente por usuário autorizado. Tipos previstos 
 - participação em atividade;
 - outra ação aprovada.
 
-Cada lançamento registra participante, descrição, evidência/referência, pontos, aprovador e data. O estorno gera lançamento negativo e mantém o histórico original.
+Cada lançamento registra participante, equipe do momento, descrição, evidência/referência, pontos, aprovador e data. O estorno gera lançamento negativo na mesma equipe histórica e mantém o lançamento original.
 
 ## Administração e papéis
 
