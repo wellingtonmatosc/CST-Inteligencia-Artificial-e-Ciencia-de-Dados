@@ -12,7 +12,7 @@ class ValidateStationPayload(BaseModel):
 
 
 class AnswerPayload(BaseModel):
-    answer: object
+    answer: str = Field(min_length=1, max_length=500)
 
 
 @router.get("/q/{code}")
