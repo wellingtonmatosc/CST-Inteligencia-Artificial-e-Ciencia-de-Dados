@@ -1,15 +1,14 @@
 # Operação do evento — Trilhas Poéticas
 
-## 1. Preparação institucional
+## 1. Preparação de participantes
 
-1. receber a base institucional mínima aprovada;
-2. marcar organizadores;
-3. importar com `scripts/import_participants.py`;
-4. guardar o CSV de códigos de ativação fora do GitHub;
-5. conferir a distribuição das cinco equipes;
-6. entregar o código de ativação ao participante pelo canal definido pela organização.
+1. revisar as regras de cadastro do evento;
+2. confirmar que alunos informam matrícula e curso/turma;
+3. confirmar que servidores e público externo usam o tipo correto de participante;
+4. marcar organizadores no painel para mantê-los fora da competição;
+5. conferir a distribuição das cinco equipes durante a homologação.
 
-O sistema não exige que público externo esteja previamente na base, caso o cadastro público permaneça habilitado.
+O sistema usa um único fluxo de cadastro. Não existe ativação institucional separada.
 
 ## 2. Curadoria e estações
 
@@ -58,7 +57,7 @@ Imprimir a `folha_impressao.html` ou adaptar os PNGs ao material visual oficial.
 
 1. encontra o QR;
 2. abre pelo celular;
-3. entra/ativa/cria a conta se necessário;
+3. entra ou cria a conta se necessário;
 4. volta automaticamente à estação;
 5. informa o código físico;
 6. recebe os pontos-base uma única vez;
