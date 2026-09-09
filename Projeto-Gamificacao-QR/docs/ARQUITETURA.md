@@ -63,7 +63,9 @@ audit_log
 blocked_terms
 ```
 
-`supabase/schema.sql` é a definição canônica para recriar um banco novo. `supabase/seed.sql` cria apenas dados-base não sensíveis.
+`station_visits`, `trail_completions`, `point_ledger` e `manual_point_actions` armazenam `team_id` como fotografia da equipe no momento da ação. Assim, mudar ou desativar posteriormente um participante não reescreve o placar histórico.
+
+`supabase/schema.sql` contém a base do banco; alterações posteriores ficam versionadas em `supabase/migrations/` e devem ser aplicadas em ordem. `supabase/seed.sql` cria apenas dados-base não sensíveis.
 
 ## RPCs atômicas
 
@@ -73,12 +75,17 @@ blocked_terms
 - `trilhas_get_station`
 - `trilhas_validate_station`
 - `trilhas_answer_challenge`
+- `trilhas_complete_trail_if_ready`
 - `trilhas_participant_summary`
 - `trilhas_team_ranking`
 - `trilhas_admin_grant_manual_points`
 - `trilhas_admin_reverse_manual_points`
 
-Validação/pontuação ocorre dentro do PostgreSQL para reduzir condições de corrida e duplicidade.
+Validação/pontuação ocorre dentro do PostgreSQL para reduzir condições de corrida e duplicidade. A janela de uma estação temporária/especial é conferida novamente no envio da resposta, não apenas na interface.
+
+## Ranking
+
+A posição é calculada primeiro pela média de pontos por participante que efetivamente contribuiu para a equipe. Em empate entram, nessa ordem, pontos totais, trilhas concluídas, estações validadas e nome da equipe. Quantidade atual de membros e percentual de ativação são indicadores, não critérios que mudem sozinhos a classificação.
 
 ## Segurança
 
