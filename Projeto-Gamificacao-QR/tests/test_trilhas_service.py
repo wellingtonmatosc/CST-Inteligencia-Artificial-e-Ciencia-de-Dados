@@ -22,6 +22,69 @@ def test_get_station_maps_station_type_label():
     assert repo.calls[0][0] == "trilhas_get_station"
 
 
+def _multiple_choice_station(_payload):
+    return {
+        "ok": True,
+        "qr": {"station_type": "permanent", "name": "Teste"},
+        "question": {
+            "id": "question-1",
+            "kind": "multiple_choice",
+            "prompt": "Escolha uma alternativa",
+            "options": [
+                {"label": "A", "value": "a"},
+                {"label": "B", "value": "b"},
+                {"label": "C", "value": "c"},
+                {"label": "D", "value": "d"},
+            ],
+        },
+    }
+
+
+def test_multiple_choice_order_is_stable_for_same_participant_and_question():
+    repo = FakeRepo({"trilhas_get_station": _multiple_choice_station})
+    service = TrilhasService(repo)
+
+    first = service.get_station("participant-1", "QR1")["question"]["options"]
+    second = service.get_station("participant-1", "QR1")["question"]["options"]
+
+    assert first == second
+    assert {item["value"] for item in first} == {"a", "b", "c", "d"}
+
+
+def test_multiple_choice_order_varies_between_participants():
+    repo = FakeRepo({"trilhas_get_station": _multiple_choice_station})
+    service = TrilhasService(repo)
+
+    orders = {
+        tuple(item["value"] for item in service.get_station(f"participant-{n}", "QR1")["question"]["options"])
+        for n in range(1, 21)
+    }
+
+    assert len(orders) > 1
+
+
+def test_true_false_keeps_original_order():
+    def station(_payload):
+        return {
+            "ok": True,
+            "qr": {"station_type": "permanent", "name": "Teste"},
+            "question": {
+                "id": "question-vf",
+                "kind": "true_false",
+                "prompt": "Verdadeiro ou falso?",
+                "options": [
+                    {"label": "Verdadeiro", "value": "true"},
+                    {"label": "Falso", "value": "false"},
+                ],
+            },
+        }
+
+    repo = FakeRepo({"trilhas_get_station": station})
+    options = TrilhasService(repo).get_station("participant-1", "QR1")["question"]["options"]
+
+    assert [item["value"] for item in options] == ["true", "false"]
+
+
 def test_validate_station_reports_sequence_lock():
     repo = FakeRepo({"trilhas_validate_station": {"ok": False, "error": "sequence_locked"}})
     with pytest.raises(AppError) as exc:
