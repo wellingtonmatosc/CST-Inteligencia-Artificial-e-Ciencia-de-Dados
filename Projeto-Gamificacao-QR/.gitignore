@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.env
+logs/
+qr_output/
+qrs.csv
+.DS_Store
+.vercel/

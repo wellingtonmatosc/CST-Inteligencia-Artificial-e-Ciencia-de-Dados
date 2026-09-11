@@ -1,0 +1,6 @@
+code,name,station_type,physical_code,points,location_hint
+TESTE-CAN-01,Poesia no espaço,permanent,POESIA01,10,Cantina — local exato a definir pelo GT3
+TESTE-TER-01,Fragmento 1 — Procurar,sequential,TRILHA01,15,Térreo — local exato a definir pelo GT3
+TESTE-1A-01,Fragmento 2 — Descobrir,sequential,TRILHA02,15,1º andar — local exato a definir pelo GT3
+TESTE-REGRA-VF,Verso Relâmpago,temporary,TEMPO01,30,Local acessível a definir pelo GT3
+TESTE-REGRA-MULTI,Cultura tecnologia e inclusão,special,ESPECIAL01,40,Local acessível a definir pelo GT3

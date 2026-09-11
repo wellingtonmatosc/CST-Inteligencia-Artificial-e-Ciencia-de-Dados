@@ -1,0 +1,43 @@
+name: Trilhas Poeticas - testes
+
+on:
+  push:
+    paths:
+      - 'Projeto-Gamificacao-QR/**'
+      - '.github/workflows/gamificacao-qr-tests.yml'
+  pull_request:
+    paths:
+      - 'Projeto-Gamificacao-QR/**'
+      - '.github/workflows/gamificacao-qr-tests.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Projeto-Gamificacao-QR
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: Projeto-Gamificacao-QR/requirements-dev.txt
+      - name: Instalar dependencias
+        run: python -m pip install --upgrade pip && pip install -r requirements-dev.txt
+      - name: Compilar Python
+        run: python -m compileall -q app scripts
+      - name: Validar JavaScript
+        run: |
+          for file in app/static/js/*.js; do
+            node --check "$file"
+          done
+      - name: Verificar ausencia do motor legado
+        run: |
+          test ! -f app/services/gamification.py
+          test ! -f app/services/gamification_optimized.py
+          test ! -f app/services/scoring.py
+          test ! -f app/services/bonus_schedule.py
+          ! grep -R "game_get_normal_activity\|game_answer_normal\|daily_bonus\|dynamic_bonus" app supabase/schema.sql --exclude-dir=__pycache__
+      - name: Executar testes
+        run: pytest
