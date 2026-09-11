@@ -6,6 +6,9 @@ sequenciais entre a Vercel e o Supabase.
 """
 from __future__ import annotations
 
+import hashlib
+import json
+
 from app.core.errors import AppError
 from app.repositories.supabase_repo import SupabaseRepository
 
@@ -15,6 +18,29 @@ STATION_LABELS = {
     "temporary": "Temporário",
     "special": "Especial",
 }
+
+
+def _stable_multiple_choice_options(question: dict, participant_id: str) -> list:
+    """Retorna alternativas em ordem pseudoaleatória e estável por participante/questão.
+
+    A mesma pessoa recebe a mesma ordem ao reabrir a questão ou usar a segunda
+    tentativa. Participantes diferentes tendem a receber permutações diferentes.
+    Questões verdadeiro/falso não passam por este embaralhamento.
+    """
+    options = list(question.get("options") or [])
+    if question.get("kind") != "multiple_choice" or len(options) < 2:
+        return options
+
+    question_key = str(question.get("id") or question.get("prompt") or "")
+    seed = f"{participant_id}:{question_key}"
+
+    def sort_key(item: tuple[int, object]) -> bytes:
+        index, option = item
+        canonical = json.dumps(option, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        value = f"{seed}:{index}:{canonical}".encode("utf-8")
+        return hashlib.sha256(value).digest()
+
+    return [option for _, option in sorted(enumerate(options), key=sort_key)]
 
 
 class TrilhasService:
@@ -40,6 +66,12 @@ class TrilhasService:
             qr.get("station_type"), "Estação"
         )
         result["qr"] = qr
+
+        question = result.get("question")
+        if isinstance(question, dict):
+            question["options"] = _stable_multiple_choice_options(question, participant_id)
+            result["question"] = question
+
         return result
 
     def validate_station(self, participant_id: str, code: str, physical_code: str | None) -> dict:
