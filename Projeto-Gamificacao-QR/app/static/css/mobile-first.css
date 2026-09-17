@@ -224,6 +224,8 @@ body .form-card[open] summary{margin-bottom:12px}
   body .admin-nav{grid-template-columns:repeat(5,minmax(0,1fr))}
   body .admin-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
   body .admin-alerts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body .admin-login{width:min(100%,520px);margin:14px auto 0;padding:24px}
+  body .admin-login form{max-width:none}
 }
 
 /* Desktop continua suportado, mas não é a referência principal. */
@@ -244,6 +246,37 @@ body .form-card[open] summary{margin-bottom:12px}
   body .participant-score{text-align:right}
   body .admin-rank{grid-template-columns:56px minmax(0,1fr) minmax(84px,auto)}
   body .admin-rank-score{grid-column:auto;justify-self:end}
+
+  /* Login administrativo: composição compacta e centralizada no desktop. */
+  body main.admin-shell:has(#loginCard:not(.hidden)){
+    width:min(1000px,calc(100% - 48px));
+    padding-top:24px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero{
+    width:100%;
+    margin:0 auto 18px;
+    padding:22px 26px;
+    border-radius:24px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero h1{
+    font-size:clamp(2.35rem,4.2vw,3.55rem);
+    margin-bottom:10px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero .hero-copy p{
+    max-width:680px;
+    font-size:1rem;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-login{
+    width:min(100%,500px);
+    margin:0 auto;
+    padding:26px;
+    border-radius:20px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-login form{max-width:none}
+  body main.admin-shell:has(#loginCard:not(.hidden)) > .page-links{
+    width:min(100%,500px);
+    margin:14px auto 0;
+  }
 }
 
 @media(hover:hover) and (pointer:fine){
