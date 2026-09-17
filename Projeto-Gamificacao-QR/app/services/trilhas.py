@@ -157,5 +157,5 @@ class TrilhasService:
         return result
 
     def ranking(self) -> list[dict]:
-        result = self.repo.rpc("trilhas_team_ranking", {})
+        result = self.repo.rpc("trilhas_individual_ranking", {})
         return result if isinstance(result, list) else []
