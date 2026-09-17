@@ -158,4 +158,13 @@ class TrilhasService:
 
     def ranking(self) -> list[dict]:
         result = self.repo.rpc("trilhas_individual_ranking", {})
-        return result if isinstance(result, list) else []
+        if not isinstance(result, list):
+            return []
+        public_rows = []
+        for row in result:
+            if not isinstance(row, dict):
+                continue
+            item = dict(row)
+            item.pop("id", None)
+            public_rows.append(item)
+        return public_rows
