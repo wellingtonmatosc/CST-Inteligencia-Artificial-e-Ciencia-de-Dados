@@ -7,8 +7,7 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 ## O que o sistema faz
 
 - cadastro, login por nick + PIN e recuperação de acesso;
-- cinco equipes secretas: Tarsila, Anita, Mário, Oswald e Pagu;
-- distribuição equilibrada por tipo de participante, curso/turma e tamanho da equipe;
+- competição individual com ranking por nick;
 - organizadores fora da competição;
 - estações QR `permanent`, `sequential`, `temporary` e `special`;
 - código físico local como validação antifraude, sem GPS;
@@ -16,11 +15,22 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 - trilhas sequenciais com bloqueio de etapas e bônus de conclusão;
 - conteúdo cultural em texto, imagem, áudio ou vídeo, com equivalentes acessíveis;
 - desafios de múltipla escolha, verdadeiro/falso ou resposta curta;
-- ranking coletivo por equipes;
+- alternativas de múltipla escolha em ordem estável por participante e questão;
 - pontos extras validados, estorno e auditoria;
 - painel administrativo com papéis `admin`, `operator`, `validator` e `viewer`;
 - geração de PNGs, manifesto e folha de impressão dos QRs;
 - acessibilidade: texto ajustável, alto contraste, redução de movimento, leitura da tela/conteúdo/desafio e comando de voz opcional.
+
+## Ranking individual
+
+A classificação usa o desempenho de cada participante:
+
+1. maior quantidade de pontos acumulados;
+2. em empate, mais trilhas concluídas;
+3. persistindo o empate, mais estações validadas;
+4. desempenhos idênticos compartilham a mesma posição.
+
+A velocidade de resposta ou deslocamento não é usada como desempate.
 
 ## Stack
 
@@ -37,8 +47,6 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 ```text
 cadastro do participante
         ↓
-equipe secreta
-        ↓
 QR físico
         ↓
 login, se necessário
@@ -51,7 +59,7 @@ conteúdo cultural acessível
         ↓
 desafio opcional
         ↓
-pontuação individual → equipe → ranking
+pontuação individual → ranking individual
 ```
 
 ## Pontuação-base adotada
@@ -69,13 +77,16 @@ A velocidade de resposta/deslocamento não gera vantagem.
 
 ## Banco
 
-`supabase/schema.sql` é o **schema canônico do sistema atual**.
+`supabase/schema.sql` contém a base estrutural do sistema. As evoluções aplicadas depois do schema-base ficam versionadas em `supabase/migrations/`.
+
+A mudança para competição individual está registrada em `supabase/migrations/20260917153330_individual_competition.sql`. As antigas colunas de equipe continuam no banco somente para compatibilidade e preservação de histórico; novas atividades competitivas não dependem de equipe.
 
 Para um banco novo:
 
 1. execute `supabase/schema.sql`;
-2. execute `supabase/seed.sql` para categorias, zonas e os 12 desafios iniciais acessíveis;
-3. configure as variáveis do `.env`.
+2. aplique as migrations em ordem;
+3. execute `supabase/seed.sql` para categorias, zonas e os 12 desafios iniciais acessíveis;
+4. configure as variáveis do `.env`.
 
 O Data API não fica disponível para `anon` ou `authenticated`. O navegador fala apenas com o FastAPI; as RPCs críticas são executáveis somente pelo backend com `service_role`.
 
@@ -87,7 +98,7 @@ O sistema usa um único fluxo de cadastro. O participante informa os dados neces
 - servidor IFMT: identificação como servidor;
 - público externo: instituição/empresa opcional.
 
-Não existe etapa separada de **ativação de cadastro IFMT**.
+Não existe etapa separada de **ativação de cadastro IFMT** e não existe distribuição por equipes.
 
 ## Administração
 
@@ -123,6 +134,10 @@ Saída em `qr_output/`:
 - `folha_impressao.html` com QR, código físico, tipo, pontos e referência de local.
 
 A escolha do **ponto físico exato** pertence à frente responsável pelos espaços.
+
+## Identidade visual
+
+O tema usa fundo azul-noite com gradientes azul, índigo e violeta, com ciano e magenta apenas como luz decorativa e âmbar para foco/destaques. A paleta foi reorganizada para manter contraste de leitura e preservar o modo de alto contraste.
 
 ## Desenvolvimento local
 
