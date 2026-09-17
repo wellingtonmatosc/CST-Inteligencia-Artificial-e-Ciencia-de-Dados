@@ -32,4 +32,4 @@ def answer_station(code: str, payload: AnswerPayload, participant=Depends(curren
 
 @router.get("/ranking")
 def ranking(game: TrilhasService = Depends(get_trilhas_service)):
-    return {"ranking": game.ranking(), "ranking_type": "teams"}
+    return {"ranking": game.ranking(), "ranking_type": "individual"}
