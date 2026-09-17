@@ -79,10 +79,6 @@ class ParticipantService:
                 "access_code_hash": sha256_hex(access_code),
             },
         )
-        if not participant.get("is_organizer") and not participant.get("team_id"):
-            team_id = self.repo.rpc("trilhas_assign_team", {"p_participant_id": participant["id"]})
-            if team_id:
-                participant["team_id"] = team_id
         session_token = self._create_session(participant["id"])
         return participant, session_token, access_code
 
