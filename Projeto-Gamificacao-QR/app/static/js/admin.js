@@ -1,6 +1,6 @@
 const $=s=>document.querySelector(s);
 const msg=$('#message');
-let session=null,catalog={categories:[],zones:[],teams:[],blocked_terms:[]};
+let session=null,catalog={categories:[],zones:[],blocked_terms:[]};
 let questions=[],stations=[],trails=[],participants=[],manualActions=[];
 
 const roleCan=(...roles)=>session&&roles.includes(session.role);
@@ -52,7 +52,7 @@ function renderQuestions(){
 
 function renderParticipants(){
   $('#manualParticipant').innerHTML=participants.filter(x=>x.active&&!x.is_organizer).map(x=>`<option value="${x.id}">${esc(x.nick)} — ${esc(x.full_name)}</option>`).join('');
-  $('#participantList').innerHTML=participants.length?participants.map(x=>{const team=x.teams?.name||'equipe ainda não definida';const status=x.is_organizer?'Organizador':team;return`<div class="admin-list-item"><div><strong>${esc(x.nick)}</strong> <span class="muted">${esc(x.full_name)}</span><br><span class="pill">${esc(x.participant_type)}</span> <span class="pill">${esc(status)}</span></div>${roleCan('admin')?`<button class="secondary compact" data-organizer="${x.id}" data-value="${x.is_organizer?'false':'true'}">${x.is_organizer?'Voltar à competição':'Marcar organizador'}</button>`:''}</div>`}).join(''):'<p class="muted">Nenhum participante.</p>';
+  $('#participantList').innerHTML=participants.length?participants.map(x=>{const status=x.is_organizer?'Organizador':'Competidor individual';return`<div class="admin-list-item"><div><strong>${esc(x.nick)}</strong> <span class="muted">${esc(x.full_name)}</span><br><span class="pill">${esc(x.participant_type)}</span> <span class="pill">${esc(status)}</span></div>${roleCan('admin')?`<button class="secondary compact" data-organizer="${x.id}" data-value="${x.is_organizer?'false':'true'}">${x.is_organizer?'Voltar à competição':'Marcar organizador'}</button>`:''}</div>`}).join(''):'<p class="muted">Nenhum participante.</p>';
   document.querySelectorAll('[data-organizer]').forEach(b=>b.onclick=async()=>{try{await api(`/api/admin/participants/${b.dataset.organizer}/organizer`,{method:'POST',body:JSON.stringify({is_organizer:b.dataset.value==='true'})});await refresh()}catch(e){showError(e)}});
 }
 
