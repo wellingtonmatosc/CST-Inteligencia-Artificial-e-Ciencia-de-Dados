@@ -2,9 +2,12 @@ function ensureStylesheet(href){
   if(document.querySelector(`link[href="${href}"]`))return;
   const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);
 }
+document.documentElement.lang='pt-BR';
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#080b1c');
 ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/theme-gradient.css');
+ensureStylesheet('/static/css/mobile-first.css');
 
 async function api(url,options={}){
   const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
