@@ -4,6 +4,7 @@ function ensureStylesheet(href){
 }
 ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
+ensureStylesheet('/static/css/theme-gradient.css');
 
 async function api(url,options={}){
   const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
