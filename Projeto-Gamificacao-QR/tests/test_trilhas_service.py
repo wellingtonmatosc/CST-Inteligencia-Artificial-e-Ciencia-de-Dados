@@ -101,11 +101,12 @@ def test_answer_challenge_returns_success_payload():
 
 
 def test_ranking_returns_empty_list_for_invalid_backend_payload():
-    repo = FakeRepo({"trilhas_team_ranking": {"unexpected": True}})
+    repo = FakeRepo({"trilhas_individual_ranking": {"unexpected": True}})
     assert TrilhasService(repo).ranking() == []
+    assert repo.calls[0][0] == "trilhas_individual_ranking"
 
 
-def test_ranking_keeps_team_rows():
-    rows = [{"name": "Equipe Pagu", "position": None, "points": 0}]
-    repo = FakeRepo({"trilhas_team_ranking": rows})
+def test_ranking_keeps_individual_rows():
+    rows = [{"nick": "Poeta", "position": 1, "points": 120, "trails_completed": 1, "stations_validated": 4}]
+    repo = FakeRepo({"trilhas_individual_ranking": rows})
     assert TrilhasService(repo).ranking() == rows
