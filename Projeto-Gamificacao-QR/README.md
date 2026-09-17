@@ -17,7 +17,7 @@ Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte,
 - desafios de múltipla escolha, verdadeiro/falso ou resposta curta;
 - alternativas de múltipla escolha em ordem estável por participante e questão;
 - pontos extras validados, estorno e auditoria;
-- painel administrativo com papéis `admin`, `operator`, `validator` e `viewer`;
+- área administrativa separada em `/admin`, destinada ao administrador único do evento;
 - geração de PNGs, manifesto e folha de impressão dos QRs;
 - acessibilidade: texto ajustável, alto contraste, redução de movimento, leitura da tela/conteúdo/desafio e comando de voz opcional.
 
@@ -102,20 +102,24 @@ Não existe etapa separada de **ativação de cadastro IFMT** e não existe dist
 
 ## Administração
 
-O primeiro acesso pode usar o administrador bootstrap configurado em variáveis de ambiente. Depois, usuários administrativos podem ser criados no painel ou localmente:
+A administração é separada do login dos participantes e fica disponível em `/admin`.
 
-```bash
-python scripts/create_admin_user.py usuario --role admin
-```
+O projeto opera com **um único administrador**, configurado pelas variáveis de ambiente `ADMIN_USERNAME` e `ADMIN_PASSWORD_HASH`. Não existe cadastro de novos administradores na interface pública ou no painel.
 
-Papéis:
+O painel administrativo concentra:
 
-- `admin`: acesso total e gestão de usuários/organizadores;
-- `operator`: estações, conteúdo, trilhas, desafios e pontos extras;
-- `validator`: valida/estorna pontos extras e consulta dados;
-- `viewer`: somente consulta.
+- visão geral com participantes, pontos, estações, validações, desafios e trilhas;
+- alertas operacionais de estações/trilhas incompletas ou temporárias;
+- consulta do progresso de cada participante, com ativação/desativação;
+- criação e edição de estações e conteúdo cultural;
+- gestão de desafios acessíveis;
+- gestão de trilhas sequenciais;
+- concessão e estorno de pontos extras;
+- visualização do ranking individual;
+- auditoria das ações administrativas;
+- moderação de nick e configurações gerais de operação.
 
-Senhas ficam somente como hash Argon2.
+A rota administrativa não aparece na navegação pública. A proteção é feita por usuário, senha, cookie `HttpOnly` e sessão administrativa assinada.
 
 ## QR Codes físicos
 
