@@ -1,0 +1,11 @@
+/* Preferências atuais de acessibilidade. Mantido enxuto para não criar uma segunda camada visual desnecessária. */
+html.a11y-contrast body{background:#000!important;color:#fff!important}
+html.a11y-contrast body::before,html.a11y-contrast .hero-visual,html.a11y-contrast .ai-ambient,html.a11y-contrast .ai-data-stream{display:none!important}
+html.a11y-contrast .card,html.a11y-contrast .hero,html.a11y-contrast .a11y-panel{background:#000!important;color:#fff!important;border:0!important;box-shadow:none!important}
+html.a11y-contrast label,html.a11y-contrast h1,html.a11y-contrast h2,html.a11y-contrast h3,html.a11y-contrast .muted,html.a11y-contrast small,html.a11y-contrast .eyebrow{color:#fff!important}
+html.a11y-contrast input,html.a11y-contrast select,html.a11y-contrast textarea,html.a11y-contrast .choices label{background:#000!important;color:#fff!important;border:1px solid #fff!important;box-shadow:none!important}
+html.a11y-contrast a{color:#fff!important;text-decoration:underline!important}
+html.a11y-contrast button,html.a11y-contrast .button-link{background:#000!important;color:#fff!important;border:1px solid #fff!important;box-shadow:none!important}
+html.a11y-contrast .notice,html.a11y-contrast .meta-pill,html.a11y-contrast .pill,html.a11y-contrast .hero-tags span{background:#000!important;color:#fff!important;border:1px solid #fff!important;box-shadow:none!important}
+html.a11y-contrast .ranking-row{background:#000!important;color:#fff!important}
+html.a11y-contrast .score-number{color:#fff!important;background:none!important;-webkit-text-fill-color:#fff!important;filter:none!important}
