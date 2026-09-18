@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import admin, admin_dashboard, game, participants
+from app.api import admin, admin_dashboard, game, participants, question_pool
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.logging import configure_logging
@@ -17,6 +17,7 @@ app.include_router(participants.router)
 app.include_router(game.router)
 app.include_router(admin.router)
 app.include_router(admin_dashboard.router)
+app.include_router(question_pool.router)
 
 BASE = Path(__file__).resolve().parent
 STATIC = BASE / "static"
