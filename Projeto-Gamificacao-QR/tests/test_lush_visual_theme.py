@@ -27,21 +27,34 @@ def test_public_ranking_has_podium_and_readable_metrics():
     assert "podium-label first" in text
     assert "podium-label second" in text
     assert "podium-label third" in text
+    assert "Ouro • 1º lugar" in text
+    assert "Prata • 2º lugar" in text
+    assert "Bronze • 3º lugar" in text
     assert "rank-metrics" in text
+    assert "rank-score-pill" in text
     assert "QRs distintos" in text
 
 
-def test_podium_effects_respect_reduced_motion():
-    public_theme = read("app/static/css/theme-lush.css")
-    admin_theme = read("app/static/css/theme-lush-admin.css")
-    assert "@keyframes first-breathe" in public_theme
-    assert "@keyframes rank-shine" in public_theme
+def test_ranking_uses_lightweight_effects_and_metallic_podium():
+    public_theme = read("app/static/css/ranking-optimized.css").lower()
+    admin_theme = read("app/static/css/theme-lush-admin.css").lower()
+    for color in ("#d4af37", "#aeb7c0", "#b87333"):
+        assert color in public_theme
+        assert color in admin_theme
+    assert "background-attachment:scroll!important" in public_theme
+    assert "animation:none!important" in public_theme
+    assert "backdrop-filter:none!important" in public_theme
+    assert "admin-leader-breathe" not in admin_theme
+    assert "admin-rank-shine" not in admin_theme
     assert "a11y-reduced-motion" in public_theme
     assert "prefers-reduced-motion:reduce" in public_theme
-    assert "@keyframes admin-leader-breathe" in admin_theme
-    assert "@keyframes admin-rank-shine" in admin_theme
-    assert "a11y-reduced-motion" in admin_theme
-    assert "prefers-reduced-motion:reduce" in admin_theme
+
+
+def test_ranking_explanatory_text_can_be_collapsed():
+    html = read("app/static/pages/ranking.html")
+    assert 'class="ranking-info"' in html
+    assert "<summary>Ver critérios do ranking</summary>" in html
+    assert "/static/css/ranking-optimized.css" in html
 
 
 def test_mobile_accessibility_control_is_compact():
