@@ -82,7 +82,10 @@ def attach_individual_progress(participants: list[dict], ranking: list[dict]) ->
         row["first_try_correct"] = int(stats.get("first_try_correct") or 0)
         row["best_correct_streak"] = int(stats.get("best_correct_streak") or 0)
         row["tie_count"] = int(stats.get("tie_count") or 1)
+        row["pre_final_tie_count"] = int(stats.get("pre_final_tie_count") or 1)
         row["needs_final_tiebreak"] = bool(stats.get("needs_final_tiebreak"))
+        row["unresolved_tie"] = bool(stats.get("unresolved_tie"))
+        row["final_tiebreak_resolved"] = bool(stats.get("final_tiebreak_resolved"))
         row["final_tiebreak_score"] = int(stats.get("final_tiebreak_score") or 0)
         row["final_tiebreak_recorded"] = bool(stats.get("final_tiebreak_recorded"))
         output.append(row)
@@ -138,7 +141,7 @@ def dashboard_data(
     unusual_recent = sum(1 for row in recent_activity if row.get("unusual_hour"))
     event_days = _event_days(repo)
     final_day = next((day for day in event_days if day.get("is_final_event")), None)
-    unresolved_ties = sum(1 for row in ranking if row.get("needs_final_tiebreak"))
+    unresolved_ties = sum(1 for row in ranking if row.get("unresolved_tie"))
 
     return {
         "mode": "individual",
