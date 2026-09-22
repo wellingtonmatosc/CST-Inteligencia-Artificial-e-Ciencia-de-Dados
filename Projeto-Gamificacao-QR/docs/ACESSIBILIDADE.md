@@ -24,7 +24,7 @@ O painel **Acessibilidade** oferece:
 - parar a síntese de voz;
 - comando de voz quando suportado pelo navegador.
 
-Comando de voz e síntese de voz são complementos. Nenhuma função essencial depende deles.
+Comando de voz e síntese de voz são complementos. Nenhuma função essencial depende deles. O acesso ao painel fica integrado à navegação e não deve cobrir conteúdo ou controles no celular.
 
 ## Conteúdo das estações
 
@@ -35,21 +35,23 @@ Comando de voz e síntese de voz são complementos. Nenhuma função essencial d
 - audiodescrição pode ser adicionada quando a obra/atividade exigir descrição visual mais rica;
 - conteúdo não deve depender apenas de cor;
 - conteúdo não deve exigir rapidez para pontuar;
-- se a proposta pedir para “observar” algo, deve oferecer percepção equivalente por descrição, som, tato/sensação ou outro meio adequado;
+- se a proposta pedir para observar algo, deve oferecer percepção equivalente por descrição, som, tato/sensação ou outro meio adequado;
 - botão **Ouvir conteúdo** aparece nas estações textuais;
 - desafios oferecem **Ouvir desafio**.
 
-## Desafios
+## Questões
 
-Antes de ativar uma questão, o sistema verifica metadados mínimos:
+A versão final utiliza somente **múltipla escolha com exatamente 4 alternativas**. Antes de ativar uma questão, o sistema verifica metadados mínimos:
 
 - instrução clara;
 - sem dependência exclusiva de cor;
 - sem exigência de rapidez;
 - texto alternativo quando há imagem;
-- transcrição/legenda quando há áudio/vídeo.
+- transcrição/legenda quando há áudio/vídeo;
+- quatro alternativas textuais distintas;
+- resposta correta pertencente ao conjunto de alternativas.
 
-Tipos habilitados: múltipla escolha, verdadeiro/falso e resposta curta. Associação/ordenação foram retirados desta versão até existir interface equivalente acessível.
+A ordem das alternativas é embaralhada de forma estável por participante + questão, sem modificar o conteúdo ou exigir rapidez.
 
 ## Navegação
 
@@ -59,7 +61,8 @@ Tipos habilitados: múltipla escolha, verdadeiro/falso e resposta curta. Associa
 - controles grandes em celular;
 - mensagens de erro/sucesso com texto e `aria-live`;
 - nenhum estado importante é comunicado somente por cor;
-- `prefers-reduced-motion` e opção manual de redução de movimento são respeitados.
+- `prefers-reduced-motion` e opção manual de redução de movimento são respeitados;
+- ranking evita animações contínuas e efeitos visuais pesados.
 
 ## Espaço físico
 
