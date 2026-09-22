@@ -13,6 +13,7 @@ ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/mobile-first.css');
 ensureStylesheet('/static/css/theme-institutional.css');
+if(isRanking)ensureStylesheet('/static/css/ranking-optimized.css');
 if(location.pathname==='/admin'){
   ensureStylesheet('/static/css/theme-institutional-admin.css');
   ensureScript('/static/js/admin-question-pool.js');
@@ -35,7 +36,7 @@ function showMessage(el,msg,type='notice'){
 }
 
 function esc(s){
-  return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+  return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','\"':'&quot;'}[c]));
 }
 
 const A11Y_STORAGE_KEY='gamificacao-a11y-v3';
