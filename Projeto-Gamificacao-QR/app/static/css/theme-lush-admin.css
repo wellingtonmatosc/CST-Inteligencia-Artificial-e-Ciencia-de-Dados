@@ -1,0 +1,58 @@
+/* Complemento do tema visual para ranking administrativo. */
+#rankingPreview .admin-rank,#adminRankingList .admin-rank{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #1f405a;
+  border-radius:14px;
+  margin:7px 0;
+  padding:12px;
+  background:linear-gradient(145deg,rgba(7,25,38,.94),rgba(2,10,17,.98));
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+#rankingPreview .admin-rank:hover,#adminRankingList .admin-rank:hover{transform:translateY(-2px)}
+#rankingPreview .admin-rank:nth-child(1),#adminRankingList .admin-rank:nth-child(1){
+  border-color:#e14a22;
+  background:linear-gradient(135deg,rgba(184,38,1,.32),rgba(18,9,11,.97) 42%,rgba(6,47,79,.62));
+  box-shadow:0 14px 34px rgba(184,38,1,.24);
+  animation:admin-leader-breathe 3.4s ease-in-out infinite;
+}
+#rankingPreview .admin-rank:nth-child(2),#adminRankingList .admin-rank:nth-child(2){
+  border-color:#6f92aa;
+  background:linear-gradient(135deg,rgba(6,47,79,.72),rgba(8,20,31,.98));
+  box-shadow:0 12px 30px rgba(6,47,79,.30);
+}
+#rankingPreview .admin-rank:nth-child(3),#adminRankingList .admin-rank:nth-child(3){
+  border-color:#9f5a8f;
+  background:linear-gradient(135deg,rgba(129,55,114,.31),rgba(14,10,18,.98));
+  box-shadow:0 12px 30px rgba(129,55,114,.20);
+}
+#rankingPreview .admin-rank:nth-child(-n+3)::after,#adminRankingList .admin-rank:nth-child(-n+3)::after{
+  content:"";
+  position:absolute;
+  inset:-55% auto -55% -42%;
+  width:30%;
+  transform:rotate(18deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.10),transparent);
+  animation:admin-rank-shine 5.4s ease-in-out infinite;
+  pointer-events:none;
+}
+#rankingPreview .admin-rank:nth-child(2)::after,#adminRankingList .admin-rank:nth-child(2)::after{animation-delay:1.2s}
+#rankingPreview .admin-rank:nth-child(3)::after,#adminRankingList .admin-rank:nth-child(3)::after{animation-delay:2.1s}
+#rankingPreview .admin-rank:nth-child(1) .admin-rank-position,#adminRankingList .admin-rank:nth-child(1) .admin-rank-position{
+  color:#fff;background:linear-gradient(135deg,#b82601,#e14a22);box-shadow:0 0 20px rgba(184,38,1,.38)
+}
+#rankingPreview .admin-rank:nth-child(2) .admin-rank-position,#adminRankingList .admin-rank:nth-child(2) .admin-rank-position{
+  color:#fff;background:linear-gradient(135deg,#315a75,#6f92aa)
+}
+#rankingPreview .admin-rank:nth-child(3) .admin-rank-position,#adminRankingList .admin-rank:nth-child(3) .admin-rank-position{
+  color:#fff;background:linear-gradient(135deg,#5e2854,#813772)
+}
+.admin-rank-position{display:grid;place-items:center;min-width:40px;min-height:40px;border-radius:12px;font-weight:950}
+@keyframes admin-leader-breathe{0%,100%{box-shadow:0 14px 34px rgba(184,38,1,.22)}50%{box-shadow:0 18px 42px rgba(184,38,1,.34),0 0 24px rgba(184,38,1,.10)}}
+@keyframes admin-rank-shine{0%,72%{transform:translateX(-20%) rotate(18deg);opacity:0}78%{opacity:.5}100%{transform:translateX(560%) rotate(18deg);opacity:0}}
+html.a11y-reduced-motion #rankingPreview .admin-rank,html.a11y-reduced-motion #adminRankingList .admin-rank,
+html.a11y-reduced-motion #rankingPreview .admin-rank::after,html.a11y-reduced-motion #adminRankingList .admin-rank::after{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){
+  #rankingPreview .admin-rank,#adminRankingList .admin-rank,#rankingPreview .admin-rank::after,#adminRankingList .admin-rank::after{animation:none!important;transition:none!important}
+}
+html.a11y-contrast #rankingPreview .admin-rank,html.a11y-contrast #adminRankingList .admin-rank{background:#000!important;color:#fff!important;border:1px solid #fff!important;box-shadow:none!important;animation:none!important}
