@@ -108,7 +108,7 @@
   .admin-shell{width:min(100% - 20px,1380px)}
   .admin-dashboard{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;gap:10px}
   .admin-toolbar{grid-column:1;grid-row:1}
-  .admin-shell .admin-nav{grid-column:1;grid-row:2;position:sticky;top:4px;z-index:30;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow:visible!important;padding:7px;border-radius:13px}
+  .admin-shell .admin-nav{grid-column:1;grid-row:2;position:sticky;top:4px;z-index:30;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow-x:auto!important;overflow-y:hidden;padding:7px;border-radius:13px}
   .admin-shell .admin-nav button{min-width:0!important;width:100%!important;white-space:normal!important;padding:8px 6px!important;text-align:center!important;font-size:.78rem;line-height:1.1}
   .admin-panel{grid-column:1;grid-row:3}
   .admin-panel > .grid.two,.admin-panel form.grid.two{grid-template-columns:1fr}
