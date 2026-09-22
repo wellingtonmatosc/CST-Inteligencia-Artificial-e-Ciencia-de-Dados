@@ -37,16 +37,17 @@
     }
 
     const meritList=card.querySelector('#rankingMeritList');
-    meritList.innerHTML=ranking.length?ranking.slice(0,20).map(row=>`<div class="admin-list-item"><div><strong>${Number(row.position)}º — ${esc(row.nick)}</strong><br><span class="muted">${esc(metricLine(row))}</span></div><div><span class="pill">${Number(row.points||0)} pts</span>${row.needs_final_tiebreak?'<span class="pill">empate técnico</span>':''}</div></div>`).join(''):'<div class="admin-empty">Ranking ainda não iniciado.</div>';
+    meritList.innerHTML=ranking.length?ranking.slice(0,20).map(row=>`<div class="admin-list-item"><div><strong>${Number(row.position)}º — ${esc(row.nick)}</strong><br><span class="muted">${esc(metricLine(row))}</span></div><div><span class="pill">${Number(row.points||0)} pts</span>${row.unresolved_tie?'<span class="pill">empate técnico</span>':row.final_tiebreak_resolved?'<span class="pill">desempate concluído</span>':''}</div></div>`).join(''):'<div class="admin-empty">Ranking ainda não iniciado.</div>';
 
-    const tied=ranking.filter(row=>row.needs_final_tiebreak);
+    const tiebreakGroup=ranking.filter(row=>row.needs_final_tiebreak);
     const area=card.querySelector('#finalTiebreakArea');
-    if(!tied.length){
-      area.innerHTML='<div class="notice"><strong>Desempate final:</strong> nenhum empate técnico no momento.</div>';
+    if(!tiebreakGroup.length){
+      area.innerHTML='<div class="notice"><strong>Desempate final:</strong> nenhum grupo empatado no momento.</div>';
       return;
     }
 
-    area.innerHTML=`<h3>Desempate supervisionado — Dia 7</h3><p class="muted">Preencha somente após uma atividade final equivalente para os participantes empatados. A nota não soma pontos; ela atua apenas como último critério de classificação.</p>${tied.map(row=>`<form class="admin-list-item final-tiebreak-form" data-participant="${esc(row.id)}"><div><strong>${esc(row.nick)}</strong><br><span class="muted">${esc(metricLine(row))}</span><label>Observação <input name="note" maxlength="500" placeholder="Ex.: desafio final supervisionado"></label></div><div><label>Nota 0–100 <input name="score" type="number" min="0" max="100" value="${row.final_tiebreak_recorded?Number(row.final_tiebreak_score||0):''}" required></label><div class="actions"><button type="submit" class="compact">Salvar</button>${row.final_tiebreak_recorded?'<button type="button" class="secondary compact" data-clear-final>Limpar</button>':''}</div></div></form>`).join('')}`;
+    const unresolved=tiebreakGroup.some(row=>row.unresolved_tie);
+    area.innerHTML=`<h3>Desempate supervisionado — Dia 7</h3><p class="muted">${unresolved?'Registre o resultado de todos os participantes do grupo. O ranking só aplicará as notas quando o grupo inteiro estiver preenchido.':'O grupo já possui resultado completo. As notas podem ser corrigidas abaixo com registro na auditoria.'} A nota não soma pontos; ela atua apenas como último critério de classificação.</p>${tiebreakGroup.map(row=>`<form class="admin-list-item final-tiebreak-form" data-participant="${esc(row.id)}"><div><strong>${esc(row.nick)}</strong><br><span class="muted">${esc(metricLine(row))}</span>${row.final_tiebreak_recorded?`<br><span class="pill">nota registrada: ${Number(row.final_tiebreak_score||0)}</span>`:'<br><span class="pill">nota pendente</span>'}<label>Observação <input name="note" maxlength="500" placeholder="Ex.: desafio final supervisionado"></label></div><div><label>Nota 0–100 <input name="score" type="number" min="0" max="100" value="${row.final_tiebreak_recorded?Number(row.final_tiebreak_score||0):''}" required></label><div class="actions"><button type="submit" class="compact">Salvar</button>${row.final_tiebreak_recorded?'<button type="button" class="secondary compact" data-clear-final>Limpar</button>':''}</div></div></form>`).join('')}`;
 
     area.querySelectorAll('.final-tiebreak-form').forEach(form=>{
       form.addEventListener('submit',async event=>{
