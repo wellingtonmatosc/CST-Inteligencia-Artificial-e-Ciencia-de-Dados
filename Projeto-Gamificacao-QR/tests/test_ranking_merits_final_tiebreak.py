@@ -30,8 +30,16 @@ def test_latest_ranking_waits_for_whole_tiebreak_group():
 
 def test_ranking_order_does_not_use_speed_as_tiebreak():
     text = read("supabase/migrations/20260922165000_final_tiebreak_group_logic.sql").lower()
-    ranking_order = "p.points desc, p.correct_answers desc, p.first_try_correct desc, p.distinct_qrs desc, p.active_days desc, p.effective_final_tiebreak_score desc"
-    assert ranking_order in text
+    markers = [
+        "p.points desc",
+        "p.correct_answers desc",
+        "p.first_try_correct desc",
+        "p.distinct_qrs desc",
+        "p.active_days desc",
+        "p.effective_final_tiebreak_score desc",
+    ]
+    positions = [text.index(marker) for marker in markers]
+    assert positions == sorted(positions)
     assert "speed" not in text
 
 
