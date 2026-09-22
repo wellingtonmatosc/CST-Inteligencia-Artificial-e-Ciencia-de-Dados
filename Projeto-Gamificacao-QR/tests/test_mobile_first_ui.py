@@ -14,13 +14,13 @@ def test_all_pages_are_pt_br():
         assert 'lang="pt-BR"' in text, f"{name} precisa declarar pt-BR"
 
 
-def test_mobile_first_stylesheet_is_loaded_globally_after_theme():
+def test_mobile_first_stylesheet_precedes_institutional_theme():
     text = (JS / "common.js").read_text(encoding="utf-8")
-    theme = "ensureStylesheet('/static/css/theme-gradient.css')"
     mobile = "ensureStylesheet('/static/css/mobile-first.css')"
-    assert theme in text
+    theme = "ensureStylesheet('/static/css/theme-institutional.css')"
     assert mobile in text
-    assert text.index(mobile) > text.index(theme)
+    assert theme in text
+    assert text.index(mobile) < text.index(theme)
 
 
 def test_mobile_first_has_target_breakpoints_and_touch_targets():
@@ -30,6 +30,17 @@ def test_mobile_first_has_target_breakpoints_and_touch_targets():
     assert "--mobile-touch:48px" in text
     assert "grid-template-columns:repeat(3,minmax(0,1fr))" in text
     assert "overflow-x:hidden" in text
+
+
+def test_new_theme_covers_narrow_mobile_and_admin_navigation():
+    theme = (CSS / "theme-institutional.css").read_text(encoding="utf-8")
+    admin = (CSS / "theme-institutional-admin.css").read_text(encoding="utf-8")
+    ranking = (CSS / "ranking-optimized.css").read_text(encoding="utf-8")
+    assert "@media(max-width:640px)" in theme
+    assert "@media(max-width:900px)" in admin
+    assert "overflow-x:auto" in admin
+    assert "@media(max-width:359px)" in ranking
+    assert "text-overflow:ellipsis" in ranking
 
 
 def test_individual_competition_copy_is_consistent():
