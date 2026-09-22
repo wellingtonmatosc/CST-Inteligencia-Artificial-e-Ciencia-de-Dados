@@ -13,6 +13,7 @@ ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/theme-gradient.css');
 ensureStylesheet('/static/css/mobile-first.css');
 ensureStylesheet('/static/css/theme-lush.css');
+ensureStylesheet('/static/css/theme-lush-admin.css');
 if(location.pathname==='/admin'){
   ensureScript('/static/js/admin-question-pool.js');
   ensureScript('/static/js/admin-monitoring.js');
