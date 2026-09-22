@@ -2,7 +2,7 @@
 
 Sistema web mobile-first para a experiência gamificada **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**.
 
-**Status:** versão final em homologação na branch `feat/gamificacao-qr-evento`. A `main` permanece sem merge até autorização explícita.
+**Status:** esta branch passa a ser a nova base do sistema final. A `main` permanece sem merge até autorização explícita.
 
 ## Regras principais
 
@@ -114,7 +114,18 @@ A fonte de verdade estrutural é `supabase/migrations/`. O antigo `schema.sql` f
 
 `supabase/seed.sql` contém somente catálogo base (categorias e zonas). Ele não cria participantes, QRs, questões ou dados de homologação.
 
-Os dados de teste/homologação das versões anteriores foram removidos antes da preparação desta versão final.
+Os dados de teste/homologação das versões anteriores foram removidos. A nova base parte sem QRs, questões, tentativas, pontuações ou trilhas antigas.
+
+## Limpeza da nova base
+
+A partir desta versão:
+
+- não manter arquivos de backup dentro do projeto;
+- não manter cópias de telas, CSS ou JavaScript substituídos;
+- não manter documentação de homologações antigas;
+- não manter dados de teste antigos no banco;
+- migrations aplicadas continuam preservadas por segurança e rastreabilidade do PostgreSQL, mas não entram no carregamento da aplicação em produção;
+- novos ajustes devem substituir o código vigente em vez de criar variantes paralelas.
 
 ## Identidade visual e acessibilidade
 
@@ -129,6 +140,8 @@ Recursos preservados:
 - comandos de voz quando suportados;
 - navegação por teclado;
 - alternativas textuais para mídia essencial.
+
+No celular o controle de acessibilidade fica inserido no fluxo da página, sem botão flutuante cobrindo conteúdo.
 
 ## Desenvolvimento local
 
@@ -157,10 +170,9 @@ O CI também compila Python, valida JavaScript e verifica que módulos do motor 
 
 Antes do evento real ainda devem ser carregados os dados oficiais: datas dos 7 dias, 15 QRs/localizações, 300 questões aprovadas, distribuição por QR/dia e conteúdo/trilhas definitivos.
 
-## Documentação
+## Documentação vigente
 
 - `docs/REQUISITOS.md`
 - `docs/ARQUITETURA.md`
 - `docs/ACESSIBILIDADE.md`
 - `docs/OPERACAO_EVENTO.md`
-- `docs/HOMOLOGACAO_FINAL.md`
