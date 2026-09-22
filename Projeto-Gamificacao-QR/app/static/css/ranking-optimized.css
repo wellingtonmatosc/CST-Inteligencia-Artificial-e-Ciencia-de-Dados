@@ -32,10 +32,10 @@ body main .individual-rank-position{display:grid;place-items:center;width:46px;h
 .rank-score-pill{display:flex;align-items:baseline;justify-content:center;gap:5px;min-width:82px;padding:8px 10px;border-radius:12px;background:rgba(0,0,0,.30);border:1px solid rgba(255,255,255,.08);white-space:nowrap}
 .rank-score-pill strong{font-size:1.38rem;line-height:1;color:#fff}.rank-score-pill span{font-size:.7rem;color:#c8d0dc}
 
-.podium-label{display:inline-flex;align-items:center;gap:5px;margin:0;padding:3px 8px;border-radius:999px;font-size:.64rem;font-weight:950;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
-.podium-label.first{background:linear-gradient(135deg,#7a5b00,#d4af37);border:1px solid #f1d873;color:#fff8d4}
-.podium-label.second{background:linear-gradient(135deg,#59636d,#aeb7c0);border:1px solid #d9dee3;color:#fff}
-.podium-label.third{background:linear-gradient(135deg,#7a3f18,#b87333);border:1px solid #d79a62;color:#fff2e4}
+body main .podium-label{display:inline-flex;align-items:center;gap:5px;margin:0;padding:3px 8px;border-radius:999px;font-size:.64rem;font-weight:950;letter-spacing:.055em;text-transform:uppercase;white-space:nowrap}
+body main .podium-label.first{background:linear-gradient(135deg,#7a5b00,#d4af37);border:1px solid #f1d873;color:#fff8d4}
+body main .podium-label.second{background:linear-gradient(135deg,#59636d,#aeb7c0);border:1px solid #d9dee3;color:#fff}
+body main .podium-label.third{background:linear-gradient(135deg,#7a3f18,#b87333);border:1px solid #d79a62;color:#fff2e4}
 
 body main .individual-ranking-card[data-position="1"]{border-color:#d4af37;background:linear-gradient(135deg,rgba(91,67,0,.44),rgba(13,13,14,.98) 44%,rgba(44,32,0,.62));box-shadow:0 9px 24px rgba(212,175,55,.14)!important}
 body main .individual-ranking-card[data-position="2"]{border-color:#9aa5ae;background:linear-gradient(135deg,rgba(88,99,109,.28),rgba(8,15,22,.98));box-shadow:0 8px 22px rgba(174,183,192,.10)!important}
@@ -63,7 +63,7 @@ body main .rank-metric span{display:block;margin-top:2px;color:#bdc5d1;font-size
   body main .individual-rank-position{width:42px;height:42px;min-width:42px;min-height:42px;border-radius:12px;font-size:1.08rem}
   .rank-identity h3{font-size:1rem}
   .rank-score-pill{min-width:72px;padding:7px 8px;gap:4px}.rank-score-pill strong{font-size:1.22rem}.rank-score-pill span{font-size:.62rem}
-  .podium-label{font-size:.59rem;padding:3px 7px}
+  body main .podium-label{font-size:.59rem;padding:3px 7px}
   body main .rank-metrics{grid-template-columns:repeat(6,minmax(0,1fr));gap:5px;margin-top:9px}
   body main .rank-metric:nth-child(-n+3){grid-column:span 2}
   body main .rank-metric:nth-child(n+4){grid-column:span 3}
@@ -75,7 +75,7 @@ body main .rank-metric span{display:block;margin-top:2px;color:#bdc5d1;font-size
   .rank-top{grid-template-columns:40px minmax(0,1fr) auto;gap:6px}
   body main .individual-rank-position{width:38px;height:38px;min-width:38px;min-height:38px;font-size:1rem}
   .rank-score-pill{min-width:66px;padding:6px}.rank-score-pill strong{font-size:1.12rem}.rank-score-pill span{display:none}
-  .podium-label{font-size:.55rem;letter-spacing:.035em}
+  body main .podium-label{font-size:.55rem;letter-spacing:.035em}
 }
 
 html.a11y-reduced-motion body main .individual-ranking-card{animation:none!important;transition:none!important}
