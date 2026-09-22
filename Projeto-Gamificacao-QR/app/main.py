@@ -29,7 +29,9 @@ async def response_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
     if path.startswith("/static/"):
-        response.headers["Cache-Control"] = "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400"
+        # Durante a homologação usamos nomes de arquivo estáveis. Revalidar evita
+        # que CSS/JS antigos permaneçam no celular após um novo deploy.
+        response.headers["Cache-Control"] = "public, max-age=0, must-revalidate"
     elif path in {"/", "/ranking", "/admin"} or path.startswith("/q/"):
         response.headers["Cache-Control"] = "no-store"
     response.headers["X-Content-Type-Options"] = "nosniff"
