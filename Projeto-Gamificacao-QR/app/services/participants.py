@@ -53,16 +53,13 @@ class ParticipantService:
 
     def register(self, payload: dict) -> tuple[dict, str, str]:
         participant_type = payload["participant_type"]
-        if participant_type == "student" and not payload.get("registration"):
-            raise AppError("Matrícula é obrigatória para aluno.", 422)
-        if participant_type == "student" and not payload.get("course_class"):
-            raise AppError("Curso/turma é obrigatório para aluno.", 422)
-        if participant_type == "student":
-            existing_registration = self.repo.select(
-                "participants", registration=(payload.get("registration") or "").strip()
-            )
-            if existing_registration:
-                raise AppError("Esta matrícula já possui cadastro.", 409)
+        campus = (payload.get("campus") or "").strip() or None
+        course_name = (payload.get("course_name") or "").strip() or None
+
+        if participant_type == "student" and not campus:
+            raise AppError("Selecione ou informe o campus.", 422)
+        if participant_type == "student" and not course_name:
+            raise AppError("Selecione ou informe o curso.", 422)
 
         nick = self._validate_nick(payload["nick"])
         access_code = random_access_code()
@@ -72,9 +69,11 @@ class ParticipantService:
                 "full_name": payload["full_name"].strip(),
                 "nick": nick,
                 "participant_type": participant_type,
-                "registration": (payload.get("registration") or "").strip() or None,
-                "course_class": (payload.get("course_class") or "").strip() or None,
-                "institution": (payload.get("institution") or "").strip() or None,
+                "campus": campus,
+                "course_name": course_name,
+                "registration": None,
+                "course_class": None,
+                "institution": None,
                 "password_hash": hash_password(payload["pin"]),
                 "access_code_hash": sha256_hex(access_code),
             },
