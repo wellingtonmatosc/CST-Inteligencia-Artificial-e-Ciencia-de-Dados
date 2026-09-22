@@ -21,7 +21,7 @@
     pool.id='questionPoolCard';
     pool.open=true;
     pool.innerHTML=`<summary>Distribuir questões por estação e dia</summary>
-      <p class="muted">O QR continua o mesmo. O sistema escolhe uma questão do conjunto permitido para a estação e para o dia atual. Se não houver vínculo, a configuração antiga da estação continua valendo.</p>
+      <p class="muted">Cada QR precisa ter um conjunto de questões. O sistema escolhe uma questão inédita para o participante, priorizando as menos usadas naquele QR/dia.</p>
       <form id="questionPoolForm" class="grid two">
         <div><label for="poolStation">Estação / QR Code</label><select id="poolStation" required></select></div>
         <div><label for="poolDay">Disponibilidade</label><select id="poolDay"><option value="">Todos os dias</option></select></div>
@@ -34,7 +34,7 @@
     calendar.className='card form-card';
     calendar.id='eventDaysCard';
     calendar.innerHTML=`<summary>Calendário da gamificação — 7 dias</summary>
-      <p class="muted">Preencha as datas quando o período oficial for confirmado. O Dia 7 está identificado como o evento principal.</p>
+      <p class="muted">Preencha as datas quando o período oficial for confirmado. A virada diária ocorre à 00:00 em America/Cuiaba. O Dia 7 é o evento principal.</p>
       <div id="eventDaysList" class="admin-list" aria-live="polite"></div>`;
 
     if(bank){panel.insertBefore(pool,bank);panel.insertBefore(calendar,bank)}else{panel.append(pool,calendar)}
@@ -52,7 +52,7 @@
 
   function renderPool(){
     const root=byId('questionPoolList');if(!root)return;
-    if(!state.links.length){root.innerHTML='<div class="admin-empty">Nenhuma questão foi vinculada ao pool. As estações continuam usando o desafio único atual.</div>';return}
+    if(!state.links.length){root.innerHTML='<div class="admin-empty">Nenhuma questão vinculada. As estações sem pool não podem ser validadas até receberem questões.</div>';return}
     const ordered=[...state.links].sort((a,b)=>stationName(a.qr_point_id).localeCompare(stationName(b.qr_point_id),'pt-BR')||(Number(a.day_number||0)-Number(b.day_number||0)));
     root.innerHTML=ordered.map(x=>`<div class="admin-list-item"><div><strong>${esc(stationName(x.qr_point_id))}</strong><br><span class="muted">${esc(dayLabel(x.day_number))}</span><br><span>${esc(questionName(x.question_id))}</span></div><div class="actions"><button type="button" class="secondary compact" data-pool-remove="${esc(x.id)}">Remover vínculo</button></div></div>`).join('');
     root.querySelectorAll('[data-pool-remove]').forEach(b=>b.addEventListener('click',()=>removePoolLink(b.dataset.poolRemove)));
@@ -70,54 +70,35 @@
       const data=await api('/api/admin/question-pool');
       state.links=data.links||[];state.eventDays=data.event_days||[];state.stations=data.stations||[];state.questions=data.questions||[];state.categories=data.categories||[];
       renderSelectors();renderPool();renderDays();
-    }catch(err){
-      if(!String(err.message||'').includes('não autorizado'))showMessage(message(),err.message||'Não foi possível carregar o banco de questões.','error');
-    }finally{loading=false}
+    }catch(err){if(!String(err.message||'').includes('não autorizado'))showMessage(message(),err.message||'Não foi possível carregar o banco de questões.','error')}
+    finally{loading=false}
   }
 
   async function submitPoolLink(event){
     event.preventDefault();
     const stationId=byId('poolStation').value,questionId=byId('poolQuestion').value,dayValue=byId('poolDay').value;
     if(!stationId||!questionId){showMessage(message(),'Selecione uma estação e uma questão.','error');return}
-    try{
-      await api('/api/admin/question-pool',{method:'POST',body:JSON.stringify({station_id:stationId,question_id:questionId,day_number:dayValue?Number(dayValue):null})});
-      await loadPoolData();
-      showMessage(message(),'Questão adicionada ao banco da estação.','success');
-    }catch(err){showMessage(message(),err.message||'Não foi possível vincular a questão.','error')}
+    try{await api('/api/admin/question-pool',{method:'POST',body:JSON.stringify({station_id:stationId,question_id:questionId,day_number:dayValue?Number(dayValue):null})});await loadPoolData();showMessage(message(),'Questão adicionada ao banco da estação.','success')}
+    catch(err){showMessage(message(),err.message||'Não foi possível vincular a questão.','error')}
   }
 
   async function removePoolLink(id){
-    try{
-      await api(`/api/admin/question-pool/${encodeURIComponent(id)}`,{method:'DELETE'});
-      await loadPoolData();
-      showMessage(message(),'Vínculo removido. A questão original não foi excluída.','success');
-    }catch(err){showMessage(message(),err.message||'Não foi possível remover o vínculo.','error')}
+    try{await api(`/api/admin/question-pool/${encodeURIComponent(id)}`,{method:'DELETE'});await loadPoolData();showMessage(message(),'Vínculo removido. A questão original não foi excluída.','success')}
+    catch(err){showMessage(message(),err.message||'Não foi possível remover o vínculo.','error')}
   }
 
   async function saveEventDay(dayNumber){
-    const label=byId(`eventLabel${dayNumber}`).value.trim();
-    const eventDate=byId(`eventDate${dayNumber}`).value||null;
-    const active=byId(`eventActive${dayNumber}`).checked;
+    const label=byId(`eventLabel${dayNumber}`).value.trim(),eventDate=byId(`eventDate${dayNumber}`).value||null,active=byId(`eventActive${dayNumber}`).checked;
     if(label.length<3){showMessage(message(),'Informe um nome para o dia.','error');return}
-    try{
-      await api(`/api/admin/event-days/${dayNumber}`,{method:'PUT',body:JSON.stringify({label,event_date:eventDate,active})});
-      await loadPoolData();
-      showMessage(message(),`Dia ${dayNumber} atualizado.`,'success');
-    }catch(err){showMessage(message(),err.message||'Não foi possível atualizar o calendário.','error')}
+    try{await api(`/api/admin/event-days/${dayNumber}`,{method:'PUT',body:JSON.stringify({label,event_date:eventDate,active})});await loadPoolData();showMessage(message(),`Dia ${dayNumber} atualizado.`,'success')}
+    catch(err){showMessage(message(),err.message||'Não foi possível atualizar o calendário.','error')}
   }
 
-  function dashboardReady(){
-    const dash=byId('dashboard');
-    return dash&&!dash.classList.contains('hidden');
-  }
-
+  function dashboardReady(){const dash=byId('dashboard');return dash&&!dash.classList.contains('hidden')}
   function start(){
-    injectUI();
-    if(dashboardReady())loadPoolData();
-    const dash=byId('dashboard');
+    injectUI();if(dashboardReady())loadPoolData();const dash=byId('dashboard');
     if(dash)new MutationObserver(()=>{if(dashboardReady())loadPoolData()}).observe(dash,{attributes:true,attributeFilter:['class']});
     document.querySelectorAll('[data-admin-tab="questionsPanel"]').forEach(b=>b.addEventListener('click',()=>{if(dashboardReady())loadPoolData()}));
   }
-
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
