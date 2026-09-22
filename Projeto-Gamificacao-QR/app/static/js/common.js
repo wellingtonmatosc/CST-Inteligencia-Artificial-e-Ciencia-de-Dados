@@ -7,14 +7,14 @@ function ensureScript(src){
   const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
 }
 document.documentElement.lang='pt-BR';
-document.querySelector('meta[name="theme-color"]')?.setAttribute('content','#000000');
+const isRanking=location.pathname==='/ranking';
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isRanking?'#06182b':'#f6f7fa');
 ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
-ensureStylesheet('/static/css/theme-gradient.css');
 ensureStylesheet('/static/css/mobile-first.css');
-ensureStylesheet('/static/css/theme-lush.css');
-ensureStylesheet('/static/css/theme-lush-admin.css');
+ensureStylesheet('/static/css/theme-institutional.css');
 if(location.pathname==='/admin'){
+  ensureStylesheet('/static/css/theme-institutional-admin.css');
   ensureScript('/static/js/admin-question-pool.js');
   ensureScript('/static/js/admin-monitoring.js');
   ensureScript('/static/js/admin-ranking-rules.js');
