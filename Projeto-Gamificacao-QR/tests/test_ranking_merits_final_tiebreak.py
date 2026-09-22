@@ -48,7 +48,7 @@ def test_public_ranking_explains_final_rules():
     js = read("app/static/js/ranking.js")
     assert "acertos na primeira tentativa" in html
     assert "Tempo e velocidade não são usados" in html
-    assert "desempate supervisionado do Dia 7" in js
+    assert "resultado supervisionado do Dia 7" in html
     assert "unresolved_tie" in js
 
 
