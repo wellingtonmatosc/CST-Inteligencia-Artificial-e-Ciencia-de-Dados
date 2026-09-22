@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+from app.core.avatars import validate_avatar_key
 from app.core.errors import AppError
 from app.core.security import hash_password, random_access_code, random_token, sha256_hex, verify_password
 from app.repositories.supabase_repo import SupabaseRepository
@@ -51,6 +52,12 @@ class ParticipantService:
             raise AppError("Esse nick já está em uso.", 409)
         return nick
 
+    def _avatar_key(self, value: str | None) -> str:
+        try:
+            return validate_avatar_key(value)
+        except ValueError as exc:
+            raise AppError(str(exc), 422) from exc
+
     def register(self, payload: dict) -> tuple[dict, str, str]:
         participant_type = payload["participant_type"]
         campus = (payload.get("campus") or "").strip() or None
@@ -62,6 +69,7 @@ class ParticipantService:
             raise AppError("Selecione ou informe o curso.", 422)
 
         nick = self._validate_nick(payload["nick"])
+        avatar_key = self._avatar_key(payload.get("avatar_key"))
         access_code = random_access_code()
         participant = self.repo.insert(
             "participants",
@@ -71,6 +79,7 @@ class ParticipantService:
                 "participant_type": participant_type,
                 "campus": campus,
                 "course_name": course_name,
+                "avatar_key": avatar_key,
                 "registration": None,
                 "course_class": None,
                 "institution": None,
@@ -144,6 +153,15 @@ class ParticipantService:
             },
             id=participant_id,
         )
+
+    def update_avatar(self, participant_id: str, avatar_key: str | None) -> str:
+        key = self._avatar_key(avatar_key)
+        self.repo.update(
+            "participants",
+            {"avatar_key": key, "updated_at": datetime.now(timezone.utc).isoformat()},
+            id=participant_id,
+        )
+        return key
 
     def _create_session(self, participant_id: str) -> str:
         token = random_token()
