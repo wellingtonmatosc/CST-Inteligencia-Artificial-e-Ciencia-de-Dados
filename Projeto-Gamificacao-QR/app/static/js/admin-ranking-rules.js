@@ -5,6 +5,8 @@
   function ensureCard(){
     const panel=document.querySelector('#rankingPanel');
     if(!panel)return null;
+    const legacyDescription=panel.querySelector('.admin-section-head .muted');
+    if(legacyDescription)legacyDescription.textContent='Pontos acumulados; em empate, acertos, acertos na 1ª tentativa, QRs distintos e dias ativos. O Dia 7 é o último desempate.';
     let card=document.querySelector('#rankingRulesCard');
     if(card)return card;
     card=document.createElement('section');
@@ -50,7 +52,8 @@
       form.addEventListener('submit',async event=>{
         event.preventDefault();
         const button=form.querySelector('button[type="submit"]');
-        const payload={score:Number(new FormData(form).get('score')),note:String(new FormData(form).get('note')||'').trim()||null};
+        const dataForm=new FormData(form);
+        const payload={score:Number(dataForm.get('score')),note:String(dataForm.get('note')||'').trim()||null};
         button.disabled=true;button.textContent='Salvando…';
         try{
           await api(`/api/admin/final-tiebreak/${encodeURIComponent(form.dataset.participant)}`,{method:'PUT',body:JSON.stringify(payload)});
