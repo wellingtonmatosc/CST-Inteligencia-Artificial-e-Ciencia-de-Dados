@@ -1,0 +1,81 @@
+/* Painel administrativo — tema institucional claro e leve. */
+.admin-shell{width:min(1380px,calc(100% - 36px));padding-top:18px}
+.admin-shell .admin-hero{padding:22px 26px;margin-bottom:14px;background:#fff;border-color:#d8dee8;box-shadow:0 8px 24px rgba(20,32,51,.07)}
+.admin-shell .admin-hero::after{display:none}
+.admin-shell .admin-hero h1{color:#102641}.admin-shell .admin-hero p{color:#667286}.admin-shell .admin-hero .eyebrow{color:#813772}
+.admin-login{background:#fff!important;border-color:#d8dee8!important;box-shadow:0 10px 28px rgba(20,32,51,.09)!important}
+.admin-dashboard{display:grid;grid-template-columns:220px minmax(0,1fr);grid-template-rows:auto 1fr;gap:14px 18px;align-items:start}
+.admin-toolbar{grid-column:1/-1;padding:10px 12px;border:1px solid #d8dee8;border-radius:14px;background:#fff}
+.admin-toolbar .muted{color:#667286}
+.admin-status-badge{color:#25354a;background:#f4f6f8;border-color:#d7dde7}
+.admin-status-dot{background:#b82601;box-shadow:none}
+.admin-nav{grid-column:1;grid-row:2;position:sticky;top:10px;display:flex;flex-direction:column;gap:5px;padding:10px;border:1px solid #d8dee8;border-radius:16px;background:#fff;box-shadow:0 8px 20px rgba(20,32,51,.06);backdrop-filter:none}
+.admin-nav button{justify-content:flex-start;min-height:42px;color:#334155;background:#fff;border:1px solid transparent;box-shadow:none;text-align:left}
+.admin-nav button:hover:not(:disabled){color:#062f4f;background:#f1f4f7;border-color:#dde3eb;transform:none}
+.admin-nav button[aria-selected="true"]{color:#fff;background:#062f4f;border-color:#062f4f;box-shadow:none}
+.admin-panel{grid-column:2;grid-row:2;min-width:0;gap:14px;animation:none!important}
+.admin-panel .card,.admin-panel details.card{color:#142033;background:#fff!important;border-color:#d8dee8!important;box-shadow:0 8px 22px rgba(20,32,51,.06)!important}
+.admin-panel .card::before,.admin-login::before{display:none!important}
+.admin-panel h2,.admin-panel h3,.admin-section-head h2{color:#102641!important}
+.admin-section-head p,.admin-panel .muted{color:#667286!important}
+.admin-shell input:not([type="radio"]):not([type="checkbox"]),.admin-shell select,.admin-shell textarea{color:#142033;background:#fff;border-color:#cfd7e3}
+.admin-shell input::placeholder,.admin-shell textarea::placeholder{color:#8995a5}
+.admin-shell input:not([type="radio"]):not([type="checkbox"]):focus,.admin-shell select:focus,.admin-shell textarea:focus{background:#fff;border-color:#813772;box-shadow:0 0 0 3px rgba(129,55,114,.11)}
+.admin-shell button:not(.secondary),.admin-shell .button-link:not(.secondary){background:#b82601;border-color:#b82601;box-shadow:none}
+.admin-shell button.secondary,.admin-shell .button-link.secondary{color:#062f4f;background:#fff;border-color:#a5b2c0}
+.admin-shell button.secondary:hover:not(:disabled),.admin-shell .button-link.secondary:hover{color:#041f35;background:#eef2f6;border-color:#7e8fa1}
+.admin-shell button:focus-visible,.admin-shell input:focus-visible,.admin-shell select:focus-visible,.admin-shell textarea:focus-visible,.admin-shell a:focus-visible{outline-color:#b82601}
+.admin-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.admin-stat{min-height:92px;padding:14px;background:#f7f8fa!important;border-color:#dce2ea!important;box-shadow:none!important;transform:none!important}
+.admin-stat strong{color:#062f4f!important;font-size:1.65rem}.admin-stat span{color:#667286!important;margin-top:5px}
+.admin-list{gap:8px}
+.admin-list-item{color:#24344a;background:#fff!important;border-color:#dde3eb!important;box-shadow:none!important;transform:none!important;padding:13px 14px}
+.admin-list-item .muted{color:#667286!important}
+.admin-panel .pill{color:#475569;background:#f4f6f8;border-color:#d6dde6}
+.admin-alerts{gap:8px}
+.admin-alert{color:#3c2b28;background:#faf3f0;border-color:#edd8d1;border-left-color:#b82601;min-height:76px}
+.admin-alert strong{color:#5d2418}.admin-alert span{color:#745047}
+.admin-empty{color:#667286;background:#f8f9fb;border-color:#cfd7e3}
+.admin-setting{background:#f7f8fa!important;border-color:#dce2ea!important;color:#24344a!important}
+.admin-setting strong{color:#102641}.admin-setting span{color:#667286!important}
+
+.admin-rank{grid-template-columns:46px 42px minmax(0,1fr) auto;align-items:center;gap:10px}
+.admin-rank-position{display:grid;place-items:center;width:42px;height:42px;border-radius:11px;color:#fff;background:#062f4f;font-size:1rem;font-weight:900}
+.admin-rank-avatar{display:block;width:40px;height:40px;border-radius:50%;overflow:hidden;border:2px solid #d7dde7;background:#fff}
+.admin-rank-score{color:#102641;font-weight:900}
+#rankingPreview .admin-rank:nth-child(1),#adminRankingList .admin-rank:nth-child(1){border-color:#d4af37!important;box-shadow:inset 3px 0 0 #d4af37!important;background:#fffdf5!important}
+#rankingPreview .admin-rank:nth-child(2),#adminRankingList .admin-rank:nth-child(2){border-color:#aeb7c0!important;box-shadow:inset 3px 0 0 #aeb7c0!important;background:#fafbfc!important}
+#rankingPreview .admin-rank:nth-child(3),#adminRankingList .admin-rank:nth-child(3){border-color:#b87333!important;box-shadow:inset 3px 0 0 #b87333!important;background:#fff9f4!important}
+#rankingPreview .admin-rank:nth-child(1) .admin-rank-position,#adminRankingList .admin-rank:nth-child(1) .admin-rank-position{background:#b08d20;color:#fff}
+#rankingPreview .admin-rank:nth-child(2) .admin-rank-position,#adminRankingList .admin-rank:nth-child(2) .admin-rank-position{background:#7d8893;color:#fff}
+#rankingPreview .admin-rank:nth-child(3) .admin-rank-position,#adminRankingList .admin-rank:nth-child(3) .admin-rank-position{background:#9a5a25;color:#fff}
+#rankingPreview .admin-rank:nth-child(1) .admin-rank-avatar,#adminRankingList .admin-rank:nth-child(1) .admin-rank-avatar{border-color:#d4af37}
+#rankingPreview .admin-rank:nth-child(2) .admin-rank-avatar,#adminRankingList .admin-rank:nth-child(2) .admin-rank-avatar{border-color:#aeb7c0}
+#rankingPreview .admin-rank:nth-child(3) .admin-rank-avatar,#adminRankingList .admin-rank:nth-child(3) .admin-rank-avatar{border-color:#b87333}
+.admin-avatar{display:inline-block;width:42px;height:42px;flex:0 0 42px;border-radius:50%;overflow:hidden;border:2px solid #d7dde7;background:#fff}
+.admin-participant-main{display:flex;align-items:flex-start;gap:10px;min-width:0}.admin-participant-copy{min-width:0;flex:1}
+
+@media(max-width:1100px){.admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){
+  .admin-shell{width:min(100% - 20px,1380px)}
+  .admin-dashboard{grid-template-columns:1fr;grid-template-rows:auto auto 1fr;gap:10px}
+  .admin-toolbar{grid-column:1;grid-row:1}
+  .admin-nav{grid-column:1;grid-row:2;position:sticky;top:0;z-index:30;display:flex;flex-direction:row;overflow-x:auto;overscroll-behavior-inline:contain;padding:7px;border-radius:13px;scrollbar-width:thin}
+  .admin-nav button{flex:0 0 auto;width:auto;white-space:nowrap;padding:8px 11px;text-align:center}
+  .admin-panel{grid-column:1;grid-row:3}
+  .admin-panel > .grid.two,.admin-panel form.grid.two{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .admin-shell .admin-hero{padding:18px 16px}
+  .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .admin-stat{min-height:82px;padding:11px}.admin-stat strong{font-size:1.35rem}.admin-stat span{font-size:.76rem}
+  .admin-list-item{flex-direction:column;gap:8px;padding:11px}.admin-list-item .actions{width:100%;justify-content:flex-start}
+  .admin-list-item .actions button{flex:1 1 auto}
+  .admin-rank{display:grid!important;grid-template-columns:42px 38px minmax(0,1fr) auto!important;align-items:center!important}
+  .admin-rank-position{width:38px;height:38px}.admin-rank-avatar{width:36px;height:36px}
+  .admin-rank .meta{grid-column:3/-1}
+  .admin-alerts{grid-template-columns:1fr}
+}
+html.a11y-reduced-motion .admin-panel,html.a11y-reduced-motion .admin-nav button{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){.admin-panel,.admin-nav button{animation:none!important;transition:none!important}}
+html.a11y-contrast .admin-shell .card,html.a11y-contrast .admin-nav,html.a11y-contrast .admin-toolbar,html.a11y-contrast .admin-list-item{background:#fff!important;color:#000!important;border:1px solid #000!important;box-shadow:none!important}
