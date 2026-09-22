@@ -1,118 +1,98 @@
 # Arquitetura — Trilhas Poéticas
 
-## Visão geral
+## Fluxo
 
 ```text
 Celular / navegador
         │ HTTPS
         ▼
 Vercel + FastAPI
-        │ secret key somente no servidor
+        │ service role somente no servidor
         ▼
 Supabase / PostgreSQL
 ```
 
-O navegador nunca acessa o Supabase diretamente.
+O browser nunca acessa o banco privilegiado diretamente.
 
-## Camadas
+## Frontend
 
-### Frontend
+HTML/CSS/JavaScript simples, mobile-first e sem framework pesado:
 
-HTML/CSS/JavaScript simples, responsivo e acessível:
+- `index.html` + `index.js`: login, cadastro, perfil, avatar e leitor de QR;
+- `scan.html` + `scan.js`: estação, conteúdo e desafio;
+- `ranking.html` + `ranking.js`: ranking individual;
+- `admin.html` + `admin.js`: painel administrativo;
+- `common.js`: API helper e acessibilidade;
+- `avatars.js`: catálogo vetorial local de avatares.
 
-- `index.html` / `index.js`: login, cadastro, recuperação, perfil e leitor de QR;
-- `scan.html` / `scan.js`: validação física, conteúdo cultural e desafio;
-- `ranking.html` / `ranking.js`: ranking coletivo;
-- `admin.html` / `admin.js`: operação administrativa;
-- `common.js`: API helper e recursos de acessibilidade.
+Tema final: institucional claro nas telas gerais e ranking escuro, sem verde. Efeitos contínuos pesados foram removidos.
 
-### API FastAPI
+## Backend
 
-- `api/participants.py`: cadastro, login, recuperação, sessão e logout;
-- `api/game.py`: estação, validação, resposta, resumo e ranking;
-- `api/admin.py`: administração, RBAC, pontos extras e auditoria;
-- `api/deps.py`: injeção de dependências e autorização.
+FastAPI concentra autenticação, validação e acesso ao Supabase. Operações críticas de pontuação ficam em RPCs PostgreSQL atômicas.
 
-### Serviços
+Principais RPCs:
 
-- `services/participants.py`: regras de conta, PIN, recuperação e sessão;
-- `services/trilhas.py`: fachada das regras de gamificação;
-- `services/questions.py`: avaliação/validação acessível dos desafios;
-- `services/moderation.py`: moderação de nick.
+- `trilhas_participant_from_session`;
+- `trilhas_home_state_from_session`;
+- `trilhas_get_station`;
+- `trilhas_validate_station`;
+- `trilhas_select_station_question`;
+- `trilhas_answer_challenge`;
+- `trilhas_complete_trail_if_ready`;
+- `trilhas_participant_summary`;
+- `trilhas_individual_ranking`;
+- RPCs administrativas de pontos manuais.
 
-O motor antigo de gamificação, bônus diário/dinâmico, scoring 10/6/2 e ativação institucional foram removidos.
+Não existem mais funções de equipes.
 
-## Banco
+## Banco final
 
-Tabelas centrais:
+Entidades principais:
 
 ```text
-teams ──< participants ──< participant_sessions
-                    │
-                    ├──< station_visits ──< station_attempts
-                    ├──< trail_completions
-                    ├──< point_ledger
-                    └──< manual_point_actions
+participants ──< participant_sessions
+      │
+      ├──< station_visits ──< station_attempts
+      ├──< trail_completions
+      ├──< point_ledger
+      └──< manual_point_actions
 
 categories ──< questions
 zones ──< qr_points ──1 station_contents
+                   ├──< station_question_pool >── questions
                    └──< trail_steps >── trails
 
+event_days
+final_tiebreak_results
 admin_users
 audit_log
 blocked_terms
 ```
 
-`station_visits`, `trail_completions`, `point_ledger` e `manual_point_actions` armazenam `team_id` como fotografia da equipe no momento da ação. Assim, mudar ou desativar posteriormente um participante não reescreve o placar histórico.
+A estrutura antiga de equipes e os campos antigos de matrícula/turma/instituição foram removidos. `station_contents` contém conteúdo cultural; questões são atribuídas pelo `station_question_pool`.
 
-`supabase/schema.sql` contém a base do banco; alterações posteriores ficam versionadas em `supabase/migrations/` e devem ser aplicadas em ordem. `supabase/seed.sql` cria apenas dados-base não sensíveis.
+## Concorrência e idempotência
 
-## RPCs atômicas
-
-- `trilhas_assign_team`
-- `trilhas_participant_from_session`
-- `trilhas_home_state_from_session`
-- `trilhas_get_station`
-- `trilhas_validate_station`
-- `trilhas_answer_challenge`
-- `trilhas_complete_trail_if_ready`
-- `trilhas_participant_summary`
-- `trilhas_team_ranking`
-- `trilhas_admin_grant_manual_points`
-- `trilhas_admin_reverse_manual_points`
-
-Validação/pontuação ocorre dentro do PostgreSQL para reduzir condições de corrida e duplicidade. A janela de uma estação temporária/especial é conferida novamente no envio da resposta, não apenas na interface.
-
-## Ranking
-
-A posição é calculada primeiro pela média de pontos por participante que efetivamente contribuiu para a equipe. Em empate entram, nessa ordem, pontos totais, trilhas concluídas, estações validadas e nome da equipe. Quantidade atual de membros e percentual de ativação são indicadores, não critérios que mudem sozinhos a classificação.
+- índice único impede duas validações do mesmo participante + QR + data;
+- ledger usa chaves únicas de deduplicação;
+- seleção de questão é serializada por QR/dia com advisory lock para reduzir colisões simultâneas;
+- questões previamente atribuídas ao participante são excluídas da seleção;
+- tentativas e pontuação são calculadas no PostgreSQL.
 
 ## Segurança
 
-- tabelas com RLS;
-- sem acesso de `anon`/`authenticated` às tabelas do jogo;
-- RPCs críticas executáveis somente pelo `service_role`;
-- browser não recebe chave de banco;
-- PIN e senha administrativa com Argon2;
-- código físico e código de recuperação persistidos somente como SHA-256;
-- sessão participante por token aleatório armazenado no banco apenas como hash;
-- sessão admin assinada com expiração;
-- CSP não foi implantada de forma rígida porque ainda há JavaScript inline na página inicial; cabeçalho de frame, MIME sniffing, referrer e Permissions-Policy estão habilitados.
-
-## Desempenho
-
-- cliente HTTPX é reaproveitado enquanto a função Vercel permanece quente;
-- a abertura da estação usa uma RPC consolidada;
-- a home autenticada usa uma RPC consolidada;
-- arquivos estáticos recebem cache na CDN;
-- páginas autenticáveis recebem `no-store`;
-- o leitor interno do QR verifica a câmera em intervalos, não a cada frame;
-- tema animado pesado antigo foi removido.
+- RLS nas tabelas expostas pela Data API;
+- `anon`/`authenticated` sem acesso direto às tabelas do jogo;
+- RPCs críticas executáveis pelo backend com `service_role`;
+- PIN e senha administrativa não são persistidos em texto puro;
+- código físico e código de recuperação são armazenados como hash;
+- sessão participante por token aleatório armazenado como hash;
+- sessão administrativa assinada e expira;
+- headers de frame, MIME sniffing, referrer e Permissions-Policy ativos.
 
 ## Produção
 
-O projeto continua no mesmo domínio Vercel para não invalidar QR Codes já gerados:
+Domínio: `https://gamificacao-qr-ifmt.vercel.app`
 
-`https://gamificacao-qr-ifmt.vercel.app`
-
-A branch de homologação permanece `feat/gamificacao-qr-evento` até a aprovação final.
+A branch de desenvolvimento/homologação permanece `feat/gamificacao-qr-evento` até autorização explícita para merge em `main`.
