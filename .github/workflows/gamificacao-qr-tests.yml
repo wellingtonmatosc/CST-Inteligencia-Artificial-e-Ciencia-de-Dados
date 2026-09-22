@@ -38,6 +38,6 @@ jobs:
           test ! -f app/services/gamification_optimized.py
           test ! -f app/services/scoring.py
           test ! -f app/services/bonus_schedule.py
-          ! grep -R "game_get_normal_activity\|game_answer_normal\|daily_bonus\|dynamic_bonus" app supabase/schema.sql --exclude-dir=__pycache__
+          ! grep -R "game_get_normal_activity\|game_answer_normal\|daily_bonus\|dynamic_bonus" app supabase/migrations --exclude-dir=__pycache__
       - name: Executar testes
         run: pytest
