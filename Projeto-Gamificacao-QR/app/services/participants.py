@@ -40,14 +40,7 @@ class ParticipantService:
             term = normalize_for_moderation(row.get("term", ""))
             if term and term in normalized_nick:
                 raise AppError("Esse nome de usuário não pode ser utilizado. Escolha outro.", 422)
-        existing = (
-            self.repo.raw_table("participants")
-            .select("id")
-            .ilike("nick", nick)
-            .limit(2)
-            .execute().data
-            or []
-        )
+        existing = self.repo.raw_table("participants").select("id").ilike("nick", nick).limit(2).execute().data or []
         if any(row["id"] != ignore_participant_id for row in existing):
             raise AppError("Esse nick já está em uso.", 409)
         return nick
@@ -62,7 +55,6 @@ class ParticipantService:
         participant_type = payload["participant_type"]
         campus = (payload.get("campus") or "").strip() or None
         course_name = (payload.get("course_name") or "").strip() or None
-
         if participant_type == "student" and not campus:
             raise AppError("Selecione ou informe o campus.", 422)
         if participant_type == "student" and not course_name:
@@ -80,9 +72,6 @@ class ParticipantService:
                 "campus": campus,
                 "course_name": course_name,
                 "avatar_key": avatar_key,
-                "registration": None,
-                "course_class": None,
-                "institution": None,
                 "password_hash": hash_password(payload["pin"]),
                 "access_code_hash": sha256_hex(access_code),
             },
@@ -91,15 +80,7 @@ class ParticipantService:
         return participant, session_token, access_code
 
     def login(self, nick: str, pin: str) -> tuple[dict, str]:
-        rows = (
-            self.repo.raw_table("participants")
-            .select("*")
-            .ilike("nick", nick.strip())
-            .eq("active", True)
-            .limit(1)
-            .execute().data
-            or []
-        )
+        rows = self.repo.raw_table("participants").select("*").ilike("nick", nick.strip()).eq("active", True).limit(1).execute().data or []
         if not rows:
             raise AppError("Nick ou PIN inválidos.", 401)
         participant = rows[0]
@@ -112,10 +93,7 @@ class ParticipantService:
             failures = int(participant.get("pin_failed_attempts") or 0) + 1
             update = {"pin_failed_attempts": failures, "pin_locked_until": None}
             if failures >= MAX_PIN_FAILURES:
-                update = {
-                    "pin_failed_attempts": 0,
-                    "pin_locked_until": (now + timedelta(minutes=PIN_LOCK_MINUTES)).isoformat(),
-                }
+                update = {"pin_failed_attempts": 0, "pin_locked_until": (now + timedelta(minutes=PIN_LOCK_MINUTES)).isoformat()}
             self.repo.update("participants", update, id=participant["id"])
             raise AppError("Nick ou PIN inválidos.", 401)
         if participant.get("pin_failed_attempts") or participant.get("pin_locked_until"):
@@ -131,45 +109,23 @@ class ParticipantService:
         new_access_code = random_access_code()
         self.repo.update(
             "participants",
-            {
-                "password_hash": hash_password(new_pin),
-                "access_code_hash": sha256_hex(new_access_code),
-                "pin_failed_attempts": 0,
-                "pin_locked_until": None,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
+            {"password_hash": hash_password(new_pin), "access_code_hash": sha256_hex(new_access_code), "pin_failed_attempts": 0, "pin_locked_until": None, "updated_at": datetime.now(timezone.utc).isoformat()},
             id=participant["id"],
         )
         return participant, self._create_session(participant["id"]), new_access_code
 
     def set_pin(self, participant_id: str, pin: str) -> None:
-        self.repo.update(
-            "participants",
-            {
-                "password_hash": hash_password(pin),
-                "pin_failed_attempts": 0,
-                "pin_locked_until": None,
-                "updated_at": datetime.now(timezone.utc).isoformat(),
-            },
-            id=participant_id,
-        )
+        self.repo.update("participants", {"password_hash": hash_password(pin), "pin_failed_attempts": 0, "pin_locked_until": None, "updated_at": datetime.now(timezone.utc).isoformat()}, id=participant_id)
 
     def update_avatar(self, participant_id: str, avatar_key: str | None) -> str:
         key = self._avatar_key(avatar_key)
-        self.repo.update(
-            "participants",
-            {"avatar_key": key, "updated_at": datetime.now(timezone.utc).isoformat()},
-            id=participant_id,
-        )
+        self.repo.update("participants", {"avatar_key": key, "updated_at": datetime.now(timezone.utc).isoformat()}, id=participant_id)
         return key
 
     def _create_session(self, participant_id: str) -> str:
         token = random_token()
         expires = datetime.now(timezone.utc) + timedelta(days=self.session_days)
-        self.repo.insert(
-            "participant_sessions",
-            {"participant_id": participant_id, "token_hash": sha256_hex(token), "expires_at": expires.isoformat()},
-        )
+        self.repo.insert("participant_sessions", {"participant_id": participant_id, "token_hash": sha256_hex(token), "expires_at": expires.isoformat()})
         return token
 
     def get_by_session(self, token: str) -> dict:
@@ -194,8 +150,4 @@ class ParticipantService:
     def logout(self, token: str | None) -> None:
         if not token:
             return
-        self.repo.update(
-            "participant_sessions",
-            {"revoked_at": datetime.now(timezone.utc).isoformat()},
-            token_hash=sha256_hex(token),
-        )
+        self.repo.update("participant_sessions", {"revoked_at": datetime.now(timezone.utc).isoformat()}, token_hash=sha256_hex(token))
