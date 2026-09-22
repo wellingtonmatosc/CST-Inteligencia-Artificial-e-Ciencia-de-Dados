@@ -36,7 +36,7 @@ function showMessage(el,msg,type='notice'){
 }
 
 function esc(s){
-  return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt',"'":'&#39;','\"':'&quot;'}[c]));
+  return String(s??'').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
 }
 
 const A11Y_STORAGE_KEY='gamificacao-a11y-v3';
