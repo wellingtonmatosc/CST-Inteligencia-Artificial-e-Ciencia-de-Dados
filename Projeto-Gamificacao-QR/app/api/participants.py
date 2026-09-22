@@ -15,9 +15,8 @@ class RegisterPayload(BaseModel):
     nick: str = Field(min_length=3, max_length=24)
     pin: str = Field(pattern=PIN_PATTERN)
     participant_type: str = Field(pattern="^(student|staff|external)$")
-    registration: str | None = Field(default=None, max_length=50)
-    course_class: str | None = Field(default=None, max_length=120)
-    institution: str | None = Field(default=None, max_length=160)
+    campus: str | None = Field(default=None, max_length=160)
+    course_name: str | None = Field(default=None, max_length=160)
 
 
 class LoginPayload(BaseModel):
@@ -50,7 +49,16 @@ def _set_cookie(response: Response, token: str, settings: Settings):
 def register(payload: RegisterPayload, response: Response, service: ParticipantService = Depends(get_participant_service), settings: Settings = Depends(get_settings)):
     participant, token, access_code = service.register(payload.model_dump())
     _set_cookie(response, token, settings)
-    return {"participant": {"id": participant["id"], "nick": participant["nick"], "full_name": participant["full_name"]}, "access_code": access_code}
+    return {
+        "participant": {
+            "id": participant["id"],
+            "nick": participant["nick"],
+            "full_name": participant["full_name"],
+            "campus": participant.get("campus"),
+            "course_name": participant.get("course_name"),
+        },
+        "access_code": access_code,
+    }
 
 
 @router.post("/login")
@@ -94,6 +102,8 @@ def me(request: Request, service: ParticipantService = Depends(get_participant_s
             "nick": participant["nick"],
             "full_name": participant["full_name"],
             "participant_type": participant["participant_type"],
+            "campus": participant.get("campus"),
+            "course_name": participant.get("course_name"),
             "has_pin": bool(participant.get("has_password")),
             "is_organizer": bool(participant.get("is_organizer")),
         },
