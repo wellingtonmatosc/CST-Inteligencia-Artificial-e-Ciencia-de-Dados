@@ -8,7 +8,7 @@ function ensureScript(src){
 }
 document.documentElement.lang='pt-BR';
 const isRanking=location.pathname==='/ranking';
-document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isRanking?'#06182b':'#f6f7fa');
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isRanking?'#f4f6f9':'#f6f7fa');
 ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/mobile-first.css');
@@ -157,7 +157,13 @@ function initA11yPanel(){
   window.openAccessibilityPanel=open;
 }
 
+function prepareAdminMobileForms(){
+  if(location.pathname!=='/admin'||!window.matchMedia('(max-width: 640px)').matches)return;
+  document.querySelectorAll('#stationsPanel details.form-card[open],#questionsPanel details.form-card[open]').forEach(item=>item.open=false);
+}
+
 window.speakText=speakText;
 window.stopSpeech=stopSpeech;
 window.speakPage=speakPage;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initA11yPanel,{once:true});else initA11yPanel();
+function initCommonUi(){prepareAdminMobileForms();initA11yPanel()}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCommonUi,{once:true});else initCommonUi();
