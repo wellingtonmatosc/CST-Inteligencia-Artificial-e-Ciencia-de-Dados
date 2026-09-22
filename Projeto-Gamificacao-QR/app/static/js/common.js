@@ -73,14 +73,25 @@ function pageSpeechText(){
 }
 function speakPage(){const text=pageSpeechText();return text?speakText(text):false}
 
+function createInlineA11yToggle(){
+  const existing=document.querySelector('#openAccessibilityQuick');
+  if(existing)return existing;
+  const button=document.createElement('button');
+  button.type='button';
+  button.id='a11yToggle';
+  button.className='secondary compact a11y-inline-toggle';
+  button.textContent='Acessibilidade';
+  const host=document.querySelector('.page-links')||document.querySelector('.admin-toolbar')||document.querySelector('main')||document.body;
+  host.appendChild(button);
+  return button;
+}
+
 function initA11yPanel(){
   let prefs=loadA11y();
   applyA11y(prefs);
 
-  const toggle=document.createElement('button');
-  toggle.type='button';toggle.id='a11yToggle';toggle.className='a11y-toggle';
+  const toggle=createInlineA11yToggle();
   toggle.setAttribute('aria-haspopup','dialog');toggle.setAttribute('aria-expanded','false');
-  toggle.textContent='Acessibilidade';
 
   const panel=document.createElement('section');
   panel.id='a11yPanel';panel.className='a11y-panel hidden';panel.setAttribute('role','dialog');panel.setAttribute('aria-labelledby','a11yTitle');
@@ -91,7 +102,7 @@ function initA11yPanel(){
   <label class="switch-row"><input type="checkbox" data-a11y-check="contrast"><span><strong>Alto contraste</strong></span></label>
   <label class="switch-row"><input type="checkbox" data-a11y-check="reducedMotion"><span><strong>Reduzir animações</strong></span></label>
   <div class="a11y-footer"><button type="button" class="secondary" data-a11y="reset">Restaurar</button></div>`;
-  document.body.append(toggle,panel);
+  document.body.append(panel);
 
   const status=panel.querySelector('#voiceStatus');
   const voiceButton=panel.querySelector('#voiceCommandButton');
