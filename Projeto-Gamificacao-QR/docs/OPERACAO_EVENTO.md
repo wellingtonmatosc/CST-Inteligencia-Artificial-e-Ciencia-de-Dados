@@ -1,31 +1,17 @@
 # Operação do evento — Trilhas Poéticas
 
-## 1. Preparação de participantes
+## Preparação
 
-1. revisar as regras de cadastro do evento;
-2. confirmar que alunos informam matrícula e curso/turma;
-3. confirmar que servidores e público externo usam o tipo correto de participante;
-4. marcar organizadores no painel para mantê-los fora da competição;
-5. conferir a distribuição das cinco equipes durante a homologação.
+1. definir as 7 datas no calendário administrativo;
+2. cadastrar os 15 QRs com código físico/local quando aplicável;
+3. cadastrar/importar as 300 questões finais, todas com 4 alternativas;
+4. distribuir questões entre os QRs e, se necessário, por dia;
+5. configurar conteúdo cultural e trilhas;
+6. testar cada QR em celular real antes da abertura.
 
-O sistema usa um único fluxo de cadastro. Não existe ativação institucional separada.
+O cadastro público usa nome, nick, PIN, tipo, campus, curso e avatar. Organizadores devem ser marcados para permanecerem fora da pontuação.
 
-## 2. Curadoria e estações
-
-No painel administrativo:
-
-1. cadastrar/revisar desafios;
-2. criar estação como permanente, sequencial, temporária ou especial;
-3. configurar pontos-base;
-4. definir código físico local;
-5. configurar janela de horário quando necessário;
-6. inserir conteúdo cultural e recursos equivalentes de acessibilidade;
-7. vincular desafio opcional;
-8. montar e ordenar trilhas sequenciais.
-
-A tecnologia não define o local físico exato. A frente de espaços informa os pontos finais depois de testar circulação, segurança e acessibilidade.
-
-## 3. Material físico
+## Material físico
 
 Criar `qrs.csv` a partir de `docs/qrs.example.csv` e executar:
 
@@ -33,75 +19,41 @@ Criar `qrs.csv` a partir de `docs/qrs.example.csv` e executar:
 python scripts/generate_qr_codes.py --input qrs.csv --base-url https://gamificacao-qr-ifmt.vercel.app
 ```
 
-Imprimir a `folha_impressao.html` ou adaptar os PNGs ao material visual oficial. O código físico deve ficar disponível somente na estação correspondente e legível/acessível.
+Cada QR válido concede 10 pontos por participante/dia. O gerador não recebe pontuação variável.
 
-## 4. Antes de abrir ao público
+## Checklist antes do público
 
-- confirmar Vercel saudável;
-- confirmar Supabase saudável;
-- confirmar 5 equipes ativas;
-- confirmar 12+ desafios ativos e acessíveis;
-- conferir todas as estações ativas;
-- testar cada QR físico no local real;
-- testar código correto/incorreto;
-- testar sequência fora de ordem;
-- testar temporário antes/durante/depois da janela;
-- testar ranking zerado sem posição falsa;
-- conferir contas dos organizadores fora da competição;
-- testar Android/iPhone e acessibilidade;
-- manter uma cópia local do manifesto dos QRs.
+- Vercel e `/health` respondendo;
+- Supabase acessível pelo backend;
+- 7 dias configurados no fuso `America/Cuiaba`;
+- 15 QRs ativos e testados;
+- pool de questões configurado para cada QR;
+- questões com exatamente 4 alternativas;
+- cadastro/login/recuperação testados;
+- 1ª tentativa correta = +10;
+- 2ª tentativa correta = +6;
+- duas erradas = +0 no desafio;
+- mesmo QR no mesmo dia não pontua novamente;
+- mesmo QR no dia seguinte volta a ser elegível;
+- questão nunca se repete para a mesma pessoa;
+- organizador permanece com zero;
+- ranking e desempates conferidos;
+- Android/iPhone e recursos de acessibilidade conferidos.
 
-## 5. Durante o evento
+## Durante o evento
 
-### Participante
+Participante: entra/cria conta → encontra QR → valida → recebe +10 → responde à questão → acompanha perfil/ranking.
 
-1. encontra o QR;
-2. abre pelo celular;
-3. entra ou cria a conta se necessário;
-4. volta automaticamente à estação;
-5. informa o código físico;
-6. recebe os pontos-base uma única vez;
-7. acessa conteúdo cultural;
-8. responde ao desafio, se houver;
-9. acompanha equipe, progresso e ranking.
+A organização acompanha participantes, estações, acessos, questões, ranking e auditoria. Atividade em horário incomum é sinalizada para revisão, sem bloqueio ou punição automática.
 
-### Organização
+## Ocorrências
 
-Usuários administrativos operam conforme papel:
+- QR danificado: desativar/substituir material;
+- código físico exposto: trocar código físico da estação;
+- pool esgotado: ampliar/revisar o pool; o sistema não repete questão silenciosamente;
+- conteúdo inacessível: corrigir ou desativar a estação até haver alternativa equivalente;
+- pontuação manual incorreta: usar estorno com justificativa, nunca apagar silenciosamente o lançamento.
 
-- administrador: configura tudo;
-- operador: estações, conteúdo, trilhas e extras;
-- validador: pontos extras/estornos;
-- consulta: monitoramento sem alterar dados.
+## Encerramento
 
-## 6. Pontos extras
-
-Ao validar uma ação extra:
-
-1. selecionar participante;
-2. escolher o tipo da ação;
-3. registrar descrição;
-4. registrar evidência/referência quando houver;
-5. informar pontos;
-6. conceder.
-
-Se houver erro, usar **Estornar** e informar justificativa. Não apagar o lançamento original.
-
-## 7. Ocorrências
-
-- QR danificado: desativar a estação e substituir o material físico;
-- código físico exposto indevidamente: editar a estação e gerar novo código físico/material;
-- participante em equipe incorreta por cadastro: não alterar pontuação manualmente sem registrar o motivo; tratar administrativamente;
-- conteúdo inacessível: desativar a estação até oferecer alternativa equivalente;
-- temporário com horário errado: corrigir janela antes de reabrir;
-- instabilidade: não duplicar pontos manualmente sem verificar o ledger/visitas.
-
-## 8. Encerramento
-
-- desativar temporários/especiais;
-- registrar últimos pontos extras;
-- conferir estornos;
-- exportar/registrar indicadores necessários ao relatório institucional;
-- preservar auditoria;
-- não apagar histórico oficial do evento;
-- somente limpar dados de homologação antes do evento real, nunca depois da execução oficial sem autorização.
+Preservar os dados oficiais, ranking, ledger e auditoria do evento. A limpeza destrutiva é apropriada apenas para dados de teste/homologação ou quando houver autorização explícita.
