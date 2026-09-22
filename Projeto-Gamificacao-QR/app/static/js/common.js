@@ -15,6 +15,7 @@ ensureStylesheet('/static/css/mobile-first.css');
 if(location.pathname==='/admin'){
   ensureScript('/static/js/admin-question-pool.js');
   ensureScript('/static/js/admin-monitoring.js');
+  ensureScript('/static/js/admin-ranking-rules.js');
 }
 
 async function api(url,options={}){
