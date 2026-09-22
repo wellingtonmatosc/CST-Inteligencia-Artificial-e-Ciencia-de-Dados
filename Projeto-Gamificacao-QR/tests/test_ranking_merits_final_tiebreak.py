@@ -18,10 +18,21 @@ def test_ranking_migration_tracks_transparent_merit_metrics():
     assert "final_tiebreak_score" in text
 
 
-def test_ranking_order_does_not_use_speed_or_timestamp_as_tiebreak():
-    text = read("supabase/migrations/20260922164000_ranking_merits_final_tiebreak.sql").lower()
-    ranking_order = "s.points desc,\n        s.correct_answers desc,\n        s.first_try_correct desc,\n        s.distinct_qrs desc,\n        s.active_days desc,\n        s.final_tiebreak_score desc"
+def test_latest_ranking_waits_for_whole_tiebreak_group():
+    text = read("supabase/migrations/20260922165000_final_tiebreak_group_logic.sql").lower()
+    assert "pre_final_tie_count" in text
+    assert "final_scores_recorded_count" in text
+    assert "effective_final_tiebreak_score" in text
+    assert "final_scores_recorded_count = p.pre_final_tie_count" in text
+    assert "unresolved_tie" in text
+    assert "final_tiebreak_resolved" in text
+
+
+def test_ranking_order_does_not_use_speed_as_tiebreak():
+    text = read("supabase/migrations/20260922165000_final_tiebreak_group_logic.sql").lower()
+    ranking_order = "p.points desc, p.correct_answers desc, p.first_try_correct desc, p.distinct_qrs desc, p.active_days desc, p.effective_final_tiebreak_score desc"
     assert ranking_order in text
+    assert "speed" not in text
 
 
 def test_public_ranking_explains_final_rules():
@@ -30,6 +41,7 @@ def test_public_ranking_explains_final_rules():
     assert "acertos na primeira tentativa" in html
     assert "Tempo e velocidade não são usados" in html
     assert "desempate supervisionado do Dia 7" in js
+    assert "unresolved_tie" in js
 
 
 def test_admin_has_explicit_final_tiebreak_controls():
@@ -38,6 +50,7 @@ def test_admin_has_explicit_final_tiebreak_controls():
     assert "/static/js/admin-ranking-rules.js" in common
     assert "/api/admin/final-tiebreak/" in admin
     assert "A nota não soma pontos" in admin
+    assert "grupo inteiro estiver preenchido" in admin
     assert "Dia 7 ainda sem data definida" in admin
 
 
@@ -46,4 +59,4 @@ def test_profile_exposes_merit_progress_without_extra_points():
     assert "Constância:" in text
     assert "Explorador:" in text
     assert "Sequência:" in text
-    assert "Empate técnico" in text
+    assert "unresolved_tie" in text
