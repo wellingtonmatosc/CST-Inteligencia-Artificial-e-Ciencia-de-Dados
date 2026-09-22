@@ -1,129 +1,89 @@
 # Trilhas Poéticas — IFMT
 
-Sistema web acessível para a experiência gamificada **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**.
+Sistema web mobile-first para a experiência gamificada **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**.
 
-**Status:** homologação na branch `feat/gamificacao-qr-evento`. A `main` permanece sem merge até a homologação final.
+**Status:** versão final em homologação na branch `feat/gamificacao-qr-evento`. A `main` permanece sem merge até autorização explícita.
 
-## O que o sistema faz
+## Regras principais
 
-- cadastro, login por nick + PIN e recuperação de acesso;
-- competição individual com ranking por nick;
-- organizadores fora da competição;
-- estações QR `permanent`, `sequential`, `temporary` e `special`;
-- código físico local como validação antifraude, sem GPS;
-- uma única pontuação válida por participante + QR;
-- trilhas sequenciais com bloqueio de etapas e bônus de conclusão;
-- conteúdo cultural em texto, imagem, áudio ou vídeo, com equivalentes acessíveis;
-- desafios de múltipla escolha, verdadeiro/falso ou resposta curta;
-- alternativas de múltipla escolha em ordem estável por participante e questão;
-- pontos extras validados, estorno e auditoria;
-- área administrativa separada em `/admin`, destinada ao administrador único do evento;
-- geração de PNGs, manifesto e folha de impressão dos QRs;
-- acessibilidade: texto ajustável, alto contraste, redução de movimento, leitura da tela/conteúdo/desafio e comando de voz opcional.
+- competição individual durante 7 dias;
+- fuso `America/Cuiaba`, com virada diária às 00:00;
+- 15 QR Codes no evento;
+- cada participante pode validar o mesmo QR uma vez por dia e novamente no dia seguinte;
+- cada validação válida vale **+10 pontos**;
+- banco final previsto de 300 questões, todas de múltipla escolha com 4 alternativas;
+- questão nunca se repete para a mesma pessoa;
+- alternativas são embaralhadas de forma estável por participante + questão;
+- acerto na 1ª tentativa: **+10**;
+- acerto na 2ª tentativa: **+6**;
+- duas respostas erradas: **+0** no desafio;
+- máximo de 2 tentativas, persistidas no servidor;
+- organizadores não pontuam;
+- velocidade/tempo não geram pontos nem servem como desempate;
+- sem GPS.
 
-## Ranking individual
+## Ranking
 
-A classificação usa o desempenho de cada participante:
+Ordem de classificação:
 
-1. maior quantidade de pontos acumulados;
-2. em empate, mais trilhas concluídas;
-3. persistindo o empate, mais estações validadas;
-4. desempenhos idênticos compartilham a mesma posição.
+1. pontos;
+2. total de acertos;
+3. acertos na 1ª tentativa;
+4. QRs distintos;
+5. dias ativos;
+6. resultado supervisionado do Dia 7, apenas se o empate permanecer.
 
-A velocidade de resposta ou deslocamento não é usada como desempate.
+Ouro, prata e bronze são destaques visuais para os três primeiros e não alteram a pontuação.
+
+## Cadastro
+
+O fluxo público usa:
+
+- nome completo;
+- nick;
+- PIN de 4 dígitos;
+- tipo de participante;
+- campus;
+- curso;
+- avatar vetorial local.
+
+Não há e-mail, matrícula, turma ou semestre. Campus e curso permitem opção personalizada.
 
 ## Stack
 
 - Python 3.12
 - FastAPI
 - Supabase / PostgreSQL
-- HTML, CSS e JavaScript sem framework
+- HTML, CSS e JavaScript sem framework pesado
 - Vercel
 - Pytest
 - `qrcode`
 
-## Fluxo principal
+## Arquitetura
 
 ```text
-cadastro do participante
-        ↓
-QR físico
-        ↓
-login, se necessário
-        ↓
-código físico
-        ↓
-duplicidade + sequência + horário
-        ↓
-conteúdo cultural acessível
-        ↓
-desafio opcional
-        ↓
-pontuação individual → ranking individual
+Celular / navegador
+        │ HTTPS
+        ▼
+Vercel + FastAPI
+        │ service_role somente no servidor
+        ▼
+Supabase / PostgreSQL
 ```
 
-## Pontuação-base adotada
+O navegador não acessa o banco privilegiado diretamente. Pontuação, tentativas, atribuição de questões, idempotência diária e ranking são protegidos no backend/RPCs PostgreSQL.
 
-| Tipo | Pontos |
-|---|---:|
-| Permanente | 10 |
-| Sequencial | 15 |
-| Temporário | 30 |
-| Especial | 40 |
-| Conclusão da trilha | +30 por padrão |
-| Desafio | 0–20 configurável |
+## Questões e QRs
 
-A velocidade de resposta/deslocamento não gera vantagem.
+A estação só pode ser validada quando possui pool de questões configurado. A seleção:
 
-## Banco
+- exclui qualquer questão já atribuída ao participante;
+- prioriza questões menos usadas naquele QR/dia;
+- equilibra dificuldade quando possível;
+- usa desempate pseudoaleatório determinístico;
+- não recorre silenciosamente a pergunta repetida quando o pool se esgota.
 
-`supabase/schema.sql` contém a base estrutural do sistema. As evoluções aplicadas depois do schema-base ficam versionadas em `supabase/migrations/`.
-
-A mudança para competição individual está registrada em `supabase/migrations/20260917153330_individual_competition.sql`. As antigas colunas de equipe continuam no banco somente para compatibilidade e preservação de histórico; novas atividades competitivas não dependem de equipe.
-
-Para um banco novo:
-
-1. execute `supabase/schema.sql`;
-2. aplique as migrations em ordem;
-3. execute `supabase/seed.sql` para categorias, zonas e os 12 desafios iniciais acessíveis;
-4. configure as variáveis do `.env`.
-
-O Data API não fica disponível para `anon` ou `authenticated`. O navegador fala apenas com o FastAPI; as RPCs críticas são executáveis somente pelo backend com `service_role`.
-
-## Cadastro de participantes
-
-O sistema usa um único fluxo de cadastro. O participante informa os dados necessários, escolhe nick e PIN e recebe um código de recuperação.
-
-- aluno IFMT: matrícula e curso/turma;
-- servidor IFMT: identificação como servidor;
-- público externo: instituição/empresa opcional.
-
-Não existe etapa separada de **ativação de cadastro IFMT** e não existe distribuição por equipes.
-
-## Administração
-
-A administração é separada do login dos participantes e fica disponível em `/admin`.
-
-O projeto opera com **um único administrador**, configurado pelas variáveis de ambiente `ADMIN_USERNAME` e `ADMIN_PASSWORD_HASH`. Não existe cadastro de novos administradores na interface pública ou no painel.
-
-O painel administrativo concentra:
-
-- visão geral com participantes, pontos, estações, validações, desafios e trilhas;
-- alertas operacionais de estações/trilhas incompletas ou temporárias;
-- consulta do progresso de cada participante, com ativação/desativação;
-- criação e edição de estações e conteúdo cultural;
-- gestão de desafios acessíveis;
-- gestão de trilhas sequenciais;
-- concessão e estorno de pontos extras;
-- visualização do ranking individual;
-- auditoria das ações administrativas;
-- moderação de nick e configurações gerais de operação.
-
-A rota administrativa não aparece na navegação pública. A proteção é feita por usuário, senha, cookie `HttpOnly` e sessão administrativa assinada.
-
-## QR Codes físicos
-
-Use `docs/qrs.example.csv` como modelo:
+O gerador de QR físico usa `docs/qrs.example.csv`:
 
 ```bash
 python scripts/generate_qr_codes.py \
@@ -131,17 +91,44 @@ python scripts/generate_qr_codes.py \
   --base-url https://gamificacao-qr-ifmt.vercel.app
 ```
 
-Saída em `qr_output/`:
+## Administração
 
-- um PNG por estação;
-- `manifest.csv`;
-- `folha_impressao.html` com QR, código físico, tipo, pontos e referência de local.
+`/admin` concentra:
 
-A escolha do **ponto físico exato** pertence à frente responsável pelos espaços.
+- visão geral e alertas;
+- participantes e organizadores;
+- estações/QRs e conteúdo cultural;
+- banco e distribuição de questões por QR/dia;
+- calendário de 7 dias;
+- trilhas sequenciais;
+- pontos extras e estornos auditáveis;
+- ranking e desempate final;
+- monitoramento de acessos;
+- auditoria e moderação de nick.
 
-## Identidade visual
+Acessos em horários incomuns são sinalizados para conferência; não há bloqueio ou retirada automática de pontos.
 
-O tema usa fundo azul-noite com gradientes azul, índigo e violeta, com ciano e magenta apenas como luz decorativa e âmbar para foco/destaques. A paleta foi reorganizada para manter contraste de leitura e preservar o modo de alto contraste.
+## Banco de dados
+
+A fonte de verdade estrutural é `supabase/migrations/`. O antigo `schema.sql` foi removido para evitar manter uma cópia desatualizada da estrutura.
+
+`supabase/seed.sql` contém somente catálogo base (categorias e zonas). Ele não cria participantes, QRs, questões ou dados de homologação.
+
+Os dados de teste/homologação das versões anteriores foram removidos antes da preparação desta versão final.
+
+## Identidade visual e acessibilidade
+
+A interface usa tema institucional claro nas telas gerais e ranking escuro. A paleta trabalha com azul/ink, roxo/plum, Embers/laranja, branco e neutros. **Verde não faz parte da identidade visual.**
+
+Recursos preservados:
+
+- ajuste de tamanho do texto;
+- alto contraste;
+- redução de movimento;
+- síntese de voz;
+- comandos de voz quando suportados;
+- navegação por teclado;
+- alternativas textuais para mídia essencial.
 
 ## Desenvolvimento local
 
@@ -154,22 +141,21 @@ copy .env.example .env
 uvicorn app.main:app --reload
 ```
 
-Abra `http://127.0.0.1:8000`.
-
-## Testes
+Testes:
 
 ```bash
 pytest
 ```
 
-O CI também compila Python, valida os arquivos JavaScript e impede o retorno dos módulos/regras do motor antigo.
+O CI também compila Python, valida JavaScript e verifica que módulos do motor legado não retornem.
 
-## Produção / homologação
+## Produção
 
-- domínio: `https://gamificacao-qr-ifmt.vercel.app`;
-- Vercel continua usando o mesmo projeto e domínio já adotados;
-- a branch de homologação é `feat/gamificacao-qr-evento`;
-- a `main` só deve receber merge depois da homologação em celular, acessibilidade e fluxo físico.
+- público: `https://gamificacao-qr-ifmt.vercel.app`
+- administração: `https://gamificacao-qr-ifmt.vercel.app/admin`
+- branch atual: `feat/gamificacao-qr-evento`
+
+Antes do evento real ainda devem ser carregados os dados oficiais: datas dos 7 dias, 15 QRs/localizações, 300 questões aprovadas, distribuição por QR/dia e conteúdo/trilhas definitivos.
 
 ## Documentação
 
