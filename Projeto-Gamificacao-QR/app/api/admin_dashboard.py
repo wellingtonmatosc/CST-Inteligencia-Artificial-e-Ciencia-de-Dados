@@ -4,7 +4,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.api.deps import current_admin, get_repo, require_admin_role
 from app.core.errors import AppError
@@ -16,6 +16,11 @@ LOCAL_TIMEZONE = ZoneInfo("America/Cuiaba")
 
 class ParticipantActivePayload(BaseModel):
     active: bool
+
+
+class FinalTiebreakPayload(BaseModel):
+    score: int = Field(ge=0, le=100)
+    note: str | None = Field(default=None, max_length=500)
 
 
 def _count_where(repo: SupabaseRepository, table: str, **filters) -> int:
@@ -61,7 +66,7 @@ def _recent_activity(repo: SupabaseRepository) -> list[dict]:
 
 
 def attach_individual_progress(participants: list[dict], ranking: list[dict]) -> list[dict]:
-    """Combina cadastro administrativo com o progresso competitivo individual."""
+    """Combina cadastro administrativo com progresso e critérios de desempate."""
     progress = {str(row.get("id")): row for row in ranking if row.get("id")}
     output: list[dict] = []
     for participant in participants:
@@ -71,6 +76,15 @@ def attach_individual_progress(participants: list[dict], ranking: list[dict]) ->
         row["position"] = stats.get("position")
         row["trails_completed"] = int(stats.get("trails_completed") or 0)
         row["stations_validated"] = int(stats.get("stations_validated") or 0)
+        row["distinct_qrs"] = int(stats.get("distinct_qrs") or 0)
+        row["active_days"] = int(stats.get("active_days") or 0)
+        row["correct_answers"] = int(stats.get("correct_answers") or 0)
+        row["first_try_correct"] = int(stats.get("first_try_correct") or 0)
+        row["best_correct_streak"] = int(stats.get("best_correct_streak") or 0)
+        row["tie_count"] = int(stats.get("tie_count") or 1)
+        row["needs_final_tiebreak"] = bool(stats.get("needs_final_tiebreak"))
+        row["final_tiebreak_score"] = int(stats.get("final_tiebreak_score") or 0)
+        row["final_tiebreak_recorded"] = bool(stats.get("final_tiebreak_recorded"))
         output.append(row)
     return output
 
@@ -86,6 +100,16 @@ def _audit(repo: SupabaseRepository, admin: dict, action: str, participant_id: s
             "entity_id": participant_id,
             "metadata": metadata,
         },
+    )
+
+
+def _event_days(repo: SupabaseRepository) -> list[dict]:
+    return (
+        repo.raw_table("event_days")
+        .select("day_number,label,event_date,active,is_final_event,updated_at")
+        .order("day_number")
+        .execute().data
+        or []
     )
 
 
@@ -112,18 +136,35 @@ def dashboard_data(
     competitors = [p for p in participants if p.get("active") and not p.get("is_organizer")]
     recent_activity = _recent_activity(repo)
     unusual_recent = sum(1 for row in recent_activity if row.get("unusual_hour"))
+    event_days = _event_days(repo)
+    final_day = next((day for day in event_days if day.get("is_final_event")), None)
+    unresolved_ties = sum(1 for row in ranking if row.get("needs_final_tiebreak"))
 
     return {
         "mode": "individual",
         "admin_mode": "single",
         "participants": participants,
         "ranking": ranking,
+        "event_days": event_days,
+        "final_day": final_day,
         "recent_activity": recent_activity,
         "monitoring": {
             "timezone": "America/Cuiaba",
             "unusual_window": "00:00–05:59",
             "unusual_recent": unusual_recent,
             "policy": "signal_only",
+        },
+        "ranking_rules": {
+            "order": [
+                "points",
+                "correct_answers",
+                "first_try_correct",
+                "distinct_qrs",
+                "active_days",
+                "final_tiebreak_score",
+            ],
+            "final_tiebreak": "supervised_day_7",
+            "speed_used": False,
         },
         "stats": {
             "participants_total": len(participants),
@@ -136,6 +177,7 @@ def dashboard_data(
             "validations_total": _count_where(repo, "station_visits"),
             "pending_challenges": _count_where(repo, "station_visits", status="validated"),
             "unusual_recent": unusual_recent,
+            "unresolved_ties": unresolved_ties,
         },
     }
 
@@ -155,3 +197,67 @@ def set_participant_active(
     repo.update("participants", {"active": payload.active}, id=participant_id)
     _audit(repo, admin, "participant_active_changed", participant_id, active=payload.active)
     return {"ok": True, "active": payload.active}
+
+
+@router.put("/final-tiebreak/{participant_id}")
+def set_final_tiebreak(
+    participant_id: str,
+    payload: FinalTiebreakPayload,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    participants = repo.select("participants", id=participant_id)
+    if not participants:
+        raise AppError("Participante não encontrado.", 404)
+    if participants[0].get("is_organizer"):
+        raise AppError("Contas da organização não participam do desempate.", 422)
+
+    now_iso = datetime.now(LOCAL_TIMEZONE).isoformat()
+    data = {
+        "score": payload.score,
+        "note": (payload.note or "").strip() or None,
+        "recorded_by": admin["username"],
+        "updated_at": now_iso,
+    }
+    existing = repo.select("final_tiebreak_results", participant_id=participant_id)
+    if existing:
+        updated = repo.update("final_tiebreak_results", data, participant_id=participant_id)
+        result = updated[0] if updated else {"participant_id": participant_id, **data}
+    else:
+        result = repo.insert(
+            "final_tiebreak_results",
+            {"participant_id": participant_id, "recorded_at": now_iso, **data},
+        )
+
+    _audit(
+        repo,
+        admin,
+        "final_tiebreak_recorded",
+        participant_id,
+        score=payload.score,
+        note=data["note"],
+    )
+    return {"ok": True, "result": result}
+
+
+@router.delete("/final-tiebreak/{participant_id}")
+def clear_final_tiebreak(
+    participant_id: str,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    existing = repo.select("final_tiebreak_results", participant_id=participant_id)
+    if not existing:
+        return {"ok": True, "removed": False}
+    previous_score = int(existing[0].get("score") or 0)
+    repo.delete("final_tiebreak_results", participant_id=participant_id)
+    _audit(
+        repo,
+        admin,
+        "final_tiebreak_cleared",
+        participant_id,
+        previous_score=previous_score,
+    )
+    return {"ok": True, "removed": True}
