@@ -1,9 +1,10 @@
 """Gera o kit físico das estações Trilhas Poéticas a partir de CSV local.
 
 CSV mínimo: code,name
-Colunas opcionais: station_type,physical_code,points,location_hint
+Colunas opcionais: station_type,physical_code,location_hint
 
-O physical_code fica apenas no material local de impressão; o banco armazena seu hash.
+A validação de qualquer QR vale 10 pontos pela regra final. O physical_code
+fica apenas no material local de impressão; o banco armazena somente seu hash.
 """
 from __future__ import annotations
 
@@ -49,35 +50,33 @@ def main() -> None:
                 raise SystemExit(f"Linha {line}: code/name obrigatório")
             url = f"{args.base_url.rstrip('/')}/q/{quote(code, safe='')}"
             filename = f"{safe_filename(code)}.png"
-            image = qrcode.make(url)
-            image.save(args.output / filename)
+            qrcode.make(url).save(args.output / filename)
             manifest.append({
                 "code": code,
                 "name": name,
                 "station_type": (row.get("station_type") or "permanent").strip(),
                 "physical_code": (row.get("physical_code") or "").strip().upper(),
-                "points": (row.get("points") or "").strip(),
                 "location_hint": (row.get("location_hint") or "").strip(),
                 "url": url,
                 "file": filename,
             })
 
-    fields = ["code", "name", "station_type", "physical_code", "points", "location_hint", "url", "file"]
+    fields = ["code", "name", "station_type", "physical_code", "location_hint", "url", "file"]
     with (args.output / "manifest.csv").open("w", encoding="utf-8-sig", newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=fields)
-        writer.writeheader(); writer.writerows(manifest)
+        writer.writeheader()
+        writer.writerows(manifest)
 
     cards = []
     for item in manifest:
         physical = html.escape(item["physical_code"] or "—")
-        points = html.escape(item["points"] or "—")
-        location = html.escape(item["location_hint"] or "A definir pela equipe de espaços")
+        location = html.escape(item["location_hint"] or "Local a definir")
         cards.append(f"""
 <article class="card">
   <h2>{html.escape(item['name'])}</h2>
   <img src="{html.escape(item['file'])}" alt="QR Code da estação {html.escape(item['name'])}">
   <p><strong>Código:</strong> {html.escape(item['code'])}</p>
-  <p><strong>Tipo:</strong> {html.escape(item['station_type'])} • <strong>Pontos:</strong> {points}</p>
+  <p><strong>Tipo:</strong> {html.escape(item['station_type'])} • <strong>Validação:</strong> 10 pontos</p>
   <p><strong>Código físico:</strong> <span class="physical">{physical}</span></p>
   <p><strong>Referência:</strong> {location}</p>
 </article>""")
