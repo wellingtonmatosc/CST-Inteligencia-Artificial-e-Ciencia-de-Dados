@@ -15,6 +15,7 @@
   ];
   const byKey=new Map(catalog.map(item=>[item.key,item]));
   const defaultKey='avatar-01';
+  const escAttr=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
   function safeKey(value){return byKey.has(String(value||''))?String(value):defaultKey}
   function hairPath(style){
@@ -34,16 +35,16 @@
   }
   function svg(item){
     const glasses=item.glasses?'<g fill="none" stroke="#172033" stroke-width="2"><circle cx="29" cy="34" r="5"/><circle cx="43" cy="34" r="5"/><path d="M34 34h4"/></g>':'';
-    return `<svg viewBox="0 0 72 72" role="img" aria-label="${item.label}" focusable="false"><circle cx="36" cy="36" r="35" fill="${item.bg}"/><path d="M13 72c2-16 12-24 23-24s21 8 23 24Z" fill="${item.shirt}"/><g fill="${item.hair}">${hairPath(item.style)}</g><ellipse cx="36" cy="35" rx="15" ry="18" fill="${item.skin}"/><g fill="${item.hair}">${item.style==='long'?'<path d="M18 32c1-16 7-23 18-23 12 0 18 8 19 23-6-7-12-10-19-10-8 0-13 3-18 10Z"/>':hairPath(item.style)}</g><circle cx="30" cy="35" r="1.5" fill="#211a20"/><circle cx="42" cy="35" r="1.5" fill="#211a20"/><path d="M31 42c3 3 7 3 10 0" fill="none" stroke="#7b3340" stroke-width="1.8" stroke-linecap="round"/>${glasses}</svg>`;
+    return `<svg viewBox="0 0 72 72" role="img" aria-label="${escAttr(item.label)}" focusable="false"><circle cx="36" cy="36" r="35" fill="${item.bg}"/><path d="M13 72c2-16 12-24 23-24s21 8 23 24Z" fill="${item.shirt}"/><g fill="${item.hair}">${hairPath(item.style)}</g><ellipse cx="36" cy="35" rx="15" ry="18" fill="${item.skin}"/><g fill="${item.hair}">${item.style==='long'?'<path d="M18 32c1-16 7-23 18-23 12 0 18 8 19 23-6-7-12-10-19-10-8 0-13 3-18 10Z"/>':hairPath(item.style)}</g><circle cx="30" cy="35" r="1.5" fill="#211a20"/><circle cx="42" cy="35" r="1.5" fill="#211a20"/><path d="M31 42c3 3 7 3 10 0" fill="none" stroke="#7b3340" stroke-width="1.8" stroke-linecap="round"/>${glasses}</svg>`;
   }
   function avatarMarkup(key,className='avatar',label=''){
     const item=byKey.get(safeKey(key));
-    const aria=label||item.label;
+    const aria=escAttr(label||item.label);
     return `<span class="${className}" data-avatar-key="${item.key}" role="img" aria-label="${aria}">${svg(item)}</span>`;
   }
   function pickerMarkup(selected=defaultKey){
     const current=safeKey(selected);
-    return catalog.map(item=>`<button type="button" class="avatar-choice${item.key===current?' is-selected':''}" data-avatar-choice="${item.key}" aria-pressed="${item.key===current?'true':'false'}" aria-label="Selecionar ${item.label}">${avatarMarkup(item.key,'avatar-choice-art')}<span class="avatar-check" aria-hidden="true">✓</span></button>`).join('');
+    return catalog.map(item=>`<button type="button" class="avatar-choice${item.key===current?' is-selected':''}" data-avatar-choice="${item.key}" aria-pressed="${item.key===current?'true':'false'}" aria-label="Selecionar ${escAttr(item.label)}">${avatarMarkup(item.key,'avatar-choice-art')}<span class="avatar-check" aria-hidden="true">✓</span></button>`).join('');
   }
   function mountPicker(container,{selected=defaultKey,onChange}={}){
     if(!container)return null;
@@ -62,4 +63,5 @@
     return {get value(){return current},set value(value){current=safeKey(value);render()}};
   }
   window.TrilhasAvatars={catalog,keys:catalog.map(item=>item.key),defaultKey,safeKey,avatarMarkup,pickerMarkup,mountPicker};
+  document.dispatchEvent(new CustomEvent('trilhas:avatars-ready'));
 })();
