@@ -1,6 +1,6 @@
-/* Alto contraste final — carregado por ultimo pelo common.js.
-   Objetivo: impedir combinacoes ilegíveis entre os temas institucionais,
-   ranking, admin e componentes dinamicos. Nenhuma informacao depende de cor. */
+/* Alto contraste definitivo — carregado por ultimo pelo common.js.
+   Esta e a unica camada que deve determinar o visual quando .a11y-contrast estiver ativo.
+   Nenhuma informacao depende exclusivamente de cor. */
 
 html.a11y-contrast{
   --hc-bg:#000000;
@@ -8,9 +8,10 @@ html.a11y-contrast{
   --hc-muted:#f2f2f2;
   --hc-border:#ffffff;
   --hc-focus:#ffd54a;
+  background:#000000!important;
+  color:#ffffff!important;
 }
 
-html.a11y-contrast,
 html.a11y-contrast body,
 html.a11y-contrast body.ranking-page,
 html.a11y-contrast body:not(.ranking-page){
@@ -24,6 +25,38 @@ html.a11y-contrast .hero::after,
 html.a11y-contrast .hero-visual,
 html.a11y-contrast .ai-ambient,
 html.a11y-contrast .ai-data-stream{display:none!important}
+
+/* Guarda de especificidade contra temas claros antigos. */
+html.a11y-contrast body:not(.ranking-page) .card,
+html.a11y-contrast body:not(.ranking-page) .hero,
+html.a11y-contrast body:not(.ranking-page) .avatar-dialog,
+html.a11y-contrast body.home-page .auth-card,
+html.a11y-contrast body.home-page .profile-card,
+html.a11y-contrast body.home-page .qr-panel,
+html.a11y-contrast .admin-shell .card,
+html.a11y-contrast .admin-shell .admin-nav,
+html.a11y-contrast .admin-shell .admin-toolbar,
+html.a11y-contrast .admin-shell .admin-list-item{
+  background:#000000!important;
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+  box-shadow:none!important;
+  background-image:none!important;
+}
+
+/* Home institucional. */
+html.a11y-contrast .home-shell .compact-hero::before{
+  color:#ffffff!important;
+  background:#000000!important;
+  border-color:#ffffff!important;
+}
+html.a11y-contrast .brand-mark i,
+html.a11y-contrast .brand-mark i:first-child{background:#ffffff!important}
+html.a11y-contrast .qr-reader-wrap{
+  background:#000000!important;
+  border-color:#ffffff!important;
+  box-shadow:none!important;
+}
 
 /* Texto */
 html.a11y-contrast h1,
@@ -105,7 +138,7 @@ html.a11y-contrast .admin-list-item{
   border-style:solid!important;
 }
 
-/* Campos: fundo claro + texto escuro para maxima leitura. */
+/* Campos: fundo branco + texto preto para leitura inequivoca. */
 html.a11y-contrast input:not([type="radio"]):not([type="checkbox"]),
 html.a11y-contrast select,
 html.a11y-contrast textarea{
@@ -129,7 +162,7 @@ html.a11y-contrast input[type="checkbox"]{
   border-color:#ffffff!important;
 }
 
-/* Acoes: primarias invertidas; secundarias permanecem pretas com contorno branco. */
+/* Acoes */
 html.a11y-contrast button:not(.secondary),
 html.a11y-contrast .button-link:not(.secondary){
   background:#ffffff!important;
@@ -160,8 +193,6 @@ html.a11y-contrast a{
   text-underline-offset:3px!important;
 }
 html.a11y-contrast button:disabled{opacity:.65!important}
-
-/* Estado de foco deve ser evidente tanto sobre preto quanto sobre branco. */
 html.a11y-contrast :focus-visible{
   outline:3px solid #ffd54a!important;
   outline-offset:3px!important;
@@ -189,7 +220,7 @@ html.a11y-contrast .admin-status-badge{
   box-shadow:none!important;
 }
 
-/* Perfil */
+/* Perfil e avatares */
 html.a11y-contrast .profile-avatar,
 html.a11y-contrast .avatar-choice,
 html.a11y-contrast .rank-avatar,
@@ -278,8 +309,9 @@ html.a11y-contrast .individual-ranking-card[data-position="3"]{
   box-shadow:none!important;
 }
 
-/* Painel de acessibilidade */
-html.a11y-contrast .a11y-panel{
+/* Painel de acessibilidade: seletor mais especifico que o acabamento claro do ranking. */
+html.a11y-contrast .a11y-panel,
+html.a11y-contrast body.ranking-page .a11y-panel{
   background:#000000!important;
   color:#ffffff!important;
   border:2px solid #ffffff!important;
@@ -288,16 +320,27 @@ html.a11y-contrast .a11y-panel{
 html.a11y-contrast .a11y-panel-head,
 html.a11y-contrast .a11y-control,
 html.a11y-contrast .a11y-footer,
-html.a11y-contrast .switch-row{
+html.a11y-contrast .switch-row,
+html.a11y-contrast body.ranking-page .a11y-panel .a11y-panel-head,
+html.a11y-contrast body.ranking-page .a11y-panel .a11y-control,
+html.a11y-contrast body.ranking-page .a11y-panel .a11y-footer,
+html.a11y-contrast body.ranking-page .a11y-panel .switch-row{
   background:#000000!important;
   color:#ffffff!important;
   border-color:#ffffff!important;
 }
-html.a11y-contrast .a11y-panel button.secondary{
+html.a11y-contrast body.ranking-page .a11y-panel .switch-row span,
+html.a11y-contrast body.ranking-page .a11y-panel .switch-row strong{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
+html.a11y-contrast .a11y-panel button.secondary,
+html.a11y-contrast body.ranking-page .a11y-panel button.secondary{
   background:#000000!important;
   color:#ffffff!important;
   -webkit-text-fill-color:#ffffff!important;
   border:2px solid #ffffff!important;
+  box-shadow:none!important;
 }
 html.a11y-contrast .a11y-panel input[type="checkbox"]{
   width:24px!important;
@@ -335,7 +378,6 @@ html.a11y-contrast .admin-section-head p{
   -webkit-text-fill-color:#ffffff!important;
 }
 
-/* Hover continua opcional e nunca e necessario para compreender a interface. */
 @media(hover:hover) and (pointer:fine){
   html.a11y-contrast button:not(:disabled):hover,
   html.a11y-contrast .button-link:hover,
