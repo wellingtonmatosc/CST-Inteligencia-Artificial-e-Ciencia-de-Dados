@@ -1,8 +1,8 @@
-# Trilhas Poéticas — IFMT
+# Trilhas Poéticas — Experiência Gamificada IFMT
 
-Sistema web mobile-first para a experiência gamificada **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**.
+Sistema web mobile-first da experiência **Trilhas Poéticas: Arte, Tecnologia, Gamificação e Inclusão**, desenvolvido na frente de Tecnologia, Sistema e Gamificação.
 
-**Status:** esta branch passa a ser a nova base do sistema final. A `main` permanece sem merge até autorização explícita.
+**Status:** a branch `feat/gamificacao-qr-evento` é a base de homologação da versão final. A `main` permanece sem merge até autorização explícita.
 
 ## Regras principais
 
@@ -35,7 +35,7 @@ Ordem de classificação:
 
 Ouro, prata e bronze são destaques visuais para os três primeiros e não alteram a pontuação.
 
-## Cadastro
+## Cadastro e avatares
 
 O fluxo público usa:
 
@@ -45,7 +45,7 @@ O fluxo público usa:
 - tipo de participante;
 - campus;
 - curso;
-- avatar vetorial local.
+- um dos 20 avatares WebP locais do sistema.
 
 Não há e-mail, matrícula, turma ou semestre. Campus e curso permitem opção personalizada.
 
@@ -83,11 +83,13 @@ A estação só pode ser validada quando possui pool de questões configurado. A
 - usa desempate pseudoaleatório determinístico;
 - não recorre silenciosamente a pergunta repetida quando o pool se esgota.
 
-O gerador de QR físico usa `docs/qrs.example.csv`:
+Os 15 registros operacionais `QR-01` a `QR-15` já foram provisionados no banco **inativos**, com 10 pontos por validação e localização ainda a definir. Antes da ativação, cada estação deve receber zona/localização definitiva, conteúdo e pool de questões.
+
+O manifesto-base está em `docs/qrs.example.csv`. O kit físico pode ser gerado com:
 
 ```bash
 python scripts/generate_qr_codes.py \
-  --input qrs.csv \
+  --input docs/qrs.example.csv \
   --base-url https://gamificacao-qr-ifmt.vercel.app
 ```
 
@@ -112,24 +114,15 @@ Acessos em horários incomuns são sinalizados para conferência; não há bloqu
 
 A fonte de verdade estrutural é `supabase/migrations/`. O antigo `schema.sql` foi removido para evitar manter uma cópia desatualizada da estrutura.
 
-`supabase/seed.sql` contém somente catálogo base (categorias e zonas). Ele não cria participantes, QRs, questões ou dados de homologação.
+`supabase/seed.sql` contém somente catálogos base. A zona `Local a definir` existe apenas para configuração segura das estações antes da definição física e deve deixar de ser usada antes da ativação dos QRs.
 
-Os dados de teste/homologação das versões anteriores foram removidos. A nova base parte sem QRs, questões, tentativas, pontuações ou trilhas antigas.
-
-## Limpeza da nova base
-
-A partir desta versão:
-
-- não manter arquivos de backup dentro do projeto;
-- não manter cópias de telas, CSS ou JavaScript substituídos;
-- não manter documentação de homologações antigas;
-- não manter dados de teste antigos no banco;
-- migrations aplicadas continuam preservadas por segurança e rastreabilidade do PostgreSQL, mas não entram no carregamento da aplicação em produção;
-- novos ajustes devem substituir o código vigente em vez de criar variantes paralelas.
+Os dados antigos de teste/homologação foram removidos. A base atual preserva somente dados necessários à configuração e à operação vigente.
 
 ## Identidade visual e acessibilidade
 
-A interface usa tema institucional claro nas telas gerais e ranking escuro. A paleta trabalha com azul/ink, roxo/plum, Embers/laranja, branco e neutros. **Verde não faz parte da identidade visual.**
+A interface usa tema institucional claro nas telas gerais e no ranking. A paleta trabalha com azul/ink, roxo/plum, Embers/laranja, branco e neutros. **Verde não faz parte da identidade visual.**
+
+A versão atual inclui sombras suaves, estados de hover/foco e acabamento visual leve, sempre respeitando redução de movimento.
 
 Recursos preservados:
 
@@ -141,7 +134,7 @@ Recursos preservados:
 - navegação por teclado;
 - alternativas textuais para mídia essencial.
 
-No celular o controle de acessibilidade fica inserido no fluxo da página, sem botão flutuante cobrindo conteúdo.
+O painel de acessibilidade segue o mesmo tema institucional claro também no ranking; quando o usuário ativa alto contraste, o modo preto/branco continua prevalecendo.
 
 ## Desenvolvimento local
 
@@ -160,15 +153,16 @@ Testes:
 pytest
 ```
 
-O CI também compila Python, valida JavaScript e verifica que módulos do motor legado não retornem.
+O CI compila Python, valida JavaScript, executa os testes automatizados e verifica que módulos do motor legado não retornem.
 
 ## Produção
 
 - público: `https://gamificacao-qr-ifmt.vercel.app`
+- ranking: `https://gamificacao-qr-ifmt.vercel.app/ranking`
 - administração: `https://gamificacao-qr-ifmt.vercel.app/admin`
 - branch atual: `feat/gamificacao-qr-evento`
 
-Antes do evento real ainda devem ser carregados os dados oficiais: datas dos 7 dias, 15 QRs/localizações, 300 questões aprovadas, distribuição por QR/dia e conteúdo/trilhas definitivos.
+Antes do evento real ainda devem ser concluídos: datas oficiais dos 7 dias, localização definitiva dos 15 QRs, 300 questões aprovadas, distribuição por QR/dia, conteúdos/trilhas e homologação física/mobile.
 
 ## Documentação vigente
 
@@ -176,3 +170,4 @@ Antes do evento real ainda devem ser carregados os dados oficiais: datas dos 7 d
 - `docs/ARQUITETURA.md`
 - `docs/ACESSIBILIDADE.md`
 - `docs/OPERACAO_EVENTO.md`
+- `docs/qrs.example.csv`
