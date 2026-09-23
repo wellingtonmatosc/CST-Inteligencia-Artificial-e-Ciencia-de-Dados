@@ -20,5 +20,6 @@ insert into public.zones(slug,name) values
 ('cantina','Cantina'),
 ('terreo','Térreo'),
 ('primeiro-andar','1º andar'),
-('externo-opcional','Área externa opcional')
+('externo-opcional','Área externa opcional'),
+('local-a-definir','Local a definir')
 on conflict(slug) do update set name=excluded.name,active=true;
