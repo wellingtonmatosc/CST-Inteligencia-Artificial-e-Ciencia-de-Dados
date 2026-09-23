@@ -23,9 +23,10 @@ HTML/CSS/JavaScript simples, mobile-first e sem framework pesado:
 - `ranking.html` + `ranking.js`: ranking individual;
 - `admin.html` + `admin.js`: painel administrativo;
 - `common.js`: API helper e acessibilidade;
-- `avatars.js`: catálogo vetorial local de avatares.
+- `avatars.js`: catálogo local com 20 avatares WebP;
+- `final-polish.css`: acabamento visual final da home/ranking e correção visual do painel de acessibilidade do ranking.
 
-Tema final: institucional claro nas telas gerais e ranking escuro, sem verde. Efeitos contínuos pesados foram removidos.
+Tema final: institucional claro nas telas gerais, ranking e áreas operacionais, sem verde. Sombras e hovers são discretos, não carregam informação essencial e respeitam redução de movimento.
 
 ## Backend
 
@@ -71,6 +72,8 @@ blocked_terms
 ```
 
 A estrutura antiga de equipes e os campos antigos de matrícula/turma/instituição foram removidos. `station_contents` contém conteúdo cultural; questões são atribuídas pelo `station_question_pool`.
+
+Os 15 registros `QR-01` a `QR-15` estão provisionados inicialmente inativos. Enquanto a instalação física não estiver definida, usam a zona operacional `local-a-definir`; antes da ativação cada registro deve receber sua zona/localização final.
 
 ## Concorrência e idempotência
 
