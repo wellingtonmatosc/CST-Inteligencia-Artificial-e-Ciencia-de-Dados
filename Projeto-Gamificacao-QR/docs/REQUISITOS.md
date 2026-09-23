@@ -7,6 +7,7 @@ Documento da versão final. Regras antigas de equipes, matrícula/turma, pontua�
 - competição individual por 7 dias;
 - fuso oficial `America/Cuiaba`, com virada diária às 00:00;
 - cadastro: nome, nick, PIN, tipo de participante, campus, curso e avatar;
+- 20 avatares WebP locais disponíveis;
 - sem e-mail, matrícula, turma ou semestre;
 - campus/curso permitem opção predefinida e preenchimento de outro valor;
 - login por nick + PIN de 4 dígitos;
@@ -16,6 +17,8 @@ Documento da versão final. Regras antigas de equipes, matrícula/turma, pontua�
 ## QRs
 
 - 15 QR Codes no evento;
+- registros operacionais `QR-01` a `QR-15` provisionados inicialmente inativos;
+- zona/localização física deve ser definida antes da ativação;
 - cada participante valida o mesmo QR no máximo uma vez por dia;
 - o mesmo QR pode ser validado novamente no dia seguinte;
 - diferentes participantes usam o mesmo QR independentemente;
@@ -67,14 +70,17 @@ Tempo e velocidade não são critérios. 1º, 2º e 3º recebem apenas destaque 
 
 O painel permite operar participantes, estações, banco de questões, distribuição por QR/dia, calendário de 7 dias, trilhas, ranking, pontos extras, auditoria e monitoramento de acessos. Acessos em horários incomuns são apenas sinalizados para análise; o sistema não bloqueia nem retira pontos automaticamente.
 
-## Segurança e acessibilidade
+## Interface, segurança e acessibilidade
 
 - Browser → FastAPI → Supabase/PostgreSQL;
 - chave privilegiada somente no backend;
 - RLS e RPCs críticas restritas ao `service_role`;
 - PIN e senha administrativa com hash;
 - cookies de sessão HttpOnly;
+- tema institucional claro na home, ranking e áreas operacionais;
+- sombras e hover são apenas acabamento visual e não carregam informação essencial;
 - sem dependência exclusiva de cor, imagem, áudio, rapidez ou precisão motora;
 - texto ajustável, alto contraste, redução de movimento, síntese de voz e navegação por teclado;
+- painel de acessibilidade visualmente consistente também no ranking;
 - imagens essenciais exigem descrição; áudio/vídeo essencial exige transcrição/legenda;
 - identidade visual sem qualquer tom de verde.
