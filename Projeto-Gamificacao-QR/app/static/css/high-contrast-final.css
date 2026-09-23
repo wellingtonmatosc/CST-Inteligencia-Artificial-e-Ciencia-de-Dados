@@ -1,0 +1,366 @@
+/* Alto contraste final — carregado por ultimo pelo common.js.
+   Objetivo: impedir combinacoes ilegíveis entre os temas institucionais,
+   ranking, admin e componentes dinamicos. Nenhuma informacao depende de cor. */
+
+html.a11y-contrast{
+  --hc-bg:#000000;
+  --hc-fg:#ffffff;
+  --hc-muted:#f2f2f2;
+  --hc-border:#ffffff;
+  --hc-focus:#ffd54a;
+}
+
+html.a11y-contrast,
+html.a11y-contrast body,
+html.a11y-contrast body.ranking-page,
+html.a11y-contrast body:not(.ranking-page){
+  background:#000000!important;
+  color:#ffffff!important;
+  background-image:none!important;
+}
+html.a11y-contrast body::before,
+html.a11y-contrast body::after,
+html.a11y-contrast .hero::after,
+html.a11y-contrast .hero-visual,
+html.a11y-contrast .ai-ambient,
+html.a11y-contrast .ai-data-stream{display:none!important}
+
+/* Texto */
+html.a11y-contrast h1,
+html.a11y-contrast h2,
+html.a11y-contrast h3,
+html.a11y-contrast h4,
+html.a11y-contrast p,
+html.a11y-contrast label,
+html.a11y-contrast legend,
+html.a11y-contrast strong,
+html.a11y-contrast small,
+html.a11y-contrast span,
+html.a11y-contrast .muted,
+html.a11y-contrast .eyebrow,
+html.a11y-contrast .question-eyebrow,
+html.a11y-contrast .brand-copy strong,
+html.a11y-contrast .brand-copy span,
+html.a11y-contrast .profile-score span,
+html.a11y-contrast .progress-grid strong,
+html.a11y-contrast .progress-grid span,
+html.a11y-contrast .individual-status h3,
+html.a11y-contrast .individual-status p,
+html.a11y-contrast #status,
+html.a11y-contrast .voice-status{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  text-shadow:none!important;
+}
+html.a11y-contrast .score-number,
+html.a11y-contrast .participant-score{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  background:none!important;
+  filter:none!important;
+}
+
+/* Superficies */
+html.a11y-contrast .hero,
+html.a11y-contrast .card,
+html.a11y-contrast .auth-card,
+html.a11y-contrast .profile-card,
+html.a11y-contrast .qr-panel,
+html.a11y-contrast .question-card,
+html.a11y-contrast .ranking-shell,
+html.a11y-contrast .individual-ranking-card,
+html.a11y-contrast .ranking-info,
+html.a11y-contrast .ranking-info-body,
+html.a11y-contrast .individual-status,
+html.a11y-contrast .progress-grid>div,
+html.a11y-contrast .avatar-dialog,
+html.a11y-contrast .admin-login,
+html.a11y-contrast .admin-toolbar,
+html.a11y-contrast .admin-nav,
+html.a11y-contrast .admin-panel .card,
+html.a11y-contrast .admin-list-item,
+html.a11y-contrast .admin-stat,
+html.a11y-contrast .admin-setting,
+html.a11y-contrast .admin-empty,
+html.a11y-contrast .admin-alert,
+html.a11y-contrast details,
+html.a11y-contrast summary{
+  background:#000000!important;
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+  box-shadow:none!important;
+  background-image:none!important;
+}
+html.a11y-contrast .hero,
+html.a11y-contrast .card,
+html.a11y-contrast .ranking-shell,
+html.a11y-contrast .individual-ranking-card,
+html.a11y-contrast .individual-status,
+html.a11y-contrast .progress-grid>div,
+html.a11y-contrast .avatar-dialog,
+html.a11y-contrast .admin-toolbar,
+html.a11y-contrast .admin-nav,
+html.a11y-contrast .admin-list-item{
+  border-width:1px!important;
+  border-style:solid!important;
+}
+
+/* Campos: fundo claro + texto escuro para maxima leitura. */
+html.a11y-contrast input:not([type="radio"]):not([type="checkbox"]),
+html.a11y-contrast select,
+html.a11y-contrast textarea{
+  background:#ffffff!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  border:2px solid #ffffff!important;
+  box-shadow:0 0 0 1px #000000 inset!important;
+  caret-color:#000000!important;
+}
+html.a11y-contrast input::placeholder,
+html.a11y-contrast textarea::placeholder{
+  color:#3d3d3d!important;
+  -webkit-text-fill-color:#3d3d3d!important;
+  opacity:1!important;
+}
+html.a11y-contrast select option{background:#ffffff!important;color:#000000!important}
+html.a11y-contrast input[type="radio"],
+html.a11y-contrast input[type="checkbox"]{
+  accent-color:#ffffff!important;
+  border-color:#ffffff!important;
+}
+
+/* Acoes: primarias invertidas; secundarias permanecem pretas com contorno branco. */
+html.a11y-contrast button:not(.secondary),
+html.a11y-contrast .button-link:not(.secondary){
+  background:#ffffff!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  border:2px solid #ffffff!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+html.a11y-contrast button.secondary,
+html.a11y-contrast .button-link.secondary,
+html.a11y-contrast .ranking-link,
+html.a11y-contrast .page-links a,
+html.a11y-contrast .page-links button,
+html.a11y-contrast .question-tools button{
+  background:#000000!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:2px solid #ffffff!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+html.a11y-contrast a{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  text-decoration:underline!important;
+  text-decoration-thickness:2px!important;
+  text-underline-offset:3px!important;
+}
+html.a11y-contrast button:disabled{opacity:.65!important}
+
+/* Estado de foco deve ser evidente tanto sobre preto quanto sobre branco. */
+html.a11y-contrast :focus-visible{
+  outline:3px solid #ffd54a!important;
+  outline-offset:3px!important;
+  box-shadow:none!important;
+}
+
+/* Avisos e indicadores */
+html.a11y-contrast .notice,
+html.a11y-contrast .success,
+html.a11y-contrast .warning,
+html.a11y-contrast .error,
+html.a11y-contrast .pill,
+html.a11y-contrast .meta-pill,
+html.a11y-contrast .station-type,
+html.a11y-contrast .result-points,
+html.a11y-contrast .station-points-preview,
+html.a11y-contrast .trail-status,
+html.a11y-contrast .rank-note .pill,
+html.a11y-contrast .admin-status-badge{
+  background:#000000!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:1px solid #ffffff!important;
+  border-left-color:#ffffff!important;
+  box-shadow:none!important;
+}
+
+/* Perfil */
+html.a11y-contrast .profile-avatar,
+html.a11y-contrast .avatar-choice,
+html.a11y-contrast .rank-avatar,
+html.a11y-contrast .admin-avatar,
+html.a11y-contrast .admin-rank-avatar{
+  background:#000000!important;
+  border-color:#ffffff!important;
+  box-shadow:0 0 0 2px #ffffff!important;
+}
+html.a11y-contrast .avatar-choice.is-selected{
+  border-color:#ffffff!important;
+  box-shadow:0 0 0 3px #ffffff!important;
+}
+html.a11y-contrast .avatar-check{
+  background:#ffffff!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  border-color:#000000!important;
+}
+
+/* Alternativas do desafio */
+html.a11y-contrast .choices label,
+html.a11y-contrast .choices label:hover,
+html.a11y-contrast .choices label:has(input:checked),
+html.a11y-contrast .choices label[aria-disabled="true"]{
+  background:#000000!important;
+  color:#ffffff!important;
+  border:2px solid #ffffff!important;
+  box-shadow:none!important;
+  opacity:1!important;
+}
+html.a11y-contrast .choices label:has(input:checked){outline:3px solid #ffd54a!important;outline-offset:2px!important}
+html.a11y-contrast .choices label[aria-disabled="true"]{opacity:.62!important}
+html.a11y-contrast .alternative-description{
+  background:#000000!important;
+  color:#ffffff!important;
+  border:1px solid #ffffff!important;
+  border-left:4px solid #ffffff!important;
+}
+
+/* Ranking */
+html.a11y-contrast body.ranking-page .ranking-hero,
+html.a11y-contrast body.ranking-page .ranking-shell,
+html.a11y-contrast body.ranking-page .individual-ranking-card,
+html.a11y-contrast body.ranking-page .ranking-info,
+html.a11y-contrast body.ranking-page .ranking-info-body,
+html.a11y-contrast body.ranking-page .rank-metric,
+html.a11y-contrast body.ranking-page .rank-score-pill{
+  background:#000000!important;
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+  box-shadow:none!important;
+}
+html.a11y-contrast .ranking-info summary,
+html.a11y-contrast .ranking-info summary::after,
+html.a11y-contrast .ranking-info-body p,
+html.a11y-contrast .rank-identity h3,
+html.a11y-contrast .rank-metric strong,
+html.a11y-contrast .rank-metric span,
+html.a11y-contrast .rank-score-pill strong,
+html.a11y-contrast .rank-score-pill span{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
+html.a11y-contrast .individual-rank-position,
+html.a11y-contrast .admin-rank-position{
+  background:#ffffff!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+  border:2px solid #ffffff!important;
+}
+html.a11y-contrast .podium-label,
+html.a11y-contrast .podium-label.first,
+html.a11y-contrast .podium-label.second,
+html.a11y-contrast .podium-label.third{
+  background:#000000!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:1px solid #ffffff!important;
+}
+html.a11y-contrast .individual-ranking-card[data-position="1"],
+html.a11y-contrast .individual-ranking-card[data-position="2"],
+html.a11y-contrast .individual-ranking-card[data-position="3"]{
+  background:#000000!important;
+  border-color:#ffffff!important;
+  box-shadow:none!important;
+}
+
+/* Painel de acessibilidade */
+html.a11y-contrast .a11y-panel{
+  background:#000000!important;
+  color:#ffffff!important;
+  border:2px solid #ffffff!important;
+  box-shadow:none!important;
+}
+html.a11y-contrast .a11y-panel-head,
+html.a11y-contrast .a11y-control,
+html.a11y-contrast .a11y-footer,
+html.a11y-contrast .switch-row{
+  background:#000000!important;
+  color:#ffffff!important;
+  border-color:#ffffff!important;
+}
+html.a11y-contrast .a11y-panel button.secondary{
+  background:#000000!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:2px solid #ffffff!important;
+}
+html.a11y-contrast .a11y-panel input[type="checkbox"]{
+  width:24px!important;
+  height:24px!important;
+  accent-color:#ffffff!important;
+}
+
+/* Admin */
+html.a11y-contrast .admin-shell .admin-nav button,
+html.a11y-contrast .admin-shell .admin-nav button[aria-selected="true"],
+html.a11y-contrast .admin-shell .admin-nav button:hover:not(:disabled),
+html.a11y-contrast .admin-shell .admin-nav button:focus-visible{
+  background:#000000!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border:1px solid #ffffff!important;
+  box-shadow:none!important;
+}
+html.a11y-contrast .admin-shell .admin-nav button[aria-selected="true"]{
+  background:#ffffff!important;
+  color:#000000!important;
+  -webkit-text-fill-color:#000000!important;
+}
+html.a11y-contrast .admin-stat strong,
+html.a11y-contrast .admin-stat span,
+html.a11y-contrast .admin-setting strong,
+html.a11y-contrast .admin-setting span,
+html.a11y-contrast .admin-alert strong,
+html.a11y-contrast .admin-alert span,
+html.a11y-contrast .admin-panel h2,
+html.a11y-contrast .admin-panel h3,
+html.a11y-contrast .admin-section-head h2,
+html.a11y-contrast .admin-section-head p{
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+}
+
+/* Hover continua opcional e nunca e necessario para compreender a interface. */
+@media(hover:hover) and (pointer:fine){
+  html.a11y-contrast button:not(:disabled):hover,
+  html.a11y-contrast .button-link:hover,
+  html.a11y-contrast .page-links a:hover{
+    transform:none!important;
+    box-shadow:none!important;
+  }
+  html.a11y-contrast button:not(.secondary):not(:disabled):hover,
+  html.a11y-contrast .button-link:not(.secondary):hover{
+    background:#e6e6e6!important;
+    color:#000000!important;
+  }
+  html.a11y-contrast button.secondary:not(:disabled):hover,
+  html.a11y-contrast .button-link.secondary:hover,
+  html.a11y-contrast .page-links a:hover{
+    background:#1f1f1f!important;
+    color:#ffffff!important;
+  }
+}
+
+html.a11y-contrast.a11y-reduced-motion *,
+html.a11y-contrast.a11y-reduced-motion *::before,
+html.a11y-contrast.a11y-reduced-motion *::after{
+  animation:none!important;
+  transition:none!important;
+  transform:none!important;
+  scroll-behavior:auto!important;
+}
