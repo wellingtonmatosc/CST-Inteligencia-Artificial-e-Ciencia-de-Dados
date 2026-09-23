@@ -9,7 +9,7 @@ from app.services.participants import ParticipantService
 
 router = APIRouter(prefix="/api/participants", tags=["participants"])
 PIN_PATTERN = r"^\d{4}$"
-AVATAR_PATTERN = r"^avatar-(0[1-9]|1[0-2])$"
+AVATAR_PATTERN = r"^avatar-(0[1-9]|1[0-9]|20)$"
 
 
 class RegisterPayload(BaseModel):
