@@ -35,7 +35,7 @@ def test_high_contrast_final_is_loaded_after_visual_themes():
     assert text.index(high_contrast) > text.index(admin)
 
 
-def test_high_contrast_final_covers_core_components():
+def test_high_contrast_final_covers_core_components_and_specificity_guards():
     text = (CSS / "high-contrast-final.css").read_text(encoding="utf-8")
     for selector in (
         "html.a11y-contrast .a11y-panel",
@@ -43,11 +43,21 @@ def test_high_contrast_final_covers_core_components():
         "html.a11y-contrast .progress-grid>div",
         "html.a11y-contrast input:not([type=\"radio\"]):not([type=\"checkbox\"])",
         "html.a11y-contrast .admin-shell .admin-nav button",
+        "html.a11y-contrast body:not(.ranking-page) .card",
+        "html.a11y-contrast body.home-page .auth-card",
+        "html.a11y-contrast body.ranking-page .a11y-panel .switch-row",
+        "html.a11y-contrast .admin-shell .card",
     ):
         assert selector in text
     assert "--hc-focus:#ffd54a" in text
     assert "background:#ffffff!important" in text
     assert "color:#000000!important" in text
+
+
+def test_legacy_accessibility_stylesheet_no_longer_defines_high_contrast():
+    text = (CSS / "accessibility.css").read_text(encoding="utf-8")
+    assert "html.a11y-contrast" not in text
+    assert "high-contrast-final.css" in text
 
 
 def test_mobile_first_has_target_breakpoints_and_touch_targets():
