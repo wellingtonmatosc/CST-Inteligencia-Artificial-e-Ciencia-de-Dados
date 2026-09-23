@@ -4,7 +4,7 @@ O banco armazena apenas a chave. Nenhuma URL, upload ou dado biométrico é acei
 """
 
 DEFAULT_AVATAR_KEY = "avatar-01"
-AVATAR_KEYS = tuple(f"avatar-{index:02d}" for index in range(1, 13))
+AVATAR_KEYS = tuple(f"avatar-{index:02d}" for index in range(1, 21))
 AVATAR_KEY_SET = frozenset(AVATAR_KEYS)
 
 
