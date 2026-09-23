@@ -24,7 +24,11 @@ O painel **Acessibilidade** oferece:
 - parar a síntese de voz;
 - comando de voz quando suportado pelo navegador.
 
+O painel usa o mesmo tema institucional claro nas páginas públicas e no ranking. Ao ativar **Alto contraste**, a apresentação preto/branco prevalece sobre sombras, hovers e demais elementos decorativos.
+
 Comando de voz e síntese de voz são complementos. Nenhuma função essencial depende deles. O acesso ao painel fica integrado à navegação e não deve cobrir conteúdo ou controles no celular.
+
+Sombras e estados de hover são apenas reforços visuais: nenhuma informação, ação ou pontuação depende de passar o mouse. Em dispositivos sem hover, todos os controles permanecem utilizáveis por toque e teclado.
 
 ## Conteúdo das estações
 
@@ -62,11 +66,14 @@ A ordem das alternativas é embaralhada de forma estável por participante + que
 - mensagens de erro/sucesso com texto e `aria-live`;
 - nenhum estado importante é comunicado somente por cor;
 - `prefers-reduced-motion` e opção manual de redução de movimento são respeitados;
-- ranking evita animações contínuas e efeitos visuais pesados.
+- ranking evita animações contínuas e efeitos visuais pesados;
+- hovers decorativos são desativáveis por redução de movimento e não substituem foco de teclado.
 
 ## Espaço físico
 
-A aplicação registra zona/referência, mas a instalação cabe à frente de espaços. Na homologação física devem ser conferidos:
+A aplicação registra zona/referência, mas a instalação cabe à frente de espaços. Os 15 QRs devem permanecer inativos enquanto a localização física não estiver definida e homologada.
+
+Na homologação física devem ser conferidos:
 
 - rota sem barreira para atividades necessárias à pontuação máxima;
 - altura e posição alcançáveis do QR e do código local;
@@ -89,6 +96,7 @@ Antes do evento testar:
 - áudio desativado;
 - atividade sem visão da imagem;
 - atividade sem uso de comando de voz;
-- rota física acessível.
+- rota física acessível;
+- painel de acessibilidade na home, ranking e fluxo de estação.
 
 A homologação não deve considerar acessibilidade concluída apenas porque o botão de acessibilidade existe.
