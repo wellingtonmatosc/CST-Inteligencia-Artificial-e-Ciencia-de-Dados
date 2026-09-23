@@ -38,56 +38,56 @@ body.home-page .qr-reader-wrap{
   box-shadow:inset 0 0 0 1px rgba(6,47,79,.03),0 8px 20px rgba(20,32,51,.06);
 }
 
-/* Ranking */
-body.ranking-page .ranking-hero,
-body.ranking-page .ranking-shell{
+/* Ranking: especificidade maior porque o tema do ranking é carregado depois. */
+html body.ranking-page .ranking-hero,
+html body.ranking-page .ranking-shell{
   box-shadow:0 12px 34px rgba(20,32,51,.10)!important;
 }
-body.ranking-page .individual-ranking-card{
+html body.ranking-page .individual-ranking-card{
   box-shadow:0 4px 14px rgba(20,32,51,.07)!important;
   transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease!important;
 }
-body.ranking-page .page-links a,
-body.ranking-page .page-links button{
+html body.ranking-page .page-links a,
+html body.ranking-page .page-links button{
   box-shadow:0 4px 12px rgba(20,32,51,.08)!important;
   transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease!important;
 }
-body.ranking-page .ranking-info{
-  box-shadow:0 3px 10px rgba(20,32,51,.04);
+html body.ranking-page .ranking-info{
+  box-shadow:0 3px 10px rgba(20,32,51,.04)!important;
 }
 
 /* Corrige o painel de acessibilidade do ranking para o tema institucional claro. */
-body.ranking-page .a11y-panel{
+html body.ranking-page .a11y-panel{
   color:#142033!important;
   background:#fff!important;
   border:1px solid #ccd5df!important;
   box-shadow:0 20px 60px rgba(20,32,51,.22)!important;
 }
-body.ranking-page .a11y-panel h2,
-body.ranking-page .a11y-panel strong,
-body.ranking-page .a11y-panel label,
-body.ranking-page .a11y-panel span{
+html body.ranking-page .a11y-panel h2,
+html body.ranking-page .a11y-panel strong,
+html body.ranking-page .a11y-panel label,
+html body.ranking-page .a11y-panel span{
   color:#142033!important;
 }
-body.ranking-page .a11y-panel .a11y-panel-head,
-body.ranking-page .a11y-panel .a11y-control,
-body.ranking-page .a11y-panel .switch-row,
-body.ranking-page .a11y-panel .a11y-footer{
+html body.ranking-page .a11y-panel .a11y-panel-head,
+html body.ranking-page .a11y-panel .a11y-control,
+html body.ranking-page .a11y-panel .switch-row,
+html body.ranking-page .a11y-panel .a11y-footer{
   border-color:#e1e6ed!important;
 }
-body.ranking-page .a11y-panel .switch-row{
+html body.ranking-page .a11y-panel .switch-row{
   background:#fff!important;
 }
-body.ranking-page .a11y-panel input[type="checkbox"]{
+html body.ranking-page .a11y-panel input[type="checkbox"]{
   accent-color:#813772;
 }
-body.ranking-page .a11y-panel button.secondary{
+html body.ranking-page .a11y-panel button.secondary{
   color:#062f4f!important;
   background:#fff!important;
   border:1px solid #9eacbd!important;
   box-shadow:0 3px 10px rgba(20,32,51,.08)!important;
 }
-body.ranking-page .a11y-panel .voice-status{
+html body.ranking-page .a11y-panel .voice-status{
   color:#667286!important;
 }
 
@@ -106,8 +106,8 @@ body.ranking-page .a11y-panel .voice-status{
   body.home-page .panel-actions button:hover:not(:disabled),
   body.home-page .profile-actions button:hover:not(:disabled),
   body.home-page .profile-actions .button-link:hover,
-  body.ranking-page .page-links a:hover,
-  body.ranking-page .page-links button:hover:not(:disabled){
+  html body.ranking-page .page-links a:hover,
+  html body.ranking-page .page-links button:hover:not(:disabled){
     transform:translateY(-1px)!important;
     box-shadow:0 7px 16px rgba(20,32,51,.13)!important;
   }
@@ -115,11 +115,11 @@ body.ranking-page .a11y-panel .voice-status{
     transform:translateY(-2px)!important;
     box-shadow:0 7px 16px rgba(20,32,51,.12)!important;
   }
-  body.ranking-page .individual-ranking-card:hover{
+  html body.ranking-page .individual-ranking-card:hover{
     transform:translateY(-2px)!important;
     box-shadow:0 9px 22px rgba(20,32,51,.12)!important;
   }
-  body.ranking-page .a11y-panel button.secondary:hover:not(:disabled){
+  html body.ranking-page .a11y-panel button.secondary:hover:not(:disabled){
     background:#eef2f6!important;
     border-color:#6e8095!important;
   }
