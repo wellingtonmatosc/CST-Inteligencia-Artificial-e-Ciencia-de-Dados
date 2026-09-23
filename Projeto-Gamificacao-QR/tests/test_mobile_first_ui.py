@@ -23,6 +23,33 @@ def test_mobile_first_stylesheet_precedes_institutional_theme():
     assert text.index(mobile) < text.index(theme)
 
 
+def test_high_contrast_final_is_loaded_after_visual_themes():
+    text = (JS / "common.js").read_text(encoding="utf-8")
+    high_contrast = "ensureStylesheet('/static/css/high-contrast-final.css')"
+    theme = "ensureStylesheet('/static/css/theme-institutional.css')"
+    ranking = "ensureStylesheet('/static/css/ranking-optimized.css')"
+    admin = "ensureStylesheet('/static/css/theme-institutional-admin.css')"
+    assert high_contrast in text
+    assert text.index(high_contrast) > text.index(theme)
+    assert text.index(high_contrast) > text.index(ranking)
+    assert text.index(high_contrast) > text.index(admin)
+
+
+def test_high_contrast_final_covers_core_components():
+    text = (CSS / "high-contrast-final.css").read_text(encoding="utf-8")
+    for selector in (
+        "html.a11y-contrast .a11y-panel",
+        "html.a11y-contrast .individual-ranking-card",
+        "html.a11y-contrast .progress-grid>div",
+        "html.a11y-contrast input:not([type=\"radio\"]):not([type=\"checkbox\"])",
+        "html.a11y-contrast .admin-shell .admin-nav button",
+    ):
+        assert selector in text
+    assert "--hc-focus:#ffd54a" in text
+    assert "background:#ffffff!important" in text
+    assert "color:#000000!important" in text
+
+
 def test_mobile_first_has_target_breakpoints_and_touch_targets():
     text = (CSS / "mobile-first.css").read_text(encoding="utf-8")
     for breakpoint in ("max-width:359px", "min-width:430px", "min-width:600px", "min-width:900px"):
