@@ -8,7 +8,8 @@ function ensureScript(src){
 }
 document.documentElement.lang='pt-BR';
 const isRanking=location.pathname==='/ranking';
-document.querySelector('meta[name="theme-color"]')?.setAttribute('content',isRanking?'#f4f6f9':'#f6f7fa');
+const defaultThemeColor=isRanking?'#f4f6f9':'#f6f7fa';
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content',defaultThemeColor);
 ensureStylesheet('/static/css/accessibility.css');
 ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/mobile-first.css');
@@ -20,6 +21,8 @@ if(location.pathname==='/admin'){
   ensureScript('/static/js/admin-monitoring.js');
   ensureScript('/static/js/admin-ranking-rules.js');
 }
+/* Deve ser a ultima camada visual: sobrescreve de forma consistente todos os temas. */
+ensureStylesheet('/static/css/high-contrast-final.css');
 
 async function api(url,options={}){
   const res=await fetch(url,{credentials:'include',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});
@@ -51,6 +54,7 @@ function applyA11y(prefs){
   root.style.fontSize=`${Math.round(prefs.fontScale*100)}%`;
   root.classList.toggle('a11y-contrast',Boolean(prefs.contrast));
   root.classList.toggle('a11y-reduced-motion',Boolean(prefs.reducedMotion));
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content',prefs.contrast?'#000000':defaultThemeColor);
 }
 
 function speakText(text){
