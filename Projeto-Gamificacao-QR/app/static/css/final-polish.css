@@ -38,6 +38,12 @@ body.home-page .qr-reader-wrap{
   box-shadow:inset 0 0 0 1px rgba(6,47,79,.03),0 8px 20px rgba(20,32,51,.06);
 }
 
+/* Desafios estruturados: preserva quebras de linha de V/F e combinações de afirmações. */
+.challenge-block #challengeTitle{
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+}
+
 /* Ranking: especificidade maior porque o tema do ranking é carregado depois. */
 html body.ranking-page .ranking-hero,
 html body.ranking-page .ranking-shell{
