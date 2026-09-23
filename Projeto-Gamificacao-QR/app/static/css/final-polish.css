@@ -1,0 +1,156 @@
+/* Acabamento visual final — sombras, hover e coerência do painel de acessibilidade.
+   Mantém a paleta institucional e respeita redução de movimento. */
+
+/* Home */
+body.home-page .compact-hero,
+body.home-page .auth-card,
+body.home-page .profile-card,
+body.home-page .qr-panel{
+  box-shadow:0 12px 34px rgba(20,32,51,.10)!important;
+  transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;
+}
+body.home-page .quick-tools button,
+body.home-page .home-actions button,
+body.home-page .home-actions .ranking-link,
+body.home-page .panel-actions button,
+body.home-page .profile-actions button,
+body.home-page .profile-actions .button-link{
+  box-shadow:0 4px 12px rgba(20,32,51,.09)!important;
+  transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease!important;
+}
+body.home-page .home-actions .ranking-link{
+  grid-column:1/-1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:46px;
+  width:100%;
+  padding:10px 14px;
+  border-radius:12px;
+  text-decoration:none;
+  font-weight:850;
+}
+body.home-page .avatar-choice{
+  box-shadow:0 3px 10px rgba(20,32,51,.08)!important;
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease!important;
+}
+body.home-page .qr-reader-wrap{
+  box-shadow:inset 0 0 0 1px rgba(6,47,79,.03),0 8px 20px rgba(20,32,51,.06);
+}
+
+/* Ranking */
+body.ranking-page .ranking-hero,
+body.ranking-page .ranking-shell{
+  box-shadow:0 12px 34px rgba(20,32,51,.10)!important;
+}
+body.ranking-page .individual-ranking-card{
+  box-shadow:0 4px 14px rgba(20,32,51,.07)!important;
+  transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease!important;
+}
+body.ranking-page .page-links a,
+body.ranking-page .page-links button{
+  box-shadow:0 4px 12px rgba(20,32,51,.08)!important;
+  transition:transform .14s ease,box-shadow .14s ease,background .14s ease,border-color .14s ease!important;
+}
+body.ranking-page .ranking-info{
+  box-shadow:0 3px 10px rgba(20,32,51,.04);
+}
+
+/* Corrige o painel de acessibilidade do ranking para o tema institucional claro. */
+body.ranking-page .a11y-panel{
+  color:#142033!important;
+  background:#fff!important;
+  border:1px solid #ccd5df!important;
+  box-shadow:0 20px 60px rgba(20,32,51,.22)!important;
+}
+body.ranking-page .a11y-panel h2,
+body.ranking-page .a11y-panel strong,
+body.ranking-page .a11y-panel label,
+body.ranking-page .a11y-panel span{
+  color:#142033!important;
+}
+body.ranking-page .a11y-panel .a11y-panel-head,
+body.ranking-page .a11y-panel .a11y-control,
+body.ranking-page .a11y-panel .switch-row,
+body.ranking-page .a11y-panel .a11y-footer{
+  border-color:#e1e6ed!important;
+}
+body.ranking-page .a11y-panel .switch-row{
+  background:#fff!important;
+}
+body.ranking-page .a11y-panel input[type="checkbox"]{
+  accent-color:#813772;
+}
+body.ranking-page .a11y-panel button.secondary{
+  color:#062f4f!important;
+  background:#fff!important;
+  border:1px solid #9eacbd!important;
+  box-shadow:0 3px 10px rgba(20,32,51,.08)!important;
+}
+body.ranking-page .a11y-panel .voice-status{
+  color:#667286!important;
+}
+
+@media(hover:hover) and (pointer:fine){
+  body.home-page .compact-hero:hover,
+  body.home-page .auth-card:hover,
+  body.home-page .profile-card:hover,
+  body.home-page .qr-panel:hover{
+    transform:translateY(-2px);
+    border-color:#c4cedb!important;
+    box-shadow:0 16px 40px rgba(20,32,51,.13)!important;
+  }
+  body.home-page .quick-tools button:hover:not(:disabled),
+  body.home-page .home-actions button:hover:not(:disabled),
+  body.home-page .home-actions .ranking-link:hover,
+  body.home-page .panel-actions button:hover:not(:disabled),
+  body.home-page .profile-actions button:hover:not(:disabled),
+  body.home-page .profile-actions .button-link:hover,
+  body.ranking-page .page-links a:hover,
+  body.ranking-page .page-links button:hover:not(:disabled){
+    transform:translateY(-1px)!important;
+    box-shadow:0 7px 16px rgba(20,32,51,.13)!important;
+  }
+  body.home-page .avatar-choice:hover:not(:disabled){
+    transform:translateY(-2px)!important;
+    box-shadow:0 7px 16px rgba(20,32,51,.12)!important;
+  }
+  body.ranking-page .individual-ranking-card:hover{
+    transform:translateY(-2px)!important;
+    box-shadow:0 9px 22px rgba(20,32,51,.12)!important;
+  }
+  body.ranking-page .a11y-panel button.secondary:hover:not(:disabled){
+    background:#eef2f6!important;
+    border-color:#6e8095!important;
+  }
+}
+
+/* Alto contraste continua soberano sobre o acabamento visual. */
+html.a11y-contrast body.ranking-page .a11y-panel{
+  background:#000!important;
+  color:#fff!important;
+  border-color:#fff!important;
+  box-shadow:none!important;
+}
+html.a11y-contrast body.ranking-page .a11y-panel h2,
+html.a11y-contrast body.ranking-page .a11y-panel strong,
+html.a11y-contrast body.ranking-page .a11y-panel label,
+html.a11y-contrast body.ranking-page .a11y-panel span,
+html.a11y-contrast body.ranking-page .a11y-panel .voice-status{
+  color:#fff!important;
+}
+html.a11y-contrast body.ranking-page .a11y-panel button.secondary{
+  background:#000!important;
+  color:#fff!important;
+  border-color:#fff!important;
+  box-shadow:none!important;
+}
+
+html.a11y-reduced-motion body.home-page *,
+html.a11y-reduced-motion body.ranking-page *{
+  transition:none!important;
+  transform:none!important;
+}
+@media(prefers-reduced-motion:reduce){
+  body.home-page *,body.ranking-page *{transition:none!important;transform:none!important}
+}
