@@ -19,6 +19,13 @@ STATION_LABELS = {
     "special": "Especial",
 }
 
+EVENT_ERRORS = {
+    "event_not_configured": ("As datas da competição ainda não foram configuradas pela organização.", 503),
+    "event_not_started": ("A competição ainda não começou.", 409),
+    "event_not_active_today": ("Hoje não é um dia ativo da competição.", 409),
+    "event_ended": ("A competição foi encerrada.", 409),
+}
+
 
 def _stable_multiple_choice_options(question: dict, participant_id: str) -> list:
     """Embaralha as 4 alternativas de forma estável por participante/questão."""
@@ -50,6 +57,9 @@ class TrilhasService:
         if not result.get("ok"):
             if result.get("error") == "invalid_qr":
                 raise AppError("QR Code inválido ou inativo.", 404)
+            if result.get("error") in EVENT_ERRORS:
+                message, status = EVENT_ERRORS[result["error"]]
+                raise AppError(message, status)
             raise AppError("Não foi possível carregar esta estação.", 503)
 
         result.pop("ok", None)
@@ -82,6 +92,7 @@ class TrilhasService:
             "expired": ("O período desta estação terminou.", 409),
             "question_pool_not_configured": ("O banco de questões desta estação ainda não foi configurado.", 503),
             "question_pool_exhausted": ("Não há uma questão inédita disponível para você nesta estação. Avise a organização.", 409),
+            **EVENT_ERRORS,
         }
         message, status = mapping.get(result.get("error"), ("Não foi possível validar esta estação.", 409))
         raise AppError(message, status)
@@ -100,10 +111,11 @@ class TrilhasService:
             "invalid_qr": ("QR Code inválido ou inativo.", 404),
             "not_started": ("Esta estação ainda não está disponível.", 409),
             "expired": ("O período desta estação terminou. O desafio não aceita mais respostas.", 409),
-            "station_not_validated": ("Valide primeiro o código físico desta estação.", 409),
+            "station_not_validated": ("Valide esta estação hoje antes de responder ao desafio.", 409),
             "no_challenge": ("Esta visita não possui desafio associado.", 409),
             "already_completed": ("Este desafio já foi finalizado.", 409),
             "challenge_unavailable": ("O desafio desta estação está temporariamente indisponível.", 503),
+            **EVENT_ERRORS,
         }
         message, status = mapping.get(result.get("error"), ("Não foi possível registrar a resposta.", 409))
         raise AppError(message, status)
