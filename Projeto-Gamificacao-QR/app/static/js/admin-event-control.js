@@ -6,6 +6,28 @@
     const panel=document.querySelector(`#${panelId}`);if(panel)panel.hidden=true;
   }
 
+  function cleanOperationalNoise(){
+    document.querySelectorAll('#alertList .admin-alert').forEach(alert=>{
+      const text=(alert.textContent||'').toLowerCase();
+      if((text.includes('sem conteúdo')||text.includes('trilha sem etapas'))&&!alert.hidden)alert.hidden=true;
+    });
+    document.querySelectorAll('#stationList .pill').forEach(pill=>{
+      if((pill.textContent||'').trim().toLowerCase()==='sem conteúdo'&&!pill.hidden)pill.hidden=true;
+    });
+    document.querySelectorAll('#trailList .muted').forEach(el=>{
+      const text=el.textContent||'';
+      if(/\d+\s*pts de conclusão/i.test(text))el.textContent=text.replace(/\d+\s*pts de conclusão/i,'sem bônus de pontos');
+    });
+  }
+
+  function observeLegacyRenders(){
+    ['alertList','stationList','trailList'].forEach(id=>{
+      const host=document.querySelector(`#${id}`);if(!host)return;
+      new MutationObserver(cleanOperationalNoise).observe(host,{childList:true,subtree:true,characterData:true});
+    });
+    cleanOperationalNoise();
+  }
+
   function simplifyAdmin(){
     hideTab('pointsPanel');
     hideTab('settingsPanel');
@@ -29,6 +51,7 @@
       if(edit&&stationCard){stationCard.hidden=false;stationCard.open=true;setTimeout(()=>document.querySelector('#stationName')?.focus(),0)}
       if(event.target.closest('#stationCancelEdit')&&stationCard){stationCard.hidden=true;stationCard.open=false}
     });
+    observeLegacyRenders();
   }
 
   function statusText(control){

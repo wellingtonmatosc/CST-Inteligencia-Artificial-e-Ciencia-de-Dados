@@ -13,18 +13,19 @@ def test_main_registers_question_pool_router():
     assert "app.include_router(question_pool.router)" in text
 
 
-def test_admin_loads_question_pool_ui_only_on_admin_page():
+def test_admin_loads_manual_event_control_instead_of_legacy_pool_ui():
     text = read("app/static/js/common.js")
     assert "location.pathname==='/admin'" in text
-    assert "/static/js/admin-question-pool.js" in text
+    assert "/static/js/admin-event-control.js" in text
+    assert "/static/js/admin-question-pool.js" not in text
 
 
-def test_question_pool_ui_is_pt_br_and_seven_days_ready():
-    text = read("app/static/js/admin-question-pool.js")
-    assert "Distribuir questões por estação e dia" in text
-    assert "Calendário da gamificação — 7 dias" in text
-    assert "Todos os dias" in text
-    assert "Evento principal" in text
+def test_manual_event_control_supports_one_to_seven_days_and_test_mode():
+    text = read("app/static/js/admin-event-control.js")
+    assert "competição individual de 1 a 7 dias" in text
+    assert "/api/admin/event-control/testing" in text
+    assert "Iniciar evento oficial" in text
+    assert "Dia simulado no teste" in text
 
 
 def test_migration_preserves_legacy_fallback_and_assigns_question_to_visit():
@@ -38,6 +39,6 @@ def test_migration_preserves_legacy_fallback_and_assigns_question_to_visit():
     assert "assigned_event_day" in text
 
 
-def test_pool_does_not_expose_correct_answer_in_admin_listing_script():
+def test_pool_does_not_expose_correct_answer_in_legacy_admin_listing_script():
     text = read("app/static/js/admin-question-pool.js")
     assert "correct_answer" not in text
