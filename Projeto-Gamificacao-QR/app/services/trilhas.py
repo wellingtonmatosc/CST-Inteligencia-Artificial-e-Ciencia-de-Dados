@@ -20,9 +20,9 @@ STATION_LABELS = {
 }
 
 EVENT_ERRORS = {
-    "event_not_configured": ("As datas da competição ainda não foram configuradas pela organização.", 503),
-    "event_not_started": ("A competição ainda não começou.", 409),
-    "event_not_active_today": ("Hoje não é um dia ativo da competição.", 409),
+    "event_not_configured": ("A competição ainda não foi configurada pela organização.", 503),
+    "event_not_started": ("Os desafios ainda não foram iniciados pela organização.", 409),
+    "event_not_active_today": ("Os desafios não estão ativos neste momento.", 409),
     "event_ended": ("A competição foi encerrada.", 409),
 }
 

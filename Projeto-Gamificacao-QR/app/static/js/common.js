@@ -17,7 +17,7 @@ ensureStylesheet('/static/css/theme-institutional.css');
 if(isRanking)ensureStylesheet('/static/css/ranking-optimized.css');
 if(location.pathname==='/admin'){
   ensureStylesheet('/static/css/theme-institutional-admin.css');
-  ensureScript('/static/js/admin-question-pool.js');
+  ensureScript('/static/js/admin-event-control.js');
   ensureScript('/static/js/admin-monitoring.js');
   ensureScript('/static/js/admin-ranking-rules.js');
 }
@@ -94,80 +94,24 @@ function createInlineA11yToggle(){
 function initA11yPanel(){
   let prefs=loadA11y();
   applyA11y(prefs);
-
   const toggle=createInlineA11yToggle();
   toggle.setAttribute('aria-haspopup','dialog');toggle.setAttribute('aria-expanded','false');
-
   const panel=document.createElement('section');
   panel.id='a11yPanel';panel.className='a11y-panel hidden';panel.setAttribute('role','dialog');panel.setAttribute('aria-labelledby','a11yTitle');
-  panel.innerHTML=`<div class="a11y-panel-head"><h2 id="a11yTitle">Acessibilidade</h2><button type="button" class="secondary compact" id="a11yClose">Fechar</button></div>
-  <div class="a11y-voice-actions"><button type="button" class="secondary" data-a11y="speak-page">Ouvir tela</button><button type="button" class="secondary" data-a11y="stop-speech">Parar áudio</button><button type="button" class="secondary" id="voiceCommandButton">Comando de voz</button></div>
-  <p id="voiceStatus" class="voice-status" role="status" aria-live="polite"></p>
-  <div class="a11y-control"><strong>Texto</strong><div class="inline-actions"><button type="button" class="secondary compact" data-a11y="font-down">A−</button><button type="button" class="secondary compact" data-a11y="font-up">A+</button></div></div>
-  <label class="switch-row"><input type="checkbox" data-a11y-check="contrast"><span><strong>Alto contraste</strong></span></label>
-  <label class="switch-row"><input type="checkbox" data-a11y-check="reducedMotion"><span><strong>Reduzir animações</strong></span></label>
-  <div class="a11y-footer"><button type="button" class="secondary" data-a11y="reset">Restaurar</button></div>`;
+  panel.innerHTML=`<div class="a11y-panel-head"><h2 id="a11yTitle">Acessibilidade</h2><button type="button" class="secondary compact" id="a11yClose">Fechar</button></div><div class="a11y-voice-actions"><button type="button" class="secondary" data-a11y="speak-page">Ouvir tela</button><button type="button" class="secondary" data-a11y="stop-speech">Parar áudio</button><button type="button" class="secondary" id="voiceCommandButton">Comando de voz</button></div><p id="voiceStatus" class="voice-status" role="status" aria-live="polite"></p><div class="a11y-control"><strong>Texto</strong><div class="inline-actions"><button type="button" class="secondary compact" data-a11y="font-down">A−</button><button type="button" class="secondary compact" data-a11y="font-up">A+</button></div></div><label class="switch-row"><input type="checkbox" data-a11y-check="contrast"><span><strong>Alto contraste</strong></span></label><label class="switch-row"><input type="checkbox" data-a11y-check="reducedMotion"><span><strong>Reduzir animações</strong></span></label><div class="a11y-footer"><button type="button" class="secondary" data-a11y="reset">Restaurar</button></div>`;
   document.body.append(panel);
-
   const status=panel.querySelector('#voiceStatus');
   const voiceButton=panel.querySelector('#voiceCommandButton');
   const sync=()=>{panel.querySelectorAll('[data-a11y-check]').forEach(i=>i.checked=Boolean(prefs[i.dataset.a11yCheck]));applyA11y(prefs);saveA11y(prefs)};
   const open=()=>{panel.classList.remove('hidden');toggle.setAttribute('aria-expanded','true');panel.querySelector('#a11yClose').focus()};
   const close=()=>{panel.classList.add('hidden');toggle.setAttribute('aria-expanded','false');toggle.focus()};
-
-  toggle.onclick=()=>panel.classList.contains('hidden')?open():close();
-  panel.querySelector('#a11yClose').onclick=close;
+  toggle.onclick=()=>panel.classList.contains('hidden')?open():close();panel.querySelector('#a11yClose').onclick=close;
   panel.querySelectorAll('[data-a11y-check]').forEach(i=>i.onchange=()=>{prefs[i.dataset.a11yCheck]=i.checked;sync()});
-  panel.querySelectorAll('[data-a11y]').forEach(b=>b.onclick=()=>{
-    const action=b.dataset.a11y;
-    if(action==='speak-page'){if(!speakPage())status.textContent='Áudio não disponível neste navegador.';return}
-    if(action==='stop-speech'){stopSpeech();status.textContent='Áudio interrompido.';return}
-    if(action==='font-up')prefs.fontScale=Math.min(1.4,Math.round((prefs.fontScale+.1)*10)/10);
-    if(action==='font-down')prefs.fontScale=Math.max(.9,Math.round((prefs.fontScale-.1)*10)/10);
-    if(action==='reset')prefs={...A11Y_DEFAULTS};
-    sync();
-  });
-
-  voiceButton.onclick=()=>{
-    const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!Recognition){status.textContent='Comando de voz indisponível neste navegador.';return}
-    stopSpeech();
-    const recognition=new Recognition();recognition.lang='pt-BR';recognition.interimResults=false;recognition.maxAlternatives=1;
-    recognition.onstart=()=>{voiceButton.disabled=true;voiceButton.textContent='Ouvindo…';status.textContent='Fale um comando.'};
-    recognition.onerror=()=>{status.textContent='Não foi possível reconhecer a voz.'};
-    recognition.onend=()=>{voiceButton.disabled=false;voiceButton.textContent='Comando de voz'};
-    recognition.onresult=e=>{
-      const raw=e.results[0][0].transcript;
-      const cmd=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
-      status.textContent=`Comando: ${raw}`;
-      if(cmd.includes('ranking'))location.assign('/ranking');
-      else if(cmd.includes('ouvir')||cmd.includes('ler tela'))speakPage();
-      else if(cmd.includes('parar'))stopSpeech();
-      else if(cmd.includes('aumentar texto')){prefs.fontScale=Math.min(1.4,prefs.fontScale+.1);sync()}
-      else if(cmd.includes('diminuir texto')){prefs.fontScale=Math.max(.9,prefs.fontScale-.1);sync()}
-      else if(cmd.includes('contraste')){prefs.contrast=!prefs.contrast;sync()}
-      else if(cmd.includes('ler qr')||cmd.includes('abrir camera'))document.querySelector('#openQrScanner')?.click();
-      else if(cmd.includes('criar conta'))document.querySelector('#showRegister')?.click();
-      else if(cmd.includes('recuperar'))document.querySelector('#showRecovery')?.click();
-      else if(cmd.includes('ouvir desafio')||cmd.includes('ouvir pergunta'))document.querySelector('#readQuestion')?.click();
-      else if(cmd.includes('responder'))document.querySelector('#answerForm')?.requestSubmit();
-      else speakText('Comando não reconhecido.');
-    };
-    try{recognition.start()}catch(_){status.textContent='Não foi possível iniciar o comando de voz.'}
-  };
-
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.classList.contains('hidden'))close()});
-  sync();
-  window.openAccessibilityPanel=open;
+  panel.querySelectorAll('[data-a11y]').forEach(b=>b.onclick=()=>{const action=b.dataset.a11y;if(action==='speak-page'){if(!speakPage())status.textContent='Áudio não disponível neste navegador.';return}if(action==='stop-speech'){stopSpeech();status.textContent='Áudio interrompido.';return}if(action==='font-up')prefs.fontScale=Math.min(1.4,Math.round((prefs.fontScale+.1)*10)/10);if(action==='font-down')prefs.fontScale=Math.max(.9,Math.round((prefs.fontScale-.1)*10)/10);if(action==='reset')prefs={...A11Y_DEFAULTS};sync()});
+  voiceButton.onclick=()=>{const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Recognition){status.textContent='Comando de voz indisponível neste navegador.';return}stopSpeech();const recognition=new Recognition();recognition.lang='pt-BR';recognition.interimResults=false;recognition.maxAlternatives=1;recognition.onstart=()=>{voiceButton.disabled=true;voiceButton.textContent='Ouvindo…';status.textContent='Fale um comando.'};recognition.onerror=()=>{status.textContent='Não foi possível reconhecer a voz.'};recognition.onend=()=>{voiceButton.disabled=false;voiceButton.textContent='Comando de voz'};recognition.onresult=e=>{const raw=e.results[0][0].transcript;const cmd=raw.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');status.textContent=`Comando: ${raw}`;if(cmd.includes('ranking'))location.assign('/ranking');else if(cmd.includes('ouvir')||cmd.includes('ler tela'))speakPage();else if(cmd.includes('parar'))stopSpeech();else if(cmd.includes('aumentar texto')){prefs.fontScale=Math.min(1.4,prefs.fontScale+.1);sync()}else if(cmd.includes('diminuir texto')){prefs.fontScale=Math.max(.9,prefs.fontScale-.1);sync()}else if(cmd.includes('contraste')){prefs.contrast=!prefs.contrast;sync()}else if(cmd.includes('ler qr')||cmd.includes('abrir camera'))document.querySelector('#openQrScanner')?.click();else if(cmd.includes('criar conta'))document.querySelector('#showRegister')?.click();else if(cmd.includes('recuperar'))document.querySelector('#showRecovery')?.click();else if(cmd.includes('ouvir desafio')||cmd.includes('ouvir pergunta'))document.querySelector('#readQuestion')?.click();else if(cmd.includes('responder'))document.querySelector('#answerForm')?.requestSubmit();else speakText('Comando não reconhecido.')};try{recognition.start()}catch(_){status.textContent='Não foi possível iniciar o comando de voz.'}};
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!panel.classList.contains('hidden'))close()});sync();window.openAccessibilityPanel=open;
 }
-
-function prepareAdminMobileForms(){
-  if(location.pathname!=='/admin'||!window.matchMedia('(max-width: 640px)').matches)return;
-  document.querySelectorAll('#stationsPanel details.form-card[open],#questionsPanel details.form-card[open]').forEach(item=>item.open=false);
-}
-
-window.speakText=speakText;
-window.stopSpeech=stopSpeech;
-window.speakPage=speakPage;
+function prepareAdminMobileForms(){if(location.pathname!=='/admin'||!window.matchMedia('(max-width: 640px)').matches)return;document.querySelectorAll('#stationsPanel details.form-card[open],#questionsPanel details.form-card[open]').forEach(item=>item.open=false)}
+window.speakText=speakText;window.stopSpeech=stopSpeech;window.speakPage=speakPage;
 function initCommonUi(){prepareAdminMobileForms();initA11yPanel()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initCommonUi,{once:true});else initCommonUi();

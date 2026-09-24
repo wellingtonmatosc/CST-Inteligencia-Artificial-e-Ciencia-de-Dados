@@ -18,9 +18,18 @@ class ParticipantActivePayload(BaseModel):
     active: bool
 
 
-class FinalTiebreakPayload(BaseModel):
-    score: int = Field(ge=0, le=100)
-    note: str | None = Field(default=None, max_length=500)
+class TestModePayload(BaseModel):
+    duration_days: int = Field(ge=1, le=7)
+    test_day: int = Field(ge=1, le=7)
+
+
+class OfficialStartPayload(BaseModel):
+    duration_days: int = Field(ge=1, le=7)
+    confirmation: str
+
+
+class ConfirmationPayload(BaseModel):
+    confirmation: str
 
 
 def _count_where(repo: SupabaseRepository, table: str, **filters) -> int:
@@ -59,14 +68,12 @@ def _recent_activity(repo: SupabaseRepository) -> list[dict]:
         item = dict(row)
         local_iso, unusual = _local_access_metadata(item.get("validated_at"))
         item["local_access_at"] = local_iso
-        # Apenas sinaliza para revisão; nunca bloqueia nem altera pontuação.
         item["unusual_hour"] = unusual
         output.append(item)
     return output
 
 
 def attach_individual_progress(participants: list[dict], ranking: list[dict]) -> list[dict]:
-    """Combina cadastro administrativo com progresso e critérios de desempate."""
     progress = {str(row.get("id")): row for row in ranking if row.get("id")}
     output: list[dict] = []
     for participant in participants:
@@ -82,12 +89,6 @@ def attach_individual_progress(participants: list[dict], ranking: list[dict]) ->
         row["first_try_correct"] = int(stats.get("first_try_correct") or 0)
         row["best_correct_streak"] = int(stats.get("best_correct_streak") or 0)
         row["tie_count"] = int(stats.get("tie_count") or 1)
-        row["pre_final_tie_count"] = int(stats.get("pre_final_tie_count") or 1)
-        row["needs_final_tiebreak"] = bool(stats.get("needs_final_tiebreak"))
-        row["unresolved_tie"] = bool(stats.get("unresolved_tie"))
-        row["final_tiebreak_resolved"] = bool(stats.get("final_tiebreak_resolved"))
-        row["final_tiebreak_score"] = int(stats.get("final_tiebreak_score") or 0)
-        row["final_tiebreak_recorded"] = bool(stats.get("final_tiebreak_recorded"))
         output.append(row)
     return output
 
@@ -106,14 +107,92 @@ def _audit(repo: SupabaseRepository, admin: dict, action: str, participant_id: s
     )
 
 
-def _event_days(repo: SupabaseRepository) -> list[dict]:
-    return (
-        repo.raw_table("event_days")
-        .select("day_number,label,event_date,active,is_final_event,updated_at")
-        .order("day_number")
-        .execute().data
-        or []
+def _event_control(repo: SupabaseRepository) -> dict:
+    rows = repo.select("event_control", singleton=True)
+    return rows[0] if rows else {}
+
+
+@router.get("/event-control")
+def event_control(
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    return {
+        "control": _event_control(repo),
+        "state": repo.rpc("trilhas_event_state", {}) or {},
+        "readiness": repo.rpc("trilhas_event_readiness", {}) or {},
+    }
+
+
+@router.put("/event-control/testing")
+def set_test_mode(
+    payload: TestModePayload,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    if payload.test_day > payload.duration_days:
+        raise AppError("O dia de teste não pode ser maior que a duração escolhida.", 422)
+    result = repo.rpc(
+        "trilhas_admin_set_test_mode",
+        {"p_duration_days": payload.duration_days, "p_test_day": payload.test_day, "p_actor": admin["username"]},
     )
+    if not isinstance(result, dict) or not result.get("ok"):
+        raise AppError("Não foi possível iniciar o modo de teste.", 409)
+    return result
+
+
+@router.post("/event-control/clear-tests")
+def clear_test_data(
+    payload: ConfirmationPayload,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    if payload.confirmation.strip().upper() != "LIMPAR TESTES":
+        raise AppError('Digite "LIMPAR TESTES" para confirmar.', 422)
+    result = repo.rpc("trilhas_admin_clear_test_data", {"p_actor": admin["username"]})
+    if not isinstance(result, dict) or not result.get("ok"):
+        raise AppError("A limpeza só é permitida no modo de teste.", 409)
+    return result
+
+
+@router.post("/event-control/start")
+def start_official_event(
+    payload: OfficialStartPayload,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    if payload.confirmation.strip().upper() != "INICIAR":
+        raise AppError('Digite "INICIAR" para confirmar o início oficial.', 422)
+    result = repo.rpc(
+        "trilhas_admin_start_official_event",
+        {"p_duration_days": payload.duration_days, "p_actor": admin["username"]},
+    )
+    if not isinstance(result, dict):
+        raise AppError("Resposta inválida ao iniciar o evento.", 503)
+    if not result.get("ok"):
+        if result.get("error") == "event_not_ready":
+            raise AppError("O evento ainda não está pronto: confira os 15 QRs, códigos físicos e o banco de questões.", 409)
+        raise AppError("Não foi possível iniciar o evento.", 409)
+    return result
+
+
+@router.post("/event-control/end")
+def end_official_event(
+    payload: ConfirmationPayload,
+    admin: dict = Depends(current_admin),
+    repo: SupabaseRepository = Depends(get_repo),
+):
+    require_admin_role(admin, "admin")
+    if payload.confirmation.strip().upper() != "ENCERRAR":
+        raise AppError('Digite "ENCERRAR" para confirmar.', 422)
+    result = repo.rpc("trilhas_admin_end_event", {"p_actor": admin["username"]})
+    if not isinstance(result, dict) or not result.get("ok"):
+        raise AppError("Não foi possível encerrar o evento.", 409)
+    return result
 
 
 @router.get("/dashboard-data")
@@ -139,17 +218,14 @@ def dashboard_data(
     competitors = [p for p in participants if p.get("active") and not p.get("is_organizer")]
     recent_activity = _recent_activity(repo)
     unusual_recent = sum(1 for row in recent_activity if row.get("unusual_hour"))
-    event_days = _event_days(repo)
-    final_day = next((day for day in event_days if day.get("is_final_event")), None)
-    unresolved_ties = sum(1 for row in ranking if row.get("unresolved_tie"))
+    shared_positions = sum(1 for row in ranking if int(row.get("tie_count") or 1) > 1)
 
     return {
         "mode": "individual",
         "admin_mode": "single",
         "participants": participants,
         "ranking": ranking,
-        "event_days": event_days,
-        "final_day": final_day,
+        "event_control": _event_control(repo),
         "recent_activity": recent_activity,
         "monitoring": {
             "timezone": "America/Cuiaba",
@@ -158,15 +234,8 @@ def dashboard_data(
             "policy": "signal_only",
         },
         "ranking_rules": {
-            "order": [
-                "points",
-                "correct_answers",
-                "first_try_correct",
-                "distinct_qrs",
-                "active_days",
-                "final_tiebreak_score",
-            ],
-            "final_tiebreak": "supervised_day_7",
+            "order": ["points", "trails_completed", "stations_validated"],
+            "exact_ties_share_position": True,
             "speed_used": False,
         },
         "stats": {
@@ -180,7 +249,7 @@ def dashboard_data(
             "validations_total": _count_where(repo, "station_visits"),
             "pending_challenges": _count_where(repo, "station_visits", status="validated"),
             "unusual_recent": unusual_recent,
-            "unresolved_ties": unresolved_ties,
+            "shared_positions": shared_positions,
         },
     }
 
@@ -200,67 +269,3 @@ def set_participant_active(
     repo.update("participants", {"active": payload.active}, id=participant_id)
     _audit(repo, admin, "participant_active_changed", participant_id, active=payload.active)
     return {"ok": True, "active": payload.active}
-
-
-@router.put("/final-tiebreak/{participant_id}")
-def set_final_tiebreak(
-    participant_id: str,
-    payload: FinalTiebreakPayload,
-    admin: dict = Depends(current_admin),
-    repo: SupabaseRepository = Depends(get_repo),
-):
-    require_admin_role(admin, "admin")
-    participants = repo.select("participants", id=participant_id)
-    if not participants:
-        raise AppError("Participante não encontrado.", 404)
-    if participants[0].get("is_organizer"):
-        raise AppError("Contas da organização não participam do desempate.", 422)
-
-    now_iso = datetime.now(LOCAL_TIMEZONE).isoformat()
-    data = {
-        "score": payload.score,
-        "note": (payload.note or "").strip() or None,
-        "recorded_by": admin["username"],
-        "updated_at": now_iso,
-    }
-    existing = repo.select("final_tiebreak_results", participant_id=participant_id)
-    if existing:
-        updated = repo.update("final_tiebreak_results", data, participant_id=participant_id)
-        result = updated[0] if updated else {"participant_id": participant_id, **data}
-    else:
-        result = repo.insert(
-            "final_tiebreak_results",
-            {"participant_id": participant_id, "recorded_at": now_iso, **data},
-        )
-
-    _audit(
-        repo,
-        admin,
-        "final_tiebreak_recorded",
-        participant_id,
-        score=payload.score,
-        note=data["note"],
-    )
-    return {"ok": True, "result": result}
-
-
-@router.delete("/final-tiebreak/{participant_id}")
-def clear_final_tiebreak(
-    participant_id: str,
-    admin: dict = Depends(current_admin),
-    repo: SupabaseRepository = Depends(get_repo),
-):
-    require_admin_role(admin, "admin")
-    existing = repo.select("final_tiebreak_results", participant_id=participant_id)
-    if not existing:
-        return {"ok": True, "removed": False}
-    previous_score = int(existing[0].get("score") or 0)
-    repo.delete("final_tiebreak_results", participant_id=participant_id)
-    _audit(
-        repo,
-        admin,
-        "final_tiebreak_cleared",
-        participant_id,
-        previous_score=previous_score,
-    )
-    return {"ok": True, "removed": True}
