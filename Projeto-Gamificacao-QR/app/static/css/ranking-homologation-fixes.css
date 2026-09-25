@@ -1,5 +1,5 @@
 /* Correções de homologação do ranking.
-   Neutraliza o grid legado de compact.css/mobile-first.css sem alterar a estrutura global. */
+   Neutraliza os grids legados e mantém a leitura compacta no celular. */
 body.ranking-page .individual-ranking-card{
   display:block!important;
   grid-template-columns:none!important;
@@ -15,24 +15,52 @@ body.ranking-page .rank-top{
   width:100%;
   min-width:0;
 }
-body.ranking-page .rank-identity{min-width:0}
-body.ranking-page .rank-identity h3{margin:0!important}
-body.ranking-page .rank-score-pill{position:static!important;min-width:64px!important}
+body.ranking-page .rank-top>.individual-rank-position,
+body.ranking-page .rank-top>.rank-avatar,
+body.ranking-page .rank-top>.rank-identity,
+body.ranking-page .rank-top>.rank-score-pill{
+  grid-area:auto!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+}
+body.ranking-page .individual-rank-position,
+body.ranking-page .rank-avatar{
+  justify-self:start!important;
+  align-self:center!important;
+}
+body.ranking-page .rank-identity{
+  min-width:0;
+  align-self:center!important;
+}
+body.ranking-page .rank-identity h3{
+  margin:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  overflow-wrap:anywhere;
+  line-height:1.15!important;
+}
+body.ranking-page .rank-score-pill{
+  position:static!important;
+  justify-self:end!important;
+  align-self:center!important;
+  min-width:64px!important;
+}
 body.ranking-page .rank-metrics{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:8px!important;
-  margin-top:10px!important;
+  margin-top:8px!important;
   width:100%;
 }
 body.ranking-page .rank-metric{
   min-width:0;
-  min-height:70px;
+  min-height:58px;
   display:flex;
   flex-direction:column;
   align-items:center;
   justify-content:center;
-  padding:8px 6px!important;
+  padding:7px 6px!important;
 }
 body.ranking-page .rank-metric strong{font-size:1rem!important}
 body.ranking-page .rank-metric span{font-size:.7rem!important;line-height:1.25!important}
@@ -43,13 +71,15 @@ body.ranking-page .rank-metric span{font-size:.7rem!important;line-height:1.25!i
     gap:7px!important;
   }
   body.ranking-page .rank-score-pill{min-width:56px!important;padding:6px!important}
+  body.ranking-page .rank-identity h3{font-size:.92rem!important}
   body.ranking-page .rank-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 }
 
 @media(max-width:359px){
   body.ranking-page .rank-top{
-    grid-template-columns:36px 36px minmax(0,1fr) 52px!important;
+    grid-template-columns:36px 36px minmax(0,1fr) 50px!important;
     gap:6px!important;
   }
-  body.ranking-page .rank-score-pill{min-width:52px!important}
+  body.ranking-page .rank-score-pill{min-width:50px!important;padding-inline:5px!important}
+  body.ranking-page .rank-identity h3{font-size:.88rem!important}
 }
