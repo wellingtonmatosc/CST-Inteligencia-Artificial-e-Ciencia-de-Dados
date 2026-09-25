@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api import admin, admin_dashboard, game, participants, question_pool
@@ -21,19 +21,54 @@ app.include_router(question_pool.router)
 
 BASE = Path(__file__).resolve().parent
 STATIC = BASE / "static"
+ADMIN_UI_VERSION = "20260925-1614"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+def _admin_html() -> str:
+    html = (STATIC / "pages" / "admin.html").read_text(encoding="utf-8")
+    html = html.replace(
+        '<html lang="pt-BR">',
+        f'<html lang="pt-BR" data-admin-ui-version="{ADMIN_UI_VERSION}">',
+        1,
+    )
+    for asset in (
+        "/static/css/styles.css",
+        "/static/css/admin-panel.css",
+        "/static/css/admin-ops.css",
+        "/static/js/avatars.js",
+        "/static/js/common.js",
+        "/static/js/admin.js",
+        "/static/js/admin-analytics.js",
+    ):
+        html = html.replace(asset, f"{asset}?v={ADMIN_UI_VERSION}")
+    bootstrap = (
+        "<script>"
+        f"window.__ADMIN_UI_VERSION__='{ADMIN_UI_VERSION}';"
+        "window.addEventListener('pageshow',function(e){"
+        "if(e.persisted){location.reload();}"
+        "});"
+        "</script>"
+    )
+    return html.replace("</head>", bootstrap + "</head>", 1)
 
 
 @app.middleware("http")
 async def response_headers(request: Request, call_next):
     response = await call_next(request)
     path = request.url.path
-    if path.startswith("/static/"):
-        # Durante a homologação usamos nomes de arquivo estáveis. Revalidar evita
-        # que CSS/JS antigos permaneçam no celular após um novo deploy.
+    if path.startswith("/static/js/admin") or path.startswith("/static/css/admin"):
+        # O ADM muda com frequência durante a homologação. Nunca reutilizar uma
+        # versão administrativa antiga em conjunto com HTML de outro deploy.
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    elif path.startswith("/static/"):
         response.headers["Cache-Control"] = "public, max-age=0, must-revalidate"
     elif path in {"/", "/ranking", "/admin"} or path.startswith("/q/"):
-        response.headers["Cache-Control"] = "no-store"
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
@@ -68,4 +103,4 @@ def ranking_page():
 
 @app.get("/admin", include_in_schema=False)
 def admin_page():
-    return FileResponse(STATIC / "pages" / "admin.html")
+    return HTMLResponse(_admin_html())
