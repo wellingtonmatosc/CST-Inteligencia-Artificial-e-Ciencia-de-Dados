@@ -33,13 +33,15 @@ def test_balanced_pool_targets_300_questions_and_15_qrs():
     assert "questions_per_qr',20" in sql
 
 
-def test_admin_uses_new_event_control_and_hides_legacy_workflows():
+def test_admin_uses_integrated_event_control_and_does_not_load_legacy_workflows():
     common = read("app/static/js/common.js")
-    event_ui = read("app/static/js/admin-event-control.js")
-    assert "/static/js/admin-event-control.js" in common
+    admin = read("app/static/js/admin.js")
+    html = read("app/static/pages/admin.html")
+    assert "/static/js/admin-event-control.js" not in common
+    assert "/static/js/admin-monitoring.js" not in common
+    assert "/static/js/admin-ranking-rules.js" not in common
     assert "/static/js/admin-question-pool.js" not in common
-    assert "hideTab('pointsPanel')" in event_ui
-    assert "hideTab('settingsPanel')" in event_ui
-    assert "contentForm" in event_ui
-    assert "questionForm" in event_ui
-    assert "Iniciar evento oficial" in event_ui
+    assert "/api/admin/event-control/testing" in admin
+    assert "/api/admin/event-control/start" in admin
+    assert "Iniciar evento oficial" in html
+    assert "eventControlCard" in html
