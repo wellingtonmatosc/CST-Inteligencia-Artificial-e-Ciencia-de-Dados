@@ -6,20 +6,20 @@
     const panel=document.querySelector('#rankingPanel');
     if(!panel)return null;
     const legacyDescription=panel.querySelector('.admin-section-head .muted');
-    if(legacyDescription)legacyDescription.textContent='Ordem oficial: pontos, trilhas concluídas e estações realizadas. Empates reais compartilham posição.';
+    if(legacyDescription)legacyDescription.textContent='Ordem oficial: pontos, estações realizadas e acertos na 1ª tentativa. Empates reais compartilham posição.';
     let card=document.querySelector('#rankingRulesCard');
     if(card)return card;
     card=document.createElement('section');
     card.id='rankingRulesCard';
     card.className='card';
-    card.innerHTML=`<div class="admin-section-head"><div><span class="eyebrow">Ranking oficial</span><h2>Critérios competitivos</h2><p class="muted">Ordem: pontos acumulados, trilhas concluídas e estações realizadas. Indicadores como acertos, dias ativos e sequência podem ser acompanhados como mérito, mas não alteram a classificação. Se todos os critérios oficiais permanecerem iguais, os participantes compartilham a posição.</p></div><button type="button" class="secondary compact" id="refreshRankingRules">Atualizar</button></div><div id="rankingRuleStatus" class="notice"><strong>Pontuação oficial:</strong> QR +10; acerto na 1ª tentativa +10; acerto na 2ª +6; erro +0 de bônus. Trilhas não geram pontos extras.</div><div id="rankingMeritList" class="admin-list"></div>`;
+    card.innerHTML=`<div class="admin-section-head"><div><span class="eyebrow">Ranking oficial</span><h2>Critérios competitivos</h2><p class="muted">Ordem: pontos acumulados, estações realizadas e acertos na 1ª tentativa. Outros indicadores podem ser acompanhados como mérito, mas não alteram a classificação. Se os três critérios oficiais permanecerem iguais, os participantes compartilham a posição.</p></div><button type="button" class="secondary compact" id="refreshRankingRules">Atualizar</button></div><div id="rankingRuleStatus" class="notice"><strong>Pontuação oficial:</strong> QR +10; acerto na 1ª tentativa +10; acerto na 2ª +6; erro +0 de bônus.</div><div id="rankingMeritList" class="admin-list"></div>`;
     panel.prepend(card);
     card.querySelector('#refreshRankingRules')?.addEventListener('click',refresh);
     return card;
   }
 
   function metricLine(row){
-    return `${Number(row.trails_completed||0)} trilhas concluídas • ${Number(row.stations_validated||0)} estações realizadas`;
+    return `${Number(row.stations_validated||0)} estações realizadas • ${Number(row.first_try_correct||0)} acertos na 1ª tentativa`;
   }
 
   function render(data){
