@@ -2,10 +2,6 @@ function ensureStylesheet(href){
   if(document.querySelector(`link[href="${href}"]`))return;
   const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link);
 }
-function ensureScript(src){
-  if(document.querySelector(`script[src="${src}"]`))return;
-  const script=document.createElement('script');script.src=src;script.defer=true;document.head.appendChild(script);
-}
 document.documentElement.lang='pt-BR';
 const isRanking=location.pathname==='/ranking';
 const defaultThemeColor=isRanking?'#f4f6f9':'#f6f7fa';
@@ -15,12 +11,7 @@ ensureStylesheet('/static/css/compact.css');
 ensureStylesheet('/static/css/mobile-first.css');
 ensureStylesheet('/static/css/theme-institutional.css');
 if(isRanking)ensureStylesheet('/static/css/ranking-optimized.css');
-if(location.pathname==='/admin'){
-  ensureStylesheet('/static/css/theme-institutional-admin.css');
-  ensureScript('/static/js/admin-event-control.js');
-  ensureScript('/static/js/admin-monitoring.js');
-  ensureScript('/static/js/admin-ranking-rules.js');
-}
+if(location.pathname==='/admin')ensureStylesheet('/static/css/theme-institutional-admin.css');
 /* Deve ser a ultima camada visual: sobrescreve de forma consistente todos os temas. */
 ensureStylesheet('/static/css/high-contrast-final.css');
 
@@ -33,6 +24,7 @@ async function api(url,options={}){
 }
 
 function showMessage(el,msg,type='notice'){
+  if(!el){console.warn('Área de mensagem não encontrada:',msg);return}
   el.className=`notice ${type}`;
   el.textContent=msg;
   el.classList.remove('hidden');
