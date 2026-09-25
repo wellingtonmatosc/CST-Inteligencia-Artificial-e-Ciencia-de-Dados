@@ -21,7 +21,7 @@ app.include_router(question_pool.router)
 
 BASE = Path(__file__).resolve().parent
 STATIC = BASE / "static"
-ADMIN_UI_VERSION = "20260925-1944"
+ADMIN_UI_VERSION = "20260925-2110"
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
