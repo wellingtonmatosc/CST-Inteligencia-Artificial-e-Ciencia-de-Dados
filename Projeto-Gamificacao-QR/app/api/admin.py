@@ -1,4 +1,4 @@
-"""API administrativa da versão final do Trilhas Poéticas.
+"""API administrativa do Trilhas Poéticas.
 
 O navegador nunca acessa o Supabase diretamente. Operações administrativas
 passam pelo FastAPI, sessão assinada, validação de papel e auditoria.
@@ -21,16 +21,7 @@ from app.services.questions import validate_accessibility_metadata
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
 ADMIN_ROLES = {"admin", "operator", "validator", "viewer"}
-ACTION_TYPES = {
-    "recitation",
-    "original_work",
-    "poem_suggestion",
-    "selected_suggestion",
-    "artistic_production",
-    "social_post",
-    "event_participation",
-    "other",
-}
+ACTION_TYPES = {"recitation", "original_work", "poem_suggestion", "selected_suggestion", "artistic_production", "social_post", "event_participation", "other"}
 
 
 class LoginPayload(BaseModel):
@@ -122,34 +113,36 @@ def _now_iso() -> str:
 
 
 def _set_admin_cookie(response: Response, token: str, settings: Settings) -> None:
-    response.set_cookie(
-        settings.admin_cookie_name,
-        token,
-        max_age=settings.admin_session_hours * 3600,
-        httponly=True,
-        secure=settings.session_cookie_secure,
-        samesite="lax",
-        path="/",
-    )
+    response.set_cookie(settings.admin_cookie_name, token, max_age=settings.admin_session_hours * 3600, httponly=True, secure=settings.session_cookie_secure, samesite="lax", path="/")
 
 
 def _audit(repo: SupabaseRepository, admin: dict, action: str, entity_type: str, entity_id=None, **metadata) -> None:
-    repo.insert(
-        "audit_log",
-        {
-            "actor_username": admin["username"],
-            "actor_role": admin["role"],
-            "action": action,
-            "entity_type": entity_type,
-            "entity_id": str(entity_id) if entity_id is not None else None,
-            "metadata": metadata,
-        },
-    )
+    repo.insert("audit_log", {"actor_username": admin["username"], "actor_role": admin["role"], "action": action, "entity_type": entity_type, "entity_id": str(entity_id) if entity_id is not None else None, "metadata": metadata})
 
 
 def _count(repo: SupabaseRepository, table: str) -> int:
     result = repo.raw_table(table).select("id", count="exact").execute()
     return result.count or 0
+
+
+def _question_rows(repo: SupabaseRepository) -> list[dict]:
+    rows = (
+        repo.raw_table("questions")
+        .select("id,category_id,kind,prompt,options,correct_answer,explanation,difficulty,media_type,media_url,accessibility,active,created_at,updated_at")
+        .order("id")
+        .execute().data
+        or []
+    )
+    for number, row in enumerate(rows, start=1):
+        row["review_code"] = f"Q{number:03d}"
+    return rows
+
+
+def _question_review_code(repo: SupabaseRepository, question_id: str) -> str | None:
+    for row in _question_rows(repo):
+        if str(row.get("id")) == str(question_id):
+            return row["review_code"]
+    return None
 
 
 def _validate_question(payload: QuestionPayload) -> dict:
@@ -175,23 +168,16 @@ def _validate_question(payload: QuestionPayload) -> dict:
     return data
 
 
+def _pending_question_visits(repo: SupabaseRepository, question_id: str) -> int:
+    result = repo.raw_table("station_visits").select("id", count="exact").eq("question_id", question_id).eq("status", "validated").execute()
+    return result.count or 0
+
+
 def _station_data(payload: StationPayload, *, keep_hash: str | None = None) -> dict:
     if payload.active_from and payload.active_until and payload.active_until <= payload.active_from:
         raise AppError("O fim da janela precisa ser posterior ao início.", 422)
     physical = (payload.physical_code or "").strip().upper()
-    return {
-        "code": payload.code.strip().upper(),
-        "name": payload.name.strip(),
-        "zone_id": payload.zone_id,
-        "station_type": payload.station_type,
-        "base_points": 10,
-        "validation_code_hash": sha256_hex(physical) if physical else keep_hash,
-        "active_from": payload.active_from.isoformat() if payload.active_from else None,
-        "active_until": payload.active_until.isoformat() if payload.active_until else None,
-        "location_hint": (payload.location_hint or "").strip() or None,
-        "active": payload.active,
-        "updated_at": _now_iso(),
-    }
+    return {"code": payload.code.strip().upper(), "name": payload.name.strip(), "zone_id": payload.zone_id, "station_type": payload.station_type, "base_points": 10, "validation_code_hash": sha256_hex(physical) if physical else keep_hash, "active_from": payload.active_from.isoformat() if payload.active_from else None, "active_until": payload.active_until.isoformat() if payload.active_until else None, "location_hint": (payload.location_hint or "").strip() or None, "active": payload.active, "updated_at": _now_iso()}
 
 
 @router.post("/login")
@@ -234,39 +220,44 @@ def session(admin: dict = Depends(current_admin)):
 
 @router.get("/overview")
 def overview(admin: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {
-        "session": admin,
-        "participants": _count(repo, "participants"),
-        "questions": _count(repo, "questions"),
-        "stations": _count(repo, "qr_points"),
-        "trails": _count(repo, "trails"),
-        "visits": _count(repo, "station_visits"),
-        "manual_actions": _count(repo, "manual_point_actions"),
-    }
+    return {"session": admin, "participants": _count(repo, "participants"), "questions": _count(repo, "questions"), "stations": _count(repo, "qr_points"), "trails": _count(repo, "trails"), "visits": _count(repo, "station_visits"), "manual_actions": _count(repo, "manual_point_actions")}
 
 
 @router.get("/catalog")
 def catalog(_: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    return {
-        "categories": repo.raw_table("categories").select("id,slug,name,active").order("name").execute().data or [],
-        "zones": repo.raw_table("zones").select("id,slug,name,active").order("name").execute().data or [],
-        "blocked_terms": repo.raw_table("blocked_terms").select("id,term,reason,active").order("term").execute().data or [],
-    }
+    return {"categories": repo.raw_table("categories").select("id,slug,name,active").order("name").execute().data or [], "zones": repo.raw_table("zones").select("id,slug,name,active").order("name").execute().data or [], "blocked_terms": repo.raw_table("blocked_terms").select("id,term,reason,active").order("term").execute().data or []}
 
 
 @router.get("/questions")
 def list_questions(_: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    rows = repo.raw_table("questions").select("id,prompt,kind,difficulty,active,category_id,accessibility,explanation").order("created_at", desc=True).execute().data or []
-    return {"questions": rows}
+    return {"questions": _question_rows(repo)}
 
 
 @router.post("/questions")
 def create_question(payload: QuestionPayload, admin: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
     require_admin_role(admin, "admin", "operator")
+    if _count(repo, "questions") >= 300:
+        raise AppError("O banco homologado já possui 300 questões. Edite ou desative uma questão existente em vez de criar a Q301.", 409)
     data = _validate_question(payload)
     question = repo.insert("questions", data)
     _audit(repo, admin, "question_created", "question", question["id"], prompt=question["prompt"])
     return {"question": question}
+
+
+@router.put("/questions/{question_id}")
+def update_question(question_id: str, payload: QuestionPayload, admin: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
+    require_admin_role(admin, "admin", "operator")
+    rows = repo.select("questions", id=question_id)
+    if not rows:
+        raise AppError("Questão não encontrada.", 404)
+    if _pending_question_visits(repo, question_id) > 0:
+        raise AppError("Há participante com esta questão em andamento. Aguarde a conclusão antes de editar.", 409)
+    data = _validate_question(payload)
+    data["updated_at"] = _now_iso()
+    updated = repo.update("questions", data, id=question_id)
+    review_code = _question_review_code(repo, question_id)
+    _audit(repo, admin, "question_updated", "question", question_id, review_code=review_code, prompt=data["prompt"], active=data["active"])
+    return {"question": updated[0] if updated else {"id": question_id, **data}, "review_code": review_code}
 
 
 @router.post("/questions/{question_id}/toggle")
@@ -279,12 +270,15 @@ def toggle_question(question_id: str, admin: dict = Depends(current_admin), repo
     if row.get("kind") != "multiple_choice":
         raise AppError("A versão final aceita apenas questões de múltipla escolha.", 422)
     active = not row["active"]
+    if not active and _pending_question_visits(repo, question_id) > 0:
+        raise AppError("Há participante com esta questão em andamento. Aguarde a conclusão antes de desativar.", 409)
     if active:
         payload = QuestionPayload(**row)
         _validate_question(payload)
     repo.update("questions", {"active": active, "updated_at": _now_iso()}, id=question_id)
-    _audit(repo, admin, "question_toggled", "question", question_id, active=active)
-    return {"active": active}
+    review_code = _question_review_code(repo, question_id)
+    _audit(repo, admin, "question_toggled", "question", question_id, review_code=review_code, active=active)
+    return {"active": active, "review_code": review_code}
 
 
 @router.get("/participants")
@@ -305,7 +299,7 @@ def set_organizer(participant_id: str, payload: OrganizerPayload, admin: dict = 
 
 @router.get("/stations")
 def list_stations(_: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
-    rows = repo.raw_table("qr_points").select("id,code,name,zone_id,station_type,base_points,active,active_from,active_until,location_hint,validation_code_hash,zones(name),station_contents(*)").order("created_at").execute().data or []
+    rows = repo.raw_table("qr_points").select("id,code,name,zone_id,station_type,base_points,active,active_from,active_until,location_hint,validation_code_hash,zones(name)").order("code").execute().data or []
     for row in rows:
         row["has_physical_code"] = bool(row.pop("validation_code_hash", None))
     return {"stations": rows}
@@ -314,6 +308,8 @@ def list_stations(_: dict = Depends(current_admin), repo: SupabaseRepository = D
 @router.post("/stations")
 def create_station(payload: StationPayload, admin: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
     require_admin_role(admin, "admin", "operator")
+    if _count(repo, "qr_points") >= 15:
+        raise AppError("O evento utiliza exatamente 15 QRs. Edite um QR existente em vez de criar um QR adicional.", 409)
     data = _station_data(payload)
     data.pop("updated_at", None)
     station = repo.insert("qr_points", data)
@@ -326,10 +322,14 @@ def update_station(station_id: str, payload: StationPayload, admin: dict = Depen
     require_admin_role(admin, "admin", "operator")
     rows = repo.select("qr_points", id=station_id)
     if not rows:
-        raise AppError("Estação não encontrada.", 404)
+        raise AppError("QR não encontrado.", 404)
     data = _station_data(payload, keep_hash=rows[0].get("validation_code_hash"))
+    data["station_type"] = "permanent"
+    data["base_points"] = 10
+    data["active_from"] = None
+    data["active_until"] = None
     updated = repo.update("qr_points", data, id=station_id)
-    _audit(repo, admin, "station_updated", "station", station_id, code=data["code"], station_type=data["station_type"])
+    _audit(repo, admin, "station_updated", "station", station_id, code=data["code"], active=data["active"], location_hint=data["location_hint"])
     return {"station": updated[0] if updated else data}
 
 
@@ -338,10 +338,10 @@ def toggle_station(station_id: str, admin: dict = Depends(current_admin), repo: 
     require_admin_role(admin, "admin", "operator")
     rows = repo.select("qr_points", id=station_id)
     if not rows:
-        raise AppError("Estação não encontrada.", 404)
+        raise AppError("QR não encontrado.", 404)
     active = not rows[0]["active"]
     repo.update("qr_points", {"active": active, "updated_at": _now_iso()}, id=station_id)
-    _audit(repo, admin, "station_toggled", "station", station_id, active=active)
+    _audit(repo, admin, "station_toggled", "station", station_id, code=rows[0].get("code"), active=active)
     return {"active": active}
 
 
@@ -418,12 +418,9 @@ def grant_manual_points(payload: ManualPointsPayload, admin: dict = Depends(curr
     require_admin_role(admin, "admin", "operator", "validator")
     if payload.action_type not in ACTION_TYPES:
         raise AppError("Tipo de ação extra inválido.", 422)
-    result = repo.rpc(
-        "trilhas_admin_grant_manual_points",
-        {"p_participant_id": payload.participant_id, "p_action_type": payload.action_type, "p_description": payload.description, "p_evidence": payload.evidence, "p_points": payload.points, "p_actor": admin["username"], "p_actor_role": admin["role"]},
-    )
+    result = repo.rpc("trilhas_admin_grant_manual_points", {"p_participant_id": payload.participant_id, "p_action_type": payload.action_type, "p_description": payload.description, "p_evidence": payload.evidence, "p_points": payload.points, "p_actor": admin["username"], "p_actor_role": admin["role"]})
     if not isinstance(result, dict) or not result.get("ok"):
-        raise AppError("Não foi possível conceder os pontos extras.", 422)
+        raise AppError("Não foi possível registrar a correção de pontos.", 422)
     return result
 
 
@@ -439,6 +436,22 @@ def reverse_manual_points(action_id: str, payload: ReversePayload, admin: dict =
 @router.get("/audit")
 def audit(_: dict = Depends(current_admin), repo: SupabaseRepository = Depends(get_repo)):
     rows = repo.raw_table("audit_log").select("*").order("created_at", desc=True).limit(500).execute().data or []
+    participants = {str(x["id"]): x.get("nick") or x.get("full_name") for x in (repo.raw_table("participants").select("id,nick,full_name").execute().data or [])}
+    stations = {str(x["id"]): x.get("code") for x in (repo.raw_table("qr_points").select("id,code").execute().data or [])}
+    questions = {str(x["id"]): x.get("review_code") for x in _question_rows(repo)}
+    for row in rows:
+        entity_id = str(row.get("entity_id") or "")
+        entity_type = row.get("entity_type")
+        if entity_type == "question":
+            row["entity_label"] = questions.get(entity_id) or (row.get("metadata") or {}).get("review_code") or entity_id
+        elif entity_type in {"station", "qr_point"}:
+            row["entity_label"] = stations.get(entity_id) or entity_id
+        elif entity_type == "participant":
+            row["entity_label"] = participants.get(entity_id) or entity_id
+        elif entity_type in {"event", "event_control"}:
+            row["entity_label"] = "Evento"
+        elif entity_type == "manual_point_action":
+            row["entity_label"] = "Correção de pontuação"
     return {"events": rows}
 
 
