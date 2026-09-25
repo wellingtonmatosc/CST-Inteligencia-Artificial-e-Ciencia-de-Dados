@@ -13,19 +13,23 @@ def test_main_registers_question_pool_router():
     assert "app.include_router(question_pool.router)" in text
 
 
-def test_admin_loads_manual_event_control_instead_of_legacy_pool_ui():
-    text = read("app/static/js/common.js")
-    assert "location.pathname==='/admin'" in text
-    assert "/static/js/admin-event-control.js" in text
-    assert "/static/js/admin-question-pool.js" not in text
+def test_admin_uses_integrated_manual_event_control_instead_of_legacy_pool_ui():
+    common = read("app/static/js/common.js")
+    admin = read("app/static/js/admin.js")
+    assert "location.pathname==='/admin'" in common
+    assert "/static/js/admin-event-control.js" not in common
+    assert "/static/js/admin-question-pool.js" not in common
+    assert "/api/admin/event-control/testing" in admin
+    assert "/api/admin/event-control/start" in admin
 
 
-def test_manual_event_control_supports_one_to_seven_days_and_test_mode():
-    text = read("app/static/js/admin-event-control.js")
-    assert "competição individual de 1 a 7 dias" in text
-    assert "/api/admin/event-control/testing" in text
-    assert "Iniciar evento oficial" in text
-    assert "Dia simulado no teste" in text
+def test_integrated_event_control_supports_one_to_seven_days_and_test_mode():
+    admin = read("app/static/js/admin.js")
+    html = read("app/static/pages/admin.html")
+    assert "Array.from({length:7}" in admin
+    assert "/api/admin/event-control/testing" in admin
+    assert "Iniciar evento oficial" in html
+    assert "Dia simulado no teste" in html
 
 
 def test_migration_preserves_legacy_fallback_and_assigns_question_to_visit():
