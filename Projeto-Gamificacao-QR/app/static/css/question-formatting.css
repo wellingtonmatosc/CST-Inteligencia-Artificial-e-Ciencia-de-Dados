@@ -1,0 +1,19 @@
+/* Formatação de desafios com enunciados multilinha.
+   Mantém listas V/F e combinações de afirmações legíveis no celular. */
+.challenge-block #challengeTitle{
+  white-space:pre-line;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.challenge-block .choices{
+  margin-top:16px;
+}
+.challenge-block .choices label span{
+  line-height:1.4;
+}
+@media(max-width:640px){
+  .challenge-block #challengeTitle{
+    line-height:1.5;
+    font-size:clamp(1.12rem,5.2vw,1.38rem);
+  }
+}

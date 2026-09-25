@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f6f7fa">
+<title>Gestão do Evento — Trilhas Poéticas</title>
+<link rel="stylesheet" href="/static/css/styles.css">
+<link rel="stylesheet" href="/static/css/admin-panel.css">
+<link rel="stylesheet" href="/static/css/admin-ops.css">
+</head>
+<body class="institutional-page admin-page">
+<a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+<main id="conteudo" class="admin-shell">
+<header class="hero admin-hero"><div class="hero-copy"><span class="eyebrow">Trilhas Poéticas • IFMT</span><h1>Gestão do evento</h1><p>Controle da homologação e da competição individual, com duração de 1 a 7 dias.</p></div></header>
+<div id="message" class="notice hidden" role="status" aria-live="polite"></div>
+
+<section id="loginCard" class="card auth-card admin-login">
+  <span class="eyebrow">Acesso restrito</span><h2>Entrar como administrador</h2>
+  <p class="muted">Este acesso é separado das contas de participantes.</p>
+  <form id="loginForm"><label for="username">Usuário</label><input id="username" name="username" autocomplete="username" required><label for="password">Senha</label><input type="password" id="password" name="password" autocomplete="current-password" required><button type="submit">Entrar no painel</button></form>
+</section>
+
+<section id="dashboard" class="admin-dashboard hidden">
+  <div class="admin-toolbar"><div><span class="admin-status-badge"><span class="admin-status-dot"></span><span id="eventStatusBadge">Competição individual</span></span><p id="adminIdentity" class="muted">Sessão administrativa</p></div><button type="button" class="secondary" id="adminLogout">Sair</button></div>
+
+  <nav class="admin-nav" aria-label="Seções administrativas" role="tablist">
+    <button type="button" data-admin-tab="overviewPanel" role="tab" aria-selected="true">Visão geral</button>
+    <button type="button" data-admin-tab="participantsPanel" role="tab" aria-selected="false">Participantes</button>
+    <button type="button" data-admin-tab="stationsPanel" role="tab" aria-selected="false">QRs</button>
+    <button type="button" data-admin-tab="questionsPanel" role="tab" aria-selected="false">Questões</button>
+    <button type="button" data-admin-tab="analyticsPanel" role="tab" aria-selected="false">Análises</button>
+    <button type="button" data-admin-tab="rankingPanel" role="tab" aria-selected="false">Ranking</button>
+    <button type="button" data-admin-tab="auditPanel" role="tab" aria-selected="false">Auditoria</button>
+  </nav>
+
+  <section id="overviewPanel" class="admin-panel" role="tabpanel">
+    <section class="card event-control-card" id="eventControlCard">
+      <div class="admin-section-head"><div><span class="eyebrow">Evento e homologação</span><h2 id="eventControlTitle">Carregando estado…</h2><p class="muted">Os testes usam o sistema real. Ao iniciar o evento oficial, somente pontuação e interações de teste são zeradas; os cadastros permanecem.</p></div><span class="pill" id="eventControlMode">—</span></div>
+      <div class="grid two event-config-grid"><div><label for="eventDuration">Duração</label><select id="eventDuration"></select></div><div><label for="eventTestDay">Dia simulado no teste</label><select id="eventTestDay"></select></div></div>
+      <div id="eventReadiness" class="meta event-readiness"></div>
+      <div class="inline-actions event-actions"><button type="button" id="startTesting">Iniciar/atualizar testes</button><button type="button" class="secondary" id="clearTesting">Limpar dados de teste</button><button type="button" id="startOfficial">Iniciar evento oficial</button><button type="button" class="secondary" id="endOfficial">Encerrar evento</button></div>
+      <p class="muted">No evento oficial, a virada de dia ocorre automaticamente em <strong>America/Cuiaba</strong>.</p>
+    </section>
+
+    <section class="card"><div class="admin-section-head"><div><span class="eyebrow">Agora</span><h2>Visão geral</h2><p class="muted">Indicadores operacionais úteis para testes e para o evento.</p></div></div><div id="overview" class="admin-stat-grid"></div></section>
+    <section class="card"><div class="admin-section-head"><div><h2>Alertas operacionais</h2><p class="muted">Somente itens que podem afetar validação, perguntas, pontuação ou operação.</p></div></div><div id="alertList" class="admin-alerts"></div></section>
+    <section class="card"><div class="admin-section-head"><div><h2>Atividade recente</h2><p class="muted">Últimas validações de QR, em horário de Cuiabá.</p></div></div><div id="recentActivity" class="admin-list"></div></section>
+    <section class="card"><div class="admin-section-head"><div><h2>Top do ranking</h2><p class="muted">Prévia da classificação individual.</p></div><button type="button" class="secondary compact" data-go-tab="rankingPanel">Ver ranking completo</button></div><div id="rankingPreview" class="admin-list"></div></section>
+  </section>
+
+  <section id="participantsPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><h2>Participantes</h2><p class="muted">Consulte progresso, posição e status. Organizadores ficam fora da competição.</p></div><div class="section-tools"><input id="participantSearch" type="search" placeholder="Buscar nome, nick, campus ou curso" aria-label="Buscar participante"></div></div><div id="participantList" class="admin-list"></div></section>
+  </section>
+
+  <section id="stationsPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><h2>15 QRs do evento</h2><p class="muted">A estrutura é fixa. Edite apenas nome, zona, local, código físico e disponibilidade.</p></div></div><div id="stationList" class="admin-list"></div></section>
+    <section class="card form-card hidden" id="qrEditCard"><div class="admin-section-head"><div><span class="eyebrow">Editar QR</span><h2 id="qrEditTitle">QR</h2></div><button type="button" class="secondary compact" id="stationCancelEdit">Cancelar</button></div>
+      <form id="stationForm" class="grid two">
+        <input type="hidden" id="stationId" name="station_id">
+        <div><label for="stationCode">Código</label><input id="stationCode" name="code" readonly required></div>
+        <div><label for="stationName">Nome</label><input id="stationName" name="name" required></div>
+        <div><label for="stationZone">Zona</label><select id="stationZone" name="zone_id" required></select></div>
+        <div><label for="physicalCode">Novo código físico</label><input id="physicalCode" name="physical_code" autocomplete="off" placeholder="Vazio mantém o atual"></div>
+        <div style="grid-column:1/-1"><label for="locationHint">Local/referência no campus</label><input id="locationHint" name="location_hint"></div>
+        <div style="grid-column:1/-1"><label class="switch-row"><input id="stationActive" name="active" type="checkbox"><span><strong>QR ativo</strong></span></label></div>
+        <div style="grid-column:1/-1"><button type="submit">Salvar QR</button></div>
+      </form>
+    </section>
+  </section>
+
+  <section id="questionsPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><h2>Banco de 300 questões</h2><p class="muted">Durante a homologação, use o código Q001–Q300 para localizar, corrigir ou desativar uma questão. Não há criação livre de novas questões.</p></div><div class="section-tools question-tools-admin"><input id="questionSearch" type="search" placeholder="Buscar Q137, texto ou categoria" aria-label="Buscar questão"><select id="questionStatusFilter" aria-label="Filtrar questões"><option value="all">Todas</option><option value="active">Ativas</option><option value="inactive">Desativadas</option></select></div></div><div id="questionList" class="admin-list"></div></section>
+
+    <section class="card form-card hidden" id="questionEditCard"><div class="admin-section-head"><div><span class="eyebrow">Revisão pedagógica</span><h2 id="questionEditTitle">Editar questão</h2><p class="muted">O código Qxxx é temporário para homologação; o UUID interno não é exibido aos participantes.</p></div><button type="button" class="secondary compact" id="questionCancelEdit">Cancelar</button></div>
+      <form id="questionEditForm" class="grid two">
+        <input type="hidden" id="questionId">
+        <div><label for="questionReviewCode">Código de teste</label><input id="questionReviewCode" readonly></div>
+        <div><label for="questionCategory">Categoria</label><select id="questionCategory" required></select></div>
+        <div style="grid-column:1/-1"><label for="questionPrompt">Enunciado</label><textarea id="questionPrompt" required></textarea></div>
+        <div style="grid-column:1/-1"><label for="questionSimple">Versão em linguagem simples</label><textarea id="questionSimple"></textarea></div>
+        <div><label for="questionOptions">4 alternativas — uma por linha</label><textarea id="questionOptions" required></textarea></div>
+        <div><label for="questionCorrectIndex">Resposta correta</label><select id="questionCorrectIndex"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select><label for="questionDifficulty">Dificuldade</label><select id="questionDifficulty"><option value="1">1 — fácil</option><option value="2">2 — média</option><option value="3">3 — difícil</option><option value="4">4</option><option value="5">5</option></select></div>
+        <div style="grid-column:1/-1"><label for="questionExplanation">Explicação</label><textarea id="questionExplanation"></textarea></div>
+        <div style="grid-column:1/-1"><label class="switch-row"><input id="questionActive" type="checkbox"><span><strong>Questão ativa no pool</strong></span></label></div>
+        <div style="grid-column:1/-1"><button type="submit">Salvar correção</button></div>
+      </form>
+    </section>
+  </section>
+
+  <section id="analyticsPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><span class="eyebrow">Análises</span><h2>Uso, desempenho e equilíbrio</h2><p class="muted">Gráficos calculados a partir das validações, tentativas e ledger oficial.</p></div><button type="button" class="secondary compact" id="refreshAnalytics">Atualizar gráficos</button></div></section>
+    <div class="analytics-grid">
+      <section class="card chart-card"><h3>QRs utilizados por dia</h3><p class="muted">Validações e cobertura de QRs em cada dia.</p><div id="dailyUsageChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>Uso por QR</h3><p class="muted">Quantidade de validações em cada um dos 15 pontos.</p><div id="qrUsageChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>Ranking geral</h3><p class="muted">Pontuação oficial acumulada.</p><div id="generalRankingChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><div class="chart-head"><div><h3>Ranking por dia</h3><p class="muted">Pontuação obtida em uma data específica.</p></div><select id="dailyRankingDay" aria-label="Selecionar dia do ranking"></select></div><div id="dailyRankingChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>Ranking por questões</h3><p class="muted">Pontos de desafios e acertos por participante.</p><div id="questionRankingChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>Ranking por QRs</h3><p class="muted">Participantes com maior cobertura de QRs e validações.</p><div id="qrRankingChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>1ª x 2ª tentativa</h3><p class="muted">Comparação de acertos por tentativa entre participantes.</p><div id="attemptRankingChart" class="attempt-chart"></div></section>
+      <section class="card chart-card"><h3>Questões com mais dificuldade</h3><p class="muted">Recomendado para a revisão pedagógica: questões com maior taxa de falha nos testes.</p><div id="questionErrorChart" class="bar-chart"></div></section>
+      <section class="card chart-card"><h3>Taxa de acerto por QR</h3><p class="muted">Ajuda a identificar estações desbalanceadas ou com perguntas mais difíceis.</p><div id="qrAccuracyChart" class="bar-chart"></div></section>
+    </div>
+  </section>
+
+  <section id="rankingPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><h2>Ranking individual</h2><p class="muted">Ordem oficial: <strong>pontos → estações realizadas → acertos na 1ª tentativa</strong>. Persistindo igualdade, a posição é compartilhada.</p></div><a class="button-link secondary" href="/ranking" target="_blank" rel="noopener">Abrir ranking público</a></div><div id="adminRankingList" class="admin-list"></div></section>
+  </section>
+
+  <section id="auditPanel" class="admin-panel" role="tabpanel" hidden>
+    <section class="card"><div class="admin-section-head"><div><h2>Auditoria</h2><p class="muted">Histórico administrativo em linguagem operacional.</p></div><div class="section-tools"><input id="auditSearch" type="search" placeholder="Buscar ação, Qxxx, QR ou participante" aria-label="Buscar auditoria"><select id="auditEntityFilter" aria-label="Filtrar auditoria"><option value="all">Tudo</option><option value="question">Questões</option><option value="station">QRs</option><option value="participant">Participantes</option><option value="event">Evento</option><option value="manual_point_action">Correções</option></select></div></div><div id="auditList" class="admin-list"></div></section>
+
+    <details class="card form-card correction-card"><summary>Correção administrativa de pontuação — uso excepcional</summary><p class="muted">Use somente para restaurar pontos que deveriam existir por falha operacional. Toda correção fica no ledger e na auditoria e pode ser estornada.</p>
+      <form id="manualForm" class="grid two"><div><label for="manualParticipant">Participante</label><select id="manualParticipant" required></select></div><div><label for="manualPoints">Pontos a restaurar</label><input id="manualPoints" type="number" min="1" max="200" value="10" required></div><div style="grid-column:1/-1"><label for="manualDescription">Motivo detalhado</label><textarea id="manualDescription" required minlength="3"></textarea></div><div><label for="manualEvidence">Evidência/referência</label><input id="manualEvidence"></div><div><label for="manualConfirmation">Confirmação</label><input id="manualConfirmation" placeholder="Digite CORRIGIR" autocomplete="off" required></div><div style="grid-column:1/-1"><button type="submit">Registrar correção</button></div></form><div id="manualList" class="admin-list"></div>
+    </details>
+  </section>
+</section>
+
+<nav class="page-links" aria-label="Navegação"><a href="/">Voltar ao site</a><a href="/ranking">Ranking público</a></nav>
+</main>
+<script src="/static/js/avatars.js"></script>
+<script src="/static/js/common.js"></script>
+<script src="/static/js/admin.js"></script>
+<script src="/static/js/admin-analytics.js"></script>
+</body></html>

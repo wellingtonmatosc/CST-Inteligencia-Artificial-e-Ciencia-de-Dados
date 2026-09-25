@@ -1,0 +1,292 @@
+/* Trilhas Poéticas — experiência mobile-first
+   Prioridade: celulares de 320–430 px, toque, leitura rápida e pt-BR.
+   Paleta sem tons de verde: azul, violeta, roxo, magenta, âmbar e vermelho. */
+
+:root{
+  --mobile-page-gap:9px;
+  --mobile-card-radius:18px;
+  --mobile-touch:48px;
+  --mobile-gradient:linear-gradient(135deg,#315fea 0%,#6c3bff 52%,#9a42f5 100%);
+  --mobile-gradient-art:linear-gradient(125deg,#315fea 0%,#6c3bff 42%,#9a42f5 72%,#d94faf 100%);
+}
+
+html,body{max-width:100%;overflow-x:hidden}
+html body{-webkit-tap-highlight-color:rgba(108,59,255,.18)}
+body::before{opacity:.16;background-size:34px 34px}
+
+/* Base pensada primeiro para celular. */
+body main,
+body main.home-shell,
+body main.admin-shell{
+  width:min(100% - 16px,760px);
+  margin-inline:auto;
+  padding-top:12px;
+  padding-bottom:calc(84px + env(safe-area-inset-bottom,0px));
+}
+
+body h1{font-size:clamp(1.9rem,9vw,2.55rem);line-height:1.08}
+body h2{font-size:clamp(1.25rem,6vw,1.55rem)}
+body h3{font-size:1.05rem}
+body p{line-height:1.58}
+body .muted,body small{color:#bcc7e7}
+body .eyebrow,body .question-eyebrow{color:#c5d2ff;letter-spacing:.105em}
+
+body .hero,
+body .admin-hero{
+  grid-template-columns:1fr;
+  gap:14px;
+  padding:18px 16px;
+  margin-bottom:12px;
+  border-radius:20px;
+  background:linear-gradient(145deg,rgba(18,24,51,.97),rgba(31,23,70,.93));
+  box-shadow:0 14px 38px rgba(2,4,22,.28),inset 0 1px 0 rgba(255,255,255,.03);
+}
+body .hero::after,body .admin-hero::after{opacity:.62}
+body .hero-copy p,body .admin-hero .hero-copy p{font-size:.98rem;line-height:1.55;color:#cad3ec}
+body .hero-visual{display:none}
+
+body .card,
+body .admin-panel .card,
+body .admin-panel details.card,
+body .admin-login{
+  padding:16px;
+  margin:9px 0;
+  border-radius:var(--mobile-card-radius);
+  box-shadow:0 12px 30px rgba(2,4,22,.22),inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+body .grid.two,
+body .auth-layout,
+body .admin-panel > .grid.two,
+body .admin-panel form.grid.two{
+  grid-template-columns:1fr;
+}
+
+body label{margin-top:10px;margin-bottom:5px}
+body input:not([type="radio"]):not([type="checkbox"]),
+body select,
+body textarea{
+  min-height:var(--mobile-touch);
+  padding:12px 13px;
+  border-radius:12px;
+  font-size:1rem;
+}
+body textarea{min-height:112px}
+body button,body .button-link{min-height:var(--mobile-touch);border-radius:12px;padding:11px 14px}
+body button:not(.secondary),body .button-link:not(.secondary){background:var(--mobile-gradient)}
+body button.secondary,body .button-link.secondary{background:#161d40;color:#edf1ff;border-color:#465b96}
+body button:focus-visible,body input:focus-visible,body select:focus-visible,body textarea:focus-visible,body a:focus-visible{outline-color:#ffb84d}
+
+body .notice{padding:12px 13px;margin:9px 0;border-radius:12px}
+body .success{background:#111f48;border-color:#4268b8;border-left-color:#4a9bff}
+body .warning{background:#2b1e10;border-color:#9c671e;border-left-color:#ffb84d}
+body .error{background:#2c131d;border-color:#a44352;border-left-color:#f25f6b}
+
+/* Início / autenticação. */
+body main.home-shell{max-width:700px}
+body main.home-shell .compact-hero{padding:17px 16px;margin-bottom:8px}
+body main.home-shell .quick-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px}
+body main.home-shell .quick-tools button{width:100%;min-width:0}
+body main.home-shell .home-auth{gap:8px}
+body main.home-shell .home-actions{grid-template-columns:1fr 1fr;gap:7px}
+body main.home-shell .panel-actions,
+body main.home-shell .qr-manual-row{grid-template-columns:1fr;gap:7px}
+body main.home-shell .qr-manual-row button{width:100%}
+body .qr-reader-wrap{min-height:190px;border-radius:14px;background:#080b1c}
+
+/* Perfil e progresso do participante. */
+body .profile-top{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+body .score-number{font-size:2rem}
+body .individual-status{gap:10px;padding:12px 13px;margin:10px 0}
+body .progress-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+body .progress-grid>div{padding:10px 8px;border-radius:12px}
+body .progress-grid strong{font-size:1.18rem}
+body .progress-grid span{font-size:.76rem;line-height:1.25}
+body .profile-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px;padding-top:12px}
+body .profile-actions #openQrScanner{grid-column:1/-1}
+body .profile-actions button.compact,body .profile-actions .button-link{width:100%;min-width:0}
+
+/* Estações, conteúdo e desafios. */
+body .question-card{padding:17px}
+body .question-prompt{font-size:1.08rem;line-height:1.55}
+body .station-top{align-items:flex-start;flex-wrap:wrap}
+body .station-type{font-size:.72rem;line-height:1.2}
+body .station-points-preview{margin:12px 0 8px;padding:11px 12px}
+body .cultural-text{font-size:1rem;line-height:1.7;margin:14px 0}
+body .station-media{margin:14px 0}
+body .station-media img,body .station-media video{width:100%;height:auto;border-radius:12px}
+body .question-tools{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:11px}
+body .question-tools button{width:100%;min-width:0;min-height:46px}
+body .choices{gap:9px;margin-top:14px}
+body .choices label{min-height:52px;padding:13px 12px;align-items:flex-start}
+body .choices input[type="radio"]{width:24px;height:24px;min-width:24px}
+body .trail-status{display:block;padding:11px 12px;margin:11px 0}
+body .trail-status span{display:block;margin-top:3px}
+
+/* Ranking. */
+body .ranking-shell{padding:15px}
+body .individual-ranking{gap:8px}
+body .individual-ranking-card{
+  grid-template-columns:44px minmax(0,1fr);
+  grid-template-areas:"pos main" "score score";
+  gap:6px 10px;
+  padding:13px;
+  border-radius:14px;
+}
+body .individual-rank-position{min-width:38px;font-size:1.2rem}
+body .individual-rank-main p{font-size:.82rem;line-height:1.35}
+body .individual-rank-score{text-align:left;display:flex;align-items:baseline;gap:6px;padding-left:54px}
+body .individual-rank-score strong{font-size:1.35rem}
+body .page-links{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+body .page-links a{display:flex;align-items:center;justify-content:center;min-height:46px;padding:9px 10px;text-align:center}
+
+/* Acessibilidade no celular. */
+body .a11y-toggle{right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));min-height:46px;padding:9px 12px}
+body .a11y-panel{right:7px;bottom:calc(64px + env(safe-area-inset-bottom,0px));width:calc(100vw - 14px);max-height:calc(100vh - 82px);border-radius:17px;padding:14px}
+body .a11y-voice-actions{grid-template-columns:1fr 1fr;gap:7px}
+body .a11y-voice-actions #voiceCommandButton{grid-column:1/-1}
+
+/* Administração mobile: sem rolagem horizontal de abas. */
+body main.admin-shell{max-width:none}
+body .admin-dashboard{gap:11px}
+body .admin-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center}
+body .admin-toolbar>button{width:auto;min-width:78px;align-self:center}
+body .admin-status-badge{font-size:.9rem;padding:6px 9px}
+body .admin-nav{
+  position:static;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:6px;
+  overflow:visible;
+  padding:7px;
+  border-radius:14px;
+}
+body .admin-nav button{
+  width:100%;
+  min-width:0;
+  min-height:44px;
+  padding:7px 4px;
+  white-space:normal;
+  overflow-wrap:anywhere;
+  font-size:.78rem;
+  line-height:1.15;
+}
+body .admin-panel{gap:11px}
+body .admin-section-head{display:grid;gap:9px}
+body .section-tools{width:100%;flex-basis:auto}
+body .section-tools input{min-width:0;width:100%}
+body .admin-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+body .admin-stat{min-height:98px;padding:13px;border-radius:14px}
+body .admin-stat strong{font-size:1.65rem}
+body .admin-stat span{font-size:.86rem;line-height:1.3}
+body .admin-alerts,body .admin-settings-grid{grid-template-columns:1fr;gap:8px}
+body .admin-alert,body .admin-setting{min-height:auto;padding:13px}
+body .admin-list-item{display:grid;gap:9px;padding:13px}
+body .admin-list-item .actions{justify-content:stretch;width:100%}
+body .admin-list-item .actions button{flex:1 1 130px;width:auto}
+body .participant-score{text-align:left;margin:0}
+body .admin-rank{grid-template-columns:40px minmax(0,1fr);gap:8px}
+body .admin-rank-score{grid-column:2;justify-self:start}
+body .admin-panel select[multiple]{min-height:180px}
+body .form-card[open] summary{margin-bottom:12px}
+
+/* Telefones muito estreitos, inclusive 320 px. */
+@media(max-width:359px){
+  body main,body main.home-shell,body main.admin-shell{width:calc(100% - 12px)}
+  body h1{font-size:1.8rem}
+  body .home-actions,body main.home-shell .home-actions,body .quick-tools,body main.home-shell .quick-tools{grid-template-columns:1fr}
+  body .profile-top{grid-template-columns:1fr}
+  body .profile-score{text-align:left}
+  body .profile-actions{grid-template-columns:1fr}
+  body .profile-actions #openQrScanner{grid-column:auto}
+  body .page-links{grid-template-columns:1fr}
+  body .question-tools{grid-template-columns:1fr}
+  body .admin-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body .admin-stat-grid{grid-template-columns:1fr}
+}
+
+/* Celulares maiores. */
+@media(min-width:430px){
+  body main,body main.home-shell{width:min(100% - 22px,760px)}
+  body .card,body .admin-panel .card,body .admin-panel details.card{padding:18px}
+  body .individual-ranking-card{grid-template-columns:48px minmax(0,1fr) auto;grid-template-areas:"pos main score";align-items:center}
+  body .individual-rank-score{grid-column:auto;padding-left:0;text-align:right;display:block}
+}
+
+/* Tablets e celulares em paisagem. */
+@media(min-width:600px){
+  body main,body main.home-shell{width:min(100% - 30px,860px);padding-top:18px}
+  body .grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body .progress-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  body .profile-actions{grid-template-columns:auto auto auto;justify-content:start}
+  body .profile-actions #openQrScanner{grid-column:auto}
+  body .profile-actions button.compact,body .profile-actions .button-link{width:auto}
+  body .admin-nav{grid-template-columns:repeat(5,minmax(0,1fr))}
+  body .admin-stat-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  body .admin-alerts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body .admin-login{width:min(100%,520px);margin:14px auto 0;padding:24px}
+  body .admin-login form{max-width:none}
+}
+
+/* Desktop continua suportado, mas não é a referência principal. */
+@media(min-width:900px){
+  body main{width:min(1080px,calc(100% - 40px));padding-top:32px;padding-bottom:68px}
+  body main.home-shell{width:min(700px,calc(100% - 40px))}
+  body main.admin-shell{width:min(1360px,calc(100% - 48px));padding-top:28px}
+  body .hero{grid-template-columns:minmax(0,1.5fr) minmax(230px,.5fr);padding:30px;border-radius:28px}
+  body .hero-visual{display:block}
+  body .card{padding:22px;border-radius:20px}
+  body .auth-layout{grid-template-columns:repeat(2,minmax(0,1fr))}
+  body .admin-toolbar{display:flex;align-items:center;justify-content:space-between}
+  body .admin-nav{position:sticky;top:10px;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));padding:10px}
+  body .admin-nav button{font-size:.9rem;white-space:nowrap;padding:9px 12px}
+  body .admin-section-head{display:flex}
+  body .admin-settings-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  body .admin-list-item{display:flex}
+  body .participant-score{text-align:right}
+  body .admin-rank{grid-template-columns:56px minmax(0,1fr) minmax(84px,auto)}
+  body .admin-rank-score{grid-column:auto;justify-self:end}
+
+  /* Login administrativo: composição compacta e centralizada no desktop. */
+  body main.admin-shell:has(#loginCard:not(.hidden)){
+    width:min(1000px,calc(100% - 48px));
+    padding-top:24px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero{
+    width:100%;
+    margin:0 auto 18px;
+    padding:22px 26px;
+    border-radius:24px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero h1{
+    font-size:clamp(2.35rem,4.2vw,3.55rem);
+    margin-bottom:10px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-hero .hero-copy p{
+    max-width:680px;
+    font-size:1rem;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-login{
+    width:min(100%,500px);
+    margin:0 auto;
+    padding:26px;
+    border-radius:20px;
+  }
+  body main.admin-shell:has(#loginCard:not(.hidden)) .admin-login form{max-width:none}
+  body main.admin-shell:has(#loginCard:not(.hidden)) > .page-links{
+    width:min(100%,500px);
+    margin:14px auto 0;
+  }
+}
+
+@media(hover:hover) and (pointer:fine){
+  body .individual-ranking-card:hover{transform:translateY(-1px)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body .hero::after,body .admin-hero::after{animation:none!important}
+  body .individual-ranking-card{transform:none!important;transition:none!important}
+}
+
+html.a11y-reduced-motion body .hero::after,
+html.a11y-reduced-motion body .admin-hero::after{animation:none!important}
