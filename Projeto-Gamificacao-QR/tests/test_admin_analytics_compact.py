@@ -49,12 +49,15 @@ def test_question_difficulty_has_line_break_between_count_and_prompt():
     assert "white-space:pre-line" in css
 
 
-def test_qr_accuracy_combines_first_and_second_attempts():
+def test_qr_accuracy_uses_grouped_vertical_columns():
     js = read("app/static/js/admin-analytics.js")
     css = read("app/static/css/admin-ops.css")
-    assert "combinedAccuracyBars" in js
+    assert "groupedAccuracyColumns" in js
     assert "first_rate" in js
     assert "second_rate" in js
-    assert ".accuracy-first" in css
-    assert ".accuracy-second" in css
-    assert "background:#b82601" in css
+    assert "total_rate" in js
+    assert ".grouped-column-chart" in css
+    assert ".grouped-first" in css
+    assert ".grouped-second" in css
+    assert ".grouped-total" in css
+    assert "height:254px" in css
