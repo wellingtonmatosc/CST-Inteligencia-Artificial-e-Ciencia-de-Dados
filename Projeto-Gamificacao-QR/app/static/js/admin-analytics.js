@@ -92,10 +92,30 @@ function horizontalBars(el,rows,{label,value,suffix='',sub=null}={}){
   el.innerHTML=list.map(x=>`<div class="chart-row"><div class="chart-label">${esc(label(x))}${sub?`<span class="chart-sub">${esc(sub(x))}</span>`:''}</div><div class="chart-track"><div class="chart-fill" style="width:${percent(value(x),max)}%"></div></div><div class="chart-value">${number(value(x))}${suffix}</div></div>`).join('');
 }
 
-function combinedAccuracyBars(el,rows){
+function groupedAccuracyColumns(el,rows){
   const list=limited(rows);if(!list.length){empty(el);return}
-  el.className='analysis-chart combined-chart';
-  el.innerHTML=`<div class="combined-legend"><span><i class="legend-dot legend-first"></i>1ª tentativa</span><span><i class="legend-dot legend-second"></i>2ª tentativa</span></div>${list.map(r=>`<div class="accuracy-row"><div class="accuracy-head"><strong>${esc(r.code)}</strong><span>${number(r.total_rate)}% total</span></div><div class="accuracy-track" aria-label="${esc(r.code)}: ${number(r.first_rate)}% na primeira tentativa e ${number(r.second_rate)}% na segunda tentativa"><div class="accuracy-first" style="width:${r.first_rate}%"></div><div class="accuracy-second" style="width:${r.second_rate}%"></div></div><div class="accuracy-meta"><span><i class="legend-dot legend-first"></i>1ª: <strong>${number(r.first_rate)}%</strong></span><span><i class="legend-dot legend-second"></i>2ª: <strong>${number(r.second_rate)}%</strong></span></div></div>`).join('')}`;
+  el.className='analysis-chart grouped-accuracy-chart';
+  el.innerHTML=`
+    <div class="grouped-accuracy-legend" aria-label="Legenda do gráfico">
+      <span><i class="legend-square legend-first"></i>1ª tentativa</span>
+      <span><i class="legend-square legend-second"></i>2ª tentativa</span>
+      <span><i class="legend-square legend-total"></i>Total de acerto</span>
+    </div>
+    <div class="grouped-accuracy-scroll">
+      <div class="grouped-accuracy-wrap">
+        <div class="grouped-y-axis" aria-hidden="true"><span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span></div>
+        <div class="grouped-column-chart">${list.map(r=>`
+          <div class="grouped-column-item" aria-label="${esc(r.code)}: ${number(r.first_rate)}% na primeira tentativa, ${number(r.second_rate)}% na segunda tentativa e ${number(r.total_rate)}% de acerto total">
+            <div class="grouped-bars">
+              <div class="grouped-bar grouped-first" style="height:${r.first_rate}%"><span>${number(r.first_rate)}%</span></div>
+              <div class="grouped-bar grouped-second" style="height:${r.second_rate}%"><span>${number(r.second_rate)}%</span></div>
+              <div class="grouped-bar grouped-total" style="height:${r.total_rate}%"><span>${number(r.total_rate)}%</span></div>
+            </div>
+            <strong class="grouped-column-label">${esc(r.code)}</strong>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
 }
 
 function setHeading(type,description,summary=''){
@@ -151,10 +171,16 @@ function renderDailyUsage(el){
 }
 
 function renderQrAccuracy(el){
-  const rows=(data?.qr_usage||[]).filter(r=>Number(r.validations||0)>0).map(r=>{const validations=Number(r.validations||0),first=Math.round((Number(r.first_try||0)/validations)*100),second=Math.round((Number(r.second_try||0)/validations)*100);return {...r,first_rate:first,second_rate:second,total_rate:first+second}}).sort((a,b)=>b.first_rate-a.first_rate||b.total_rate-a.total_rate||String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
-  const avg=rows.length?Math.round(rows.reduce((s,r)=>s+r.total_rate,0)/rows.length):0;
-  setHeading('qrAccuracy','Compara, no mesmo gráfico, a taxa de acerto na 1ª e na 2ª tentativa. A 1ª tentativa recebe maior destaque visual.',rows.length?`média total ${avg}%`:'');
-  combinedAccuracyBars(el,rows);
+  const rows=[...(data?.qr_usage||[])].map(r=>{
+    const validations=Number(r.validations||0);
+    const first=validations?Math.round((Number(r.first_try||0)/validations)*100):0;
+    const second=validations?Math.round((Number(r.second_try||0)/validations)*100):0;
+    return {...r,first_rate:first,second_rate:second,total_rate:Math.min(100,first+second)};
+  }).sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
+  const active=rows.filter(r=>Number(r.validations||0)>0);
+  const avg=active.length?Math.round(active.reduce((s,r)=>s+r.total_rate,0)/active.length):0;
+  setHeading('qrAccuracy','Compara cada QR em três colunas: acerto na 1ª tentativa, acerto na 2ª tentativa e taxa total. A 1ª tentativa permanece com maior destaque visual.',active.length?`média total ${avg}%`:'');
+  groupedAccuracyColumns(el,rows);
 }
 
 function renderQuestionErrors(el){
