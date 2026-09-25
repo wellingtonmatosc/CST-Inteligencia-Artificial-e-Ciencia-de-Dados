@@ -6,30 +6,34 @@ const percent=(value,max)=>max>0?Math.max(2,Math.min(100,(Number(value||0)/max)*
 const number=value=>Number(value||0).toLocaleString('pt-BR');
 
 const ANALYSES={
-  general:{label:'Ranking geral',group:'Competição',orientation:'horizontal'},
-  dailyRanking:{label:'Ranking por dia',group:'Competição',orientation:'horizontal',needsDay:true},
-  questionRanking:{label:'Ranking por questões',group:'Competição',orientation:'horizontal'},
-  qrRanking:{label:'Ranking por QRs',group:'Competição',orientation:'horizontal'},
-  firstTry:{label:'Ranking por acertos na 1ª tentativa',group:'Competição',orientation:'horizontal'},
-  secondTry:{label:'Ranking por acertos na 2ª tentativa',group:'Competição',orientation:'horizontal'},
-  qrUsage:{label:'Uso por QR',group:'Uso dos QRs',orientation:'vertical'},
-  dailyUsage:{label:'QRs utilizados por dia',group:'Uso dos QRs',orientation:'vertical'},
-  qrAccuracy:{label:'Taxa de acerto por QR',group:'Qualidade das questões',orientation:'vertical'},
-  questionErrors:{label:'Questões com mais dificuldade',group:'Qualidade das questões',orientation:'horizontal'}
+  general:{label:'Ranking geral',group:'Competição',needsDay:false},
+  dailyRanking:{label:'Ranking por dia',group:'Competição',needsDay:true},
+  questionRanking:{label:'Ranking por questões',group:'Competição',needsDay:false},
+  qrRanking:{label:'Ranking por QRs',group:'Competição',needsDay:false},
+  firstTry:{label:'Ranking por acertos na 1ª tentativa',group:'Competição',needsDay:false},
+  secondTry:{label:'Ranking por acertos na 2ª tentativa',group:'Competição',needsDay:false},
+  qrUsage:{label:'Uso por QR',group:'Uso dos QRs',needsDay:false},
+  dailyUsage:{label:'QRs utilizados por dia',group:'Uso dos QRs',needsDay:false},
+  qrAccuracy:{label:'Taxa de acerto por QR',group:'Uso dos QRs',needsDay:false},
+  questionErrors:{label:'Questões com mais dificuldade',group:'Qualidade das questões',needsDay:false}
 };
+const GROUPS=['Competição','Uso dos QRs','Qualidade das questões'];
+
+function analysisOptions(group,current=''){
+  const items=Object.entries(ANALYSES).filter(([,item])=>item.group===group);
+  return items.map(([key,item])=>`<option value="${key}"${key===current?' selected':''}>${esc(item.label)}</option>`).join('');
+}
 
 function ensureWorkspace(){
   if(workspaceReady)return;
   const grid=document.querySelector('#analyticsPanel .analytics-grid');
   if(!grid)return;
   workspaceReady=true;
-  const groups={};
-  Object.entries(ANALYSES).forEach(([key,item])=>{(groups[item.group]??=[]).push([key,item])});
-  const options=Object.entries(groups).map(([group,items])=>`<optgroup label="${esc(group)}">${items.map(([key,item])=>`<option value="${key}">${esc(item.label)}</option>`).join('')}</optgroup>`).join('');
   grid.innerHTML=`
     <section class="card analytics-workspace">
       <div class="analytics-controls" aria-label="Filtros das análises">
-        <div><label for="analysisType">Análise</label><select id="analysisType">${options}</select></div>
+        <div><label for="analysisGroupSelect">Grupo</label><select id="analysisGroupSelect">${GROUPS.map((group,i)=>`<option value="${esc(group)}"${i===0?' selected':''}>${esc(group)}</option>`).join('')}</select></div>
+        <div><label for="analysisType">Análise</label><select id="analysisType">${analysisOptions('Competição','general')}</select></div>
         <div><label for="analysisDay">Dia</label><select id="analysisDay" disabled><option value="">Evento completo</option></select></div>
         <div><label for="analysisLimit">Exibir</label><select id="analysisLimit"><option value="5">Top 5</option><option value="10" selected>Top 10</option><option value="20">Top 20</option><option value="0">Todos</option></select></div>
       </div>
@@ -39,9 +43,19 @@ function ensureWorkspace(){
       </div>
       <div id="analysisChart" class="analysis-chart" role="img" aria-live="polite"></div>
     </section>`;
+  root('analysisGroupSelect')?.addEventListener('change',()=>{syncAnalysisOptions();syncDayFilter();renderSelected()});
   root('analysisType')?.addEventListener('change',()=>{syncDayFilter();renderSelected()});
   root('analysisDay')?.addEventListener('change',renderSelected);
   root('analysisLimit')?.addEventListener('change',renderSelected);
+}
+
+function syncAnalysisOptions(){
+  const group=root('analysisGroupSelect')?.value||'Competição';
+  const select=root('analysisType');if(!select)return;
+  const current=select.value;
+  const valid=Object.entries(ANALYSES).some(([key,item])=>key===current&&item.group===group);
+  select.innerHTML=analysisOptions(group,valid?current:'');
+  if(!valid&&select.options.length)select.selectedIndex=0;
 }
 
 function allDays(){
@@ -78,11 +92,10 @@ function horizontalBars(el,rows,{label,value,suffix='',sub=null}={}){
   el.innerHTML=list.map(x=>`<div class="chart-row"><div class="chart-label">${esc(label(x))}${sub?`<span class="chart-sub">${esc(sub(x))}</span>`:''}</div><div class="chart-track"><div class="chart-fill" style="width:${percent(value(x),max)}%"></div></div><div class="chart-value">${number(value(x))}${suffix}</div></div>`).join('');
 }
 
-function verticalColumns(el,rows,{label,value,suffix='',sub=null}={}){
+function combinedAccuracyBars(el,rows){
   const list=limited(rows);if(!list.length){empty(el);return}
-  const max=Math.max(...list.map(x=>Number(value(x)||0)),1);
-  el.className='analysis-chart vertical-chart';
-  el.innerHTML=`<div class="column-chart">${list.map(x=>`<div class="column-item"><div class="column-value">${number(value(x))}${suffix}</div><div class="column-track"><div class="column-fill" style="height:${percent(value(x),max)}%"></div></div><div class="column-label">${esc(label(x))}</div>${sub?`<div class="column-sub">${esc(sub(x))}</div>`:''}</div>`).join('')}</div>`;
+  el.className='analysis-chart combined-chart';
+  el.innerHTML=`<div class="combined-legend"><span><i class="legend-dot legend-first"></i>1ª tentativa</span><span><i class="legend-dot legend-second"></i>2ª tentativa</span></div>${list.map(r=>`<div class="accuracy-row"><div class="accuracy-head"><strong>${esc(r.code)}</strong><span>${number(r.total_rate)}% total</span></div><div class="accuracy-track" aria-label="${esc(r.code)}: ${number(r.first_rate)}% na primeira tentativa e ${number(r.second_rate)}% na segunda tentativa"><div class="accuracy-first" style="width:${r.first_rate}%"></div><div class="accuracy-second" style="width:${r.second_rate}%"></div></div><div class="accuracy-meta"><span><i class="legend-dot legend-first"></i>1ª: <strong>${number(r.first_rate)}%</strong></span><span><i class="legend-dot legend-second"></i>2ª: <strong>${number(r.second_rate)}%</strong></span></div></div>`).join('')}`;
 }
 
 function setHeading(type,description,summary=''){
@@ -126,28 +139,28 @@ function renderAttemptRanking(el,field,type,labelText){
 }
 
 function renderQrUsage(el){
-  const rows=[...(data?.qr_usage||[])].sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
-  setHeading('qrUsage','Compara quantas validações ocorreram em cada um dos 15 pontos físicos.',`${rows.reduce((s,r)=>s+Number(r.validations||0),0)} validação(ões)`);
-  verticalColumns(el,rows,{label:r=>r.code,value:r=>r.validations,sub:r=>`${r.participants} participante(s)`});
+  const rows=[...(data?.qr_usage||[])].sort((a,b)=>Number(b.validations||0)-Number(a.validations||0)||String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
+  setHeading('qrUsage','Compara quantas validações ocorreram em cada um dos 15 pontos físicos. Os QRs mais utilizados aparecem primeiro.',`${rows.reduce((s,r)=>s+Number(r.validations||0),0)} validação(ões)`);
+  horizontalBars(el,rows,{label:r=>r.code,value:r=>r.validations,sub:r=>`${r.participants} participante(s)`});
 }
 
 function renderDailyUsage(el){
-  const rows=[...(data?.daily_usage||[])].sort((a,b)=>String(a.activity_date||'').localeCompare(String(b.activity_date||'')));
-  setHeading('dailyUsage','Evolução do uso ao longo dos dias, com quantidade de validações, QRs distintos e participantes.',`${rows.length} dia(s) com atividade`);
-  verticalColumns(el,rows,{label:r=>r.event_day?`Dia ${r.event_day}`:r.activity_date,value:r=>r.validations,sub:r=>`${r.distinct_qrs} QRs • ${r.participants} participantes`});
+  const rows=[...(data?.daily_usage||[])].sort((a,b)=>Number(b.validations||0)-Number(a.validations||0)||String(a.activity_date||'').localeCompare(String(b.activity_date||'')));
+  setHeading('dailyUsage','Compara os dias com maior utilização do sistema. Os dias com mais validações aparecem primeiro.',`${rows.length} dia(s) com atividade`);
+  horizontalBars(el,rows,{label:r=>r.event_day?`Dia ${r.event_day}`:r.activity_date,value:r=>r.validations,sub:r=>`${r.distinct_qrs} QRs distintos • ${r.participants} participantes`});
 }
 
 function renderQrAccuracy(el){
-  const rows=(data?.qr_usage||[]).filter(r=>Number(r.validations||0)>0).map(r=>({...r,accuracy:Number(r.validations)?Math.round(((Number(r.first_try||0)+Number(r.second_try||0))/Number(r.validations))*100):0})).sort((a,b)=>String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
-  const avg=rows.length?Math.round(rows.reduce((s,r)=>s+r.accuracy,0)/rows.length):0;
-  setHeading('qrAccuracy','Ajuda a identificar estações cujo conjunto de questões esteja muito mais fácil ou difícil que os demais.',rows.length?`média ${avg}%`:'');
-  verticalColumns(el,rows,{label:r=>r.code,value:r=>r.accuracy,suffix:'%',sub:r=>`${r.first_try} de 1ª • ${r.second_try} de 2ª`});
+  const rows=(data?.qr_usage||[]).filter(r=>Number(r.validations||0)>0).map(r=>{const validations=Number(r.validations||0),first=Math.round((Number(r.first_try||0)/validations)*100),second=Math.round((Number(r.second_try||0)/validations)*100);return {...r,first_rate:first,second_rate:second,total_rate:first+second}}).sort((a,b)=>b.first_rate-a.first_rate||b.total_rate-a.total_rate||String(a.code||'').localeCompare(String(b.code||''),undefined,{numeric:true}));
+  const avg=rows.length?Math.round(rows.reduce((s,r)=>s+r.total_rate,0)/rows.length):0;
+  setHeading('qrAccuracy','Compara, no mesmo gráfico, a taxa de acerto na 1ª e na 2ª tentativa. A 1ª tentativa recebe maior destaque visual.',rows.length?`média total ${avg}%`:'');
+  combinedAccuracyBars(el,rows);
 }
 
 function renderQuestionErrors(el){
   const rows=(data?.question_performance||[]).filter(r=>Number(r.attempted||0)>0).map(r=>({...r,error_rate:Math.max(0,100-Number(r.success_rate||0))})).sort((a,b)=>b.error_rate-a.error_rate||Number(b.attempted||0)-Number(a.attempted||0));
   setHeading('questionErrors','Prioriza Qxxx com maior taxa de erro para orientar a revisão pedagógica durante a homologação.',`${rows.length} questão(ões) respondida(s)`);
-  horizontalBars(el,rows,{label:r=>r.review_code,value:r=>r.error_rate,suffix:'%',sub:r=>`${r.attempted} resposta(s) • ${String(r.prompt||'').slice(0,90)}`});
+  horizontalBars(el,rows,{label:r=>r.review_code,value:r=>r.error_rate,suffix:'%',sub:r=>`${r.attempted} resposta(s)\n${String(r.prompt||'').slice(0,110)}`});
 }
 
 function renderSelected(){
@@ -166,7 +179,7 @@ function renderSelected(){
   if(type==='questionErrors')return renderQuestionErrors(el);
 }
 
-function render(){ensureWorkspace();fillDays();renderSelected()}
+function render(){ensureWorkspace();syncAnalysisOptions();fillDays();renderSelected()}
 async function load(){
   if(loading)return;loading=true;ensureWorkspace();
   try{const res=await fetch('/api/admin/analytics',{credentials:'include'});if(res.status===401||res.status===403)return;if(!res.ok)throw new Error('Não foi possível carregar as análises.');data=await res.json();render()}
