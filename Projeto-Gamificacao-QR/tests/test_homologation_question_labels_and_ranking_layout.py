@@ -26,5 +26,5 @@ def test_question_reference_migration_preserves_roman_questions_and_normalizes_l
     assert "\\ma\\M" in sql
     assert "\\md\\M" in sql
     assert "algarismos romanos" in sql
-    assert "correct_answer" in sql.lower()
-    assert "set options" in sql.lower()
+    assert "setcorrect_answer" not in compact.lower()
+    assert "setoptions=n.options" in compact.lower()
